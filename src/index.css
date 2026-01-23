@@ -152,3 +152,25 @@ td {
 tr:hover td {
     background: rgba(255, 255, 255, 0.02);
 }
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 1rem;
+    border-radius: var(--radius);
+}
+
+.table-container table {
+    min-width: 800px;
+}
+
+@media (max-width: 768px) {
+    .btn {
+        padding: 0.6rem 1rem;
+        font-size: 0.8rem;
+    }
+    
+    .card {
+        padding: 1rem;
+    }
+}

@@ -13,6 +13,7 @@ import './App.css';
 
 function App() {
     const [activeView, setActiveView] = useState('dashboard');
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(() => {
         return localStorage.getItem('hv_manager_auth') === 'true';
     });
@@ -23,6 +24,11 @@ function App() {
         setIsAuthenticated(true);
         localStorage.setItem('hv_manager_auth', 'true');
     };
+
+    // Close mobile menu when switching views
+    useEffect(() => {
+        setIsMobileMenuOpen(false);
+    }, [activeView]);
 
     const renderView = () => {
         switch (activeView) {
@@ -69,7 +75,28 @@ function App() {
 
     return (
         <div className="app-container">
-            <Sidebar activeView={activeView} setActiveView={setActiveView} />
+            <button
+                className="mobile-toggle"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <div style={{ width: '20px', height: '2px', background: 'white' }}></div>
+                    <div style={{ width: '20px', height: '2px', background: 'white' }}></div>
+                    <div style={{ width: '20px', height: '2px', background: 'white' }}></div>
+                </div>
+            </button>
+
+            <div
+                className={`mobile-overlay ${isMobileMenuOpen ? 'active' : ''}`}
+                onClick={() => setIsMobileMenuOpen(false)}
+            />
+
+            <Sidebar
+                activeView={activeView}
+                setActiveView={setActiveView}
+                isMobileOpen={isMobileMenuOpen}
+                setIsMobileOpen={setIsMobileMenuOpen}
+            />
             <main className="main-content">
                 {renderView()}
             </main>

@@ -2,12 +2,14 @@
     display: grid;
     grid-template-columns: 260px 1fr;
     min-height: 100vh;
+    position: relative;
 }
 
 .main-content {
     padding: 2rem;
     overflow-y: auto;
     max-height: 100vh;
+    width: 100%;
 }
 
 .view-container {
@@ -20,6 +22,7 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 2rem;
+    gap: 1rem;
 }
 
 .grid-2 {
@@ -28,8 +31,80 @@
     gap: 1.5rem;
 }
 
+/* Mobile Toggle Button */
+.mobile-toggle {
+    display: none;
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 100;
+    padding: 0.5rem;
+    background: var(--primary);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Overlay for Mobile Sidebar */
+.mobile-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 90;
+}
+
 @media (max-width: 1024px) {
     .app-container {
         grid-template-columns: 80px 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .app-container {
+        display: block;
+    }
+
+    .main-content {
+        padding: 5rem 1rem 2rem 1rem;
+    }
+
+    .view-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .view-header .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .grid-2 {
+        grid-template-columns: 1fr;
+    }
+
+    .mobile-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .mobile-overlay.active {
+        display: block;
+    }
+}
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 900px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
     }
 }

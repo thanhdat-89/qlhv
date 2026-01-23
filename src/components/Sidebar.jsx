@@ -9,7 +9,7 @@ import {
     LogOut
 } from 'lucide-react';
 
-const Sidebar = ({ activeView, setActiveView }) => {
+const Sidebar = ({ activeView, setActiveView, isMobileOpen, setIsMobileOpen }) => {
     const menuItems = [
         { id: 'dashboard', label: 'Tổng quan', icon: LayoutDashboard },
         { id: 'students', label: 'Học viên', icon: Users },
@@ -19,9 +19,54 @@ const Sidebar = ({ activeView, setActiveView }) => {
         { id: 'tuition', label: 'Học phí', icon: Wallet },
     ];
 
+    const sidebarStyle = {
+        margin: '1rem',
+        marginRight: 0,
+        height: 'calc(100vh - 2rem)',
+        display: 'flex',
+        flexDirection: 'column',
+        transition: 'transform 0.3s ease-in-out',
+        zIndex: 100,
+    };
+
+    const mobileSidebarStyle = {
+        position: 'fixed',
+        left: 0,
+        top: 0,
+        bottom: 0,
+        margin: 0,
+        height: '100vh',
+        width: '280px',
+        transform: isMobileOpen ? 'translateX(0)' : 'translateX(-100%)',
+        borderRadius: 0,
+    };
+
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+
     return (
-        <aside className="glass" style={{ margin: '1rem', marginRight: 0, height: 'calc(100vh - 2rem)', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ padding: '2rem', textAlign: 'center' }}>
+        <aside
+            className="glass sidebar-container"
+            style={{
+                ...sidebarStyle,
+                ...(isMobile ? mobileSidebarStyle : {})
+            }}
+        >
+            <div style={{ padding: '2rem', textAlign: 'center', position: 'relative' }}>
+                {isMobile && (
+                    <button
+                        onClick={() => setIsMobileOpen(false)}
+                        style={{
+                            position: 'absolute',
+                            top: '1rem',
+                            right: '1rem',
+                            background: 'transparent',
+                            border: 'none',
+                            color: 'var(--text-secondary)'
+                        }}
+                    >
+                        ✕
+                    </button>
+                )}
                 <div style={{
                     width: '3rem', height: '3rem', background: 'var(--primary)',
                     borderRadius: '12px', margin: '0 auto 1rem', display: 'flex',

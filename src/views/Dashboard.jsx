@@ -61,7 +61,7 @@ const Dashboard = ({ db }) => {
                 </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', marginBottom: '2rem' }}>
+            <div className="stats-grid">
                 <div className="glass card" style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
                     <div style={{ padding: '1rem', background: 'rgba(99, 102, 241, 0.15)', borderRadius: '12px', color: 'var(--primary)' }}>
                         <Users size={32} />
