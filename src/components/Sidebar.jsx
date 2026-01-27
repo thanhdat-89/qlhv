@@ -74,7 +74,7 @@ const Sidebar = ({ activeView, setActiveView, isMobileOpen, setIsMobileOpen }) =
                 }}>
                     <BookOpen />
                 </div>
-                <h2 style={{ fontSize: '1.25rem' }}>Quản lý học viên</h2>
+                <h2 style={{ fontSize: '1.25rem', color: 'var(--text-primary)' }}>Quản lý học viên</h2>
             </div>
 
             <nav style={{ flex: 1, padding: '1rem' }}>
@@ -84,13 +84,11 @@ const Sidebar = ({ activeView, setActiveView, isMobileOpen, setIsMobileOpen }) =
                     return (
                         <button
                             key={item.id}
-                            onClick={() => setActiveView(item.id)}
-                            className={`btn ${isActive ? 'btn-primary' : 'btn-glass'}`}
-                            style={{
-                                width: '100%', justifyContent: 'flex-start', marginBottom: '0.5rem',
-                                border: isActive ? 'none' : '1px solid transparent',
-                                background: isActive ? '' : 'transparent'
+                            onClick={() => {
+                                setActiveView(item.id);
+                                if (isMobile) setIsMobileOpen(false);
                             }}
+                            className={`btn nav-link ${isActive ? 'active' : ''}`}
                         >
                             <Icon size={20} />
                             <span>{item.label}</span>
@@ -101,20 +99,16 @@ const Sidebar = ({ activeView, setActiveView, isMobileOpen, setIsMobileOpen }) =
 
             <div style={{ padding: '1rem', borderTop: '1px solid var(--glass-border)' }}>
                 <button
-                    onClick={() => setActiveView('settings')}
-                    className={`btn ${activeView === 'settings' ? 'btn-primary' : 'btn-glass'}`}
-                    style={{
-                        width: '100%',
-                        justifyContent: 'flex-start',
-                        background: activeView === 'settings' ? '' : 'transparent',
-                        border: activeView === 'settings' ? 'none' : '1px solid transparent',
-                        marginBottom: '0.5rem'
+                    onClick={() => {
+                        setActiveView('settings');
+                        if (isMobile) setIsMobileOpen(false);
                     }}
+                    className={`btn nav-link ${activeView === 'settings' ? 'active' : ''}`}
                 >
                     <Settings size={20} />
                     <span>Cài đặt</span>
                 </button>
-                <button className="btn btn-glass" style={{ width: '100%', justifyContent: 'flex-start', background: 'transparent', border: 'none', color: 'var(--danger)' }}>
+                <button className="btn nav-link" style={{ color: 'var(--danger)' }}>
                     <LogOut size={20} />
                     <span>Đăng xuất</span>
                 </button>

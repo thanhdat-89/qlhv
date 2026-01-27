@@ -97,20 +97,11 @@ const Students = ({ db }) => {
                 </div>
             </div>
 
-            <div style={{ marginBottom: '1.5rem' }}>
+            <div className="search-container">
                 <input
                     type="text"
                     placeholder="Tìm kiếm theo tên học viên..."
                     className="glass"
-                    style={{
-                        width: '100%',
-                        maxWidth: '400px',
-                        padding: '0.75rem 1rem',
-                        color: 'white',
-                        border: '1px solid var(--glass-border)',
-                        borderRadius: '8px',
-                        outline: 'none'
-                    }}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -126,26 +117,16 @@ const Students = ({ db }) => {
                 />
             )}
 
-            <div className="glass" style={{ padding: '0.25rem', borderRadius: 'var(--radius)', display: 'flex', gap: '0.25rem', width: 'fit-content', marginBottom: '1.5rem' }}>
+            <div className="tab-group">
                 <button
                     onClick={() => setViewMode('list')}
-                    className={`btn ${viewMode === 'list' ? 'btn-primary' : ''}`}
-                    style={{
-                        padding: '0.6rem 1.5rem',
-                        background: viewMode === 'list' ? '' : 'transparent',
-                        color: viewMode === 'list' ? 'white' : 'rgba(255, 255, 255, 0.7)'
-                    }}
+                    className={`tab-item ${viewMode === 'list' ? 'active' : ''}`}
                 >
                     Danh sách
                 </button>
                 <button
                     onClick={() => setViewMode('history')}
-                    className={`btn ${viewMode === 'history' ? 'btn-primary' : ''}`}
-                    style={{
-                        padding: '0.6rem 1.5rem',
-                        background: viewMode === 'history' ? '' : 'transparent',
-                        color: viewMode === 'history' ? 'white' : 'rgba(255, 255, 255, 0.7)'
-                    }}
+                    className={`tab-item ${viewMode === 'history' ? 'active' : ''}`}
                 >
                     Lịch sử nhập học
                 </button>
@@ -153,49 +134,35 @@ const Students = ({ db }) => {
 
             {viewMode === 'list' && (
                 <>
-                    <div className="glass" style={{ padding: '0.25rem', borderRadius: 'var(--radius)', display: 'flex', gap: '0.25rem', width: 'fit-content', marginBottom: '2rem' }}>
+                    <div className="tab-group" style={{ marginBottom: '2rem' }}>
                         <button
                             onClick={() => setFilterMode('all')}
-                            className={`btn ${filterMode === 'all' ? 'btn-primary' : ''} `}
-                            style={{
-                                padding: '0.5rem 1.5rem',
-                                background: filterMode === 'all' ? '' : 'transparent',
-                                color: filterMode === 'all' ? 'white' : 'rgba(255, 255, 255, 0.6)'
-                            }}
+                            className={`tab-item ${filterMode === 'all' ? 'active' : ''}`}
                         >
                             Tất cả
                         </button>
                         <button
                             onClick={() => setFilterMode('new')}
-                            className={`btn ${filterMode === 'new' ? 'btn-primary' : ''} `}
-                            style={{
-                                padding: '0.5rem 1.5rem',
-                                background: filterMode === 'new' ? '' : 'transparent',
-                                color: filterMode === 'new' ? 'white' : 'rgba(255, 255, 255, 0.6)'
-                            }}
+                            className={`tab-item ${filterMode === 'new' ? 'active' : ''}`}
+                            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
                         >
                             <UserCheck size={16} /> Học sinh mới
                         </button>
                         <button
                             onClick={() => setFilterMode('left')}
-                            className={`btn ${filterMode === 'left' ? 'btn-primary' : ''} `}
-                            style={{
-                                padding: '0.5rem 1.5rem',
-                                background: filterMode === 'left' ? '' : 'transparent',
-                                color: filterMode === 'left' ? 'white' : 'rgba(255, 255, 255, 0.6)'
-                            }}
+                            className={`tab-item ${filterMode === 'left' ? 'active' : ''}`}
+                            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
                         >
                             <UserMinus size={16} /> Học sinh nghỉ
                         </button>
                     </div>
 
                     <div style={{ marginBottom: '2rem' }}>
-                        <label className="form-label" style={{ color: 'var(--text-secondary)', marginBottom: '0.5rem', display: 'block' }}>Lọc theo lớp</label>
-                        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                        <label className="form-label">Lọc theo lớp</label>
+                        <div className="filter-group">
                             <button
                                 onClick={() => setSelectedClassId('all')}
-                                className={`btn ${selectedClassId === 'all' ? 'btn-glass active' : 'btn-glass'}`}
-                                style={{ border: selectedClassId === 'all' ? '1px solid var(--primary)' : '' }}
+                                className={`btn btn-glass filter-item ${selectedClassId === 'all' ? 'active' : ''}`}
                             >
                                 Tất cả lớp
                             </button>
@@ -203,8 +170,7 @@ const Students = ({ db }) => {
                                 <button
                                     key={c.id}
                                     onClick={() => setSelectedClassId(c.id)}
-                                    className={`btn ${selectedClassId === c.id ? 'btn-glass active' : 'btn-glass'}`}
-                                    style={{ border: selectedClassId === c.id ? '1px solid var(--primary)' : '' }}
+                                    className={`btn btn-glass filter-item ${selectedClassId === c.id ? 'active' : ''}`}
                                 >
                                     {c.name}
                                 </button>
@@ -230,7 +196,7 @@ const Students = ({ db }) => {
                             <tbody>
                                 {displayStudents().map((s) => (
                                     <tr key={s.id}>
-                                        <td style={{ color: 'white', fontWeight: 500 }}>{s.name}</td>
+                                        <td style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{s.name}</td>
                                         <td>{s.className}</td>
                                         <td style={{ textAlign: 'center' }}>{s.birthYear}</td>
                                         <td style={{ color: 'var(--text-primary)' }}>{s.phone || '-'}</td>
@@ -288,7 +254,7 @@ const Students = ({ db }) => {
                                     <td style={{ color: 'var(--primary)', fontWeight: 600 }}>
                                         {new Date(s.enrollDate).toLocaleDateString('vi-VN')}
                                     </td>
-                                    <td style={{ color: 'white', fontWeight: 500 }}>{s.name}</td>
+                                    <td style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{s.name}</td>
                                     <td style={{ textAlign: 'center' }}>{s.birthYear}</td>
                                     <td>{s.className}</td>
                                     <td style={{ textAlign: 'center' }}>{getStatusLabel(s.status)}</td>

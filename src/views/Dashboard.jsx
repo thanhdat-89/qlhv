@@ -39,7 +39,7 @@ const Dashboard = ({ db }) => {
         return Object.keys(monthly).map(key => ({ name: key, revenue: monthly[key] }));
     }, [fees]);
 
-    const COLORS = ['#6366f1', '#ec4899', '#f59e0b', '#22c55e'];
+    const COLORS = ['var(--primary)', 'var(--secondary)', 'var(--warning)', 'var(--success)'];
 
     return (
         <div className="view-container">
@@ -49,9 +49,10 @@ const Dashboard = ({ db }) => {
                     <div className="glass" style={{ padding: '0.5rem 1rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                         <Filter size={18} color="var(--text-secondary)" />
                         <select
+                            className="glass"
                             value={categoryFilter}
                             onChange={(e) => setCategoryFilter(e.target.value)}
-                            style={{ background: 'transparent', border: 'none', color: 'white', outline: 'none' }}
+                            style={{ background: 'transparent', border: 'none', padding: 0 }}
                         >
                             <option value="All">Tất cả hệ lớp</option>
                             <option value="Cơ bản">Cơ bản</option>
@@ -63,37 +64,37 @@ const Dashboard = ({ db }) => {
 
             <div className="stats-grid">
                 <div className="glass card" style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-                    <div style={{ padding: '1rem', background: 'rgba(99, 102, 241, 0.15)', borderRadius: '12px', color: 'var(--primary)' }}>
+                    <div className="icon-box icon-box-primary">
                         <Users size={32} />
                     </div>
                     <div>
-                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Tổng học viên</p>
-                        <h2 style={{ fontSize: '1.75rem' }}>{totalStudents}</h2>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', fontWeight: 500 }}>Tổng học viên</p>
+                        <h2 style={{ fontSize: '1.75rem', marginTop: '0.25rem' }}>{totalStudents}</h2>
                     </div>
                 </div>
                 <div className="glass card" style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-                    <div style={{ padding: '1rem', background: 'rgba(34, 197, 94, 0.15)', borderRadius: '12px', color: 'var(--success)' }}>
+                    <div className="icon-box icon-box-success">
                         <TrendingUp size={32} />
                     </div>
                     <div>
-                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Đang học</p>
-                        <h2 style={{ fontSize: '1.75rem' }}>{activeStudents}</h2>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', fontWeight: 500 }}>Đang học</p>
+                        <h2 style={{ fontSize: '1.75rem', marginTop: '0.25rem' }}>{activeStudents}</h2>
                     </div>
                 </div>
                 <div className="glass card" style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-                    <div style={{ padding: '1rem', background: 'rgba(236, 72, 153, 0.15)', borderRadius: '12px', color: 'var(--secondary)' }}>
+                    <div className="icon-box icon-box-secondary">
                         <DollarSign size={32} />
                     </div>
                     <div>
-                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Doanh thu</p>
-                        <h2 style={{ fontSize: '1.75rem' }}>{new Intl.NumberFormat('vi-VN').format(totalRevenue)} đ</h2>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', fontWeight: 500 }}>Doanh thu</p>
+                        <h2 style={{ fontSize: '1.75rem', marginTop: '0.25rem' }}>{new Intl.NumberFormat('vi-VN').format(totalRevenue)} đ</h2>
                     </div>
                 </div>
             </div>
 
             <div className="grid-2">
                 <div className="glass card">
-                    <h3 style={{ marginBottom: '1.5rem' }}>Tình trạng thu học phí</h3>
+                    <h3 style={{ marginBottom: '1.5rem', fontSize: '1.1rem' }}>Tình trạng thu học phí</h3>
                     <div style={{ height: '350px' }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
@@ -102,31 +103,32 @@ const Dashboard = ({ db }) => {
                                     cx="50%"
                                     cy="50%"
                                     labelLine={true}
-                                    label={({ name, value, percent }) => `${name}: ${value} (${(percent * 100).toFixed(0)}%)`}
+                                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                                     outerRadius={100}
-                                    paddingAngle={3}
+                                    paddingAngle={5}
                                     dataKey="value"
                                 >
-                                    <Cell fill="#10b981" />
-                                    <Cell fill="#f59e0b" />
+                                    <Cell fill="var(--success)" stroke="none" />
+                                    <Cell fill="var(--warning)" stroke="none" />
                                 </Pie>
                                 <Tooltip
                                     contentStyle={{
-                                        background: '#1e293b',
-                                        border: '1px solid rgba(255,255,255,0.2)',
-                                        borderRadius: '8px',
+                                        background: 'rgba(255, 255, 255, 0.95)',
+                                        border: '1px solid #e2e8f0',
+                                        borderRadius: '12px',
                                         padding: '12px',
-                                        boxShadow: '0 4px 6px rgba(0,0,0,0.3)'
+                                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                                        backdropFilter: 'blur(4px)'
                                     }}
-                                    itemStyle={{ color: '#ffffff', fontWeight: '500' }}
-                                    labelStyle={{ color: '#e2e8f0', marginBottom: '4px' }}
+                                    itemStyle={{ color: 'var(--text-primary)', fontWeight: '600', fontSize: '14px' }}
+                                    labelStyle={{ color: 'var(--text-secondary)', marginBottom: '4px', fontSize: '12px' }}
                                     formatter={(value) => [`${value} học viên`, 'Số lượng']}
                                 />
                                 <Legend
                                     verticalAlign="bottom"
                                     height={36}
                                     iconType="circle"
-                                    formatter={(value) => <span style={{ color: 'var(--text-primary)' }}>{value}</span>}
+                                    formatter={(value) => <span style={{ color: 'var(--text-primary)', fontSize: '14px', fontWeight: 500 }}>{value}</span>}
                                 />
                             </PieChart>
                         </ResponsiveContainer>
@@ -134,38 +136,46 @@ const Dashboard = ({ db }) => {
                 </div>
 
                 <div className="glass card">
-                    <h3 style={{ marginBottom: '1.5rem' }}>Doanh thu theo tháng</h3>
+                    <h3 style={{ marginBottom: '1.5rem', fontSize: '1.1rem' }}>Doanh thu theo tháng</h3>
                     <div style={{ height: '350px' }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={revenueData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                                 <XAxis
                                     dataKey="name"
                                     stroke="var(--text-secondary)"
                                     fontSize={12}
-                                    tick={{ fill: 'var(--text-primary)' }}
+                                    tick={{ fill: 'var(--text-secondary)' }}
+                                    axisLine={{ stroke: '#e2e8f0' }}
+                                    tickLine={false}
                                 />
                                 <YAxis
                                     stroke="var(--text-secondary)"
                                     fontSize={12}
-                                    tick={{ fill: 'var(--text-primary)' }}
+                                    tick={{ fill: 'var(--text-secondary)' }}
                                     tickFormatter={(value) => `${(value / 1000000).toFixed(1)}M`}
+                                    axisLine={false}
+                                    tickLine={false}
                                 />
                                 <Tooltip
+                                    cursor={{ fill: '#f8fafc' }}
                                     contentStyle={{
-                                        background: 'var(--bg-dark)',
-                                        border: '1px solid var(--glass-border)',
-                                        borderRadius: '8px',
-                                        color: 'white'
+                                        background: 'rgba(255, 255, 255, 0.95)',
+                                        border: '1px solid #e2e8f0',
+                                        borderRadius: '12px',
+                                        padding: '12px',
+                                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                                        backdropFilter: 'blur(4px)'
                                     }}
+                                    itemStyle={{ color: 'var(--text-primary)', fontWeight: '600', fontSize: '14px' }}
+                                    labelStyle={{ color: 'var(--text-secondary)', marginBottom: '4px', fontSize: '12px' }}
                                     formatter={(value) => [new Intl.NumberFormat('vi-VN').format(value) + ' đ', 'Doanh thu']}
-                                    labelStyle={{ color: 'var(--text-primary)' }}
                                 />
                                 <Bar
                                     dataKey="revenue"
                                     fill="var(--primary)"
-                                    radius={[8, 8, 0, 0]}
-                                    label={{ position: 'top', fill: 'var(--text-primary)', fontSize: 11, formatter: (value) => `${(value / 1000000).toFixed(1)}M` }}
+                                    radius={[6, 6, 0, 0]}
+                                    maxBarSize={50}
                                 />
                             </BarChart>
                         </ResponsiveContainer>
@@ -181,7 +191,7 @@ const Dashboard = ({ db }) => {
                         return (
                             <div key={c.id} className="glass" style={{ padding: '1rem', borderRadius: '8px' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '0.5rem' }}>
-                                    <h4 style={{ fontSize: '1rem', color: 'white' }}>{c.name}</h4>
+                                    <h4 style={{ fontSize: '1rem', color: 'var(--text-primary)' }}>{c.name}</h4>
                                     <span className={`label ${c.category === 'Cơ bản' ? 'label-primary' : 'label-warning'}`} style={{ fontSize: '0.7rem' }}>
                                         {c.category}
                                     </span>

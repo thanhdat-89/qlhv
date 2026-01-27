@@ -78,7 +78,7 @@ const Schedule = ({ db }) => {
                                                                 animation: 'fadeIn 0.3s ease'
                                                             }}
                                                         >
-                                                            <div style={{ fontWeight: 600, color: 'white' }}>{c.name}</div>
+                                                            <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{c.name}</div>
                                                             <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
                                                                 {c.category}
                                                             </div>
@@ -90,8 +90,10 @@ const Schedule = ({ db }) => {
                                                             display: 'flex',
                                                             alignItems: 'center',
                                                             justifyContent: 'center',
-                                                            color: 'rgba(255,255,255,0.05)',
-                                                            fontSize: '0.7rem'
+                                                            color: 'var(--text-secondary)',
+                                                            opacity: 0.6,
+                                                            fontSize: '0.75rem',
+                                                            fontStyle: 'italic'
                                                         }}>
                                                             Trống
                                                         </div>
@@ -108,7 +110,7 @@ const Schedule = ({ db }) => {
             ) : (
                 <div className="holidays-view">
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                        <h2 style={{ fontSize: '1.25rem', color: 'white' }}>Danh sách ngày nghỉ</h2>
+                        <h2 style={{ fontSize: '1.25rem', color: 'var(--text-primary)' }}>Danh sách ngày nghỉ</h2>
                         <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>
                             <Plus size={18} /> Thêm ngày nghỉ
                         </button>
@@ -128,7 +130,7 @@ const Schedule = ({ db }) => {
                                             {h.type === 'Nghỉ Lễ' ? <Coffee size={24} /> : <ShieldAlert size={24} />}
                                         </div>
                                         <div>
-                                            <div style={{ fontWeight: 600, color: 'white', fontSize: '1.1rem' }}>
+                                            <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '1.1rem' }}>
                                                 {h.date ? (
                                                     h.endDate && h.endDate !== h.date ? (
                                                         `${new Date(h.date).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })} - ${new Date(h.endDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })}`

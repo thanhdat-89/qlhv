@@ -8,6 +8,7 @@ const AddAttendanceModal = ({ students, onAdd, onUpdate, onClose, initialData })
         studentId: students[0]?.id || '',
         date: new Date().toISOString().split('T')[0],
         status: true,
+        isExcused: false,
         fee: students[0]?.tuition?.feePerSession || 200000,
         notes: ''
     });
@@ -68,12 +69,8 @@ const AddAttendanceModal = ({ students, onAdd, onUpdate, onClose, initialData })
     };
 
     return (
-        <div className="modal-overlay" style={{
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-            background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
-        }}>
-            <div className="modal-content glass card" style={{ width: '100%', maxWidth: '400px', position: 'relative' }}>
+        <div className="modal-overlay">
+            <div className="modal-content card" style={{ maxWidth: '400px' }}>
                 <button onClick={onClose} style={{ position: 'absolute', right: '1.5rem', top: '1.5rem', background: 'transparent', border: 'none', color: 'var(--text-secondary)' }}>
                     <X size={24} />
                 </button>
@@ -85,7 +82,7 @@ const AddAttendanceModal = ({ students, onAdd, onUpdate, onClose, initialData })
                             type="text"
                             placeholder="Tìm kiếm học viên..."
                             className="glass"
-                            style={{ width: '100%', padding: '0.75rem', color: 'white', marginBottom: '0.5rem' }}
+                            style={{ width: '100%', padding: '0.75rem', marginBottom: '0.5rem' }}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
@@ -111,7 +108,7 @@ const AddAttendanceModal = ({ students, onAdd, onUpdate, onClose, initialData })
                             ))}
                         </div>
                         <select
-                            className="glass" style={{ width: '100%', padding: '0.75rem', color: 'white' }}
+                            className="glass" style={{ width: '100%', padding: '0.75rem' }}
                             value={formData.studentId} onChange={e => handleStudentChange(e.target.value)}
                         >
                             {filteredStudents.map(s => <option key={s.id} value={s.id}>{s.name} - {s.className}</option>)}
@@ -121,7 +118,7 @@ const AddAttendanceModal = ({ students, onAdd, onUpdate, onClose, initialData })
                         <label className="form-label">Học phí buổi học (đ)</label>
                         <input
                             className="glass" type="number" required
-                            style={{ width: '100%', padding: '0.75rem', color: 'white' }}
+                            style={{ width: '100%', padding: '0.75rem' }}
                             value={formData.fee} onChange={e => setFormData({ ...formData, fee: e.target.value })}
                         />
                     </div>
@@ -129,23 +126,49 @@ const AddAttendanceModal = ({ students, onAdd, onUpdate, onClose, initialData })
                         <label className="form-label">Ngày học</label>
                         <input
                             className="glass" type="date" required
-                            style={{ width: '100%', padding: '0.75rem', color: 'white' }}
+                            style={{ width: '100%', padding: '0.75rem' }}
                             value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })}
                         />
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <input
-                            type="checkbox" id="att-status"
-                            checked={formData.status} onChange={e => setFormData({ ...formData, status: e.target.checked })}
-                            style={{ width: '1.25rem', height: '1.25rem' }}
-                        />
-                        <label htmlFor="att-status" className="form-label" style={{ marginBottom: 0 }}>Học viên hiện diện</label>
+                    <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '0.5rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <input
+                                type="checkbox" id="att-status"
+                                checked={formData.status}
+                                onChange={e => {
+                                    const checked = e.target.checked;
+                                    setFormData({
+                                        ...formData,
+                                        status: checked,
+                                        isExcused: checked ? false : formData.isExcused
+                                    });
+                                }}
+                                style={{ width: '1.25rem', height: '1.25rem' }}
+                            />
+                            <label htmlFor="att-status" className="form-label" style={{ marginBottom: 0 }}>Học viên hiện diện</label>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <input
+                                type="checkbox" id="att-excused"
+                                checked={formData.isExcused}
+                                onChange={e => {
+                                    const checked = e.target.checked;
+                                    setFormData({
+                                        ...formData,
+                                        isExcused: checked,
+                                        status: checked ? false : formData.status
+                                    });
+                                }}
+                                style={{ width: '1.25rem', height: '1.25rem' }}
+                            />
+                            <label htmlFor="att-excused" className="form-label" style={{ marginBottom: 0 }}>Học sinh xin nghỉ</label>
+                        </div>
                     </div>
                     <div>
                         <label className="form-label">Ghi chú</label>
                         <textarea
                             className="glass" rows="3"
-                            style={{ width: '100%', padding: '0.75rem', color: 'white', resize: 'none' }}
+                            style={{ width: '100%', padding: '0.75rem', resize: 'none' }}
                             value={formData.notes} onChange={e => setFormData({ ...formData, notes: e.target.value })}
                             placeholder="Ví dụ: Học bù buổi T2..."
                         />
@@ -158,10 +181,6 @@ const AddAttendanceModal = ({ students, onAdd, onUpdate, onClose, initialData })
                     </div>
                 </form>
             </div>
-            <style>{`
-        .form-label { display: block; margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--text-secondary); }
-        .glass { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 8px; outline: none; }
-      `}</style>
         </div>
     );
 };

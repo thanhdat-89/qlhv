@@ -20,27 +20,31 @@ const Classes = ({ db }) => {
     const renderSchedule = (schedule) => {
         const days = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
         return (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                 {['morning', 'afternoon', 'evening'].map(period => (
-                    <div key={period} style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
-                        <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', width: '45px', textTransform: 'capitalize' }}>
+                    <div key={period} style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', width: '50px', fontWeight: 500 }}>
                             {period === 'morning' ? 'Sáng' : period === 'afternoon' ? 'Chiều' : 'Tối'}:
                         </span>
-                        {days.map(day => (
-                            <span
-                                key={day}
-                                className="label"
-                                style={{
-                                    padding: '2px 6px',
-                                    fontSize: '0.65rem',
-                                    background: schedule[period].includes(day) ? 'var(--primary)' : 'rgba(255,255,255,0.05)',
-                                    color: schedule[period].includes(day) ? 'white' : 'var(--text-secondary)',
-                                    opacity: schedule[period].includes(day) ? 1 : 0.4
-                                }}
-                            >
-                                {day}
-                            </span>
-                        ))}
+                        <div style={{ display: 'flex', gap: '0.25rem' }}>
+                            {days.map(day => (
+                                <span
+                                    key={day}
+                                    className="label"
+                                    style={{
+                                        padding: '2px 8px',
+                                        fontSize: '0.7rem',
+                                        background: schedule[period].includes(day) ? 'var(--primary)' : '#f1f5f9',
+                                        color: schedule[period].includes(day) ? 'white' : 'var(--text-secondary)',
+                                        opacity: schedule[period].includes(day) ? 1 : 0.5,
+                                        width: '32px',
+                                        textAlign: 'center'
+                                    }}
+                                >
+                                    {day}
+                                </span>
+                            ))}
+                        </div>
                     </div>
                 ))}
             </div>
@@ -79,7 +83,7 @@ const Classes = ({ db }) => {
                         {classes.map((c) => (
                             <tr key={c.id}>
                                 <td>{c.id}</td>
-                                <td style={{ color: 'white', fontWeight: 500 }}>{c.name}</td>
+                                <td style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{c.name}</td>
                                 <td>
                                     <span className={`label ${c.category === 'Cơ bản' ? 'label-primary' : 'label-warning'}`}>
                                         {c.category}

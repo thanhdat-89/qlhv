@@ -50,12 +50,8 @@ const AddTuitionModal = ({ students, onAdd, onClose }) => {
     };
 
     return (
-        <div className="modal-overlay" style={{
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-            background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
-        }}>
-            <div className="modal-content glass card" style={{ width: '100%', maxWidth: '400px', position: 'relative' }}>
+        <div className="modal-overlay">
+            <div className="modal-content card" style={{ maxWidth: '400px' }}>
                 <button onClick={onClose} style={{ position: 'absolute', right: '1.5rem', top: '1.5rem', background: 'transparent', border: 'none', color: 'var(--text-secondary)' }}>
                     <X size={24} />
                 </button>
@@ -67,7 +63,7 @@ const AddTuitionModal = ({ students, onAdd, onClose }) => {
                             type="text"
                             placeholder="Tìm kiếm học viên..."
                             className="glass"
-                            style={{ width: '100%', padding: '0.75rem', color: 'white', marginBottom: '0.5rem' }}
+                            style={{ width: '100%', padding: '0.75rem', marginBottom: '0.5rem' }}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
@@ -93,7 +89,7 @@ const AddTuitionModal = ({ students, onAdd, onClose }) => {
                             ))}
                         </div>
                         <select
-                            className="glass" style={{ width: '100%', padding: '0.75rem', color: 'white' }}
+                            className="glass" style={{ width: '100%', padding: '0.75rem' }}
                             value={formData.studentId} onChange={e => handleStudentChange(e.target.value)}
                         >
                             {filteredStudents.map(s => <option key={s.id} value={s.id}>{s.name} - {s.className}</option>)}
@@ -103,7 +99,7 @@ const AddTuitionModal = ({ students, onAdd, onClose }) => {
                         <label className="form-label">Số tiền đóng (đ)</label>
                         <input
                             className="glass" type="number" required
-                            style={{ width: '100%', padding: '0.75rem', color: 'white' }}
+                            style={{ width: '100%', padding: '0.75rem' }}
                             value={formData.amount} onChange={e => setFormData({ ...formData, amount: e.target.value })}
                         />
                     </div>
@@ -111,7 +107,7 @@ const AddTuitionModal = ({ students, onAdd, onClose }) => {
                         <label className="form-label">Ngày đóng</label>
                         <input
                             className="glass" type="date" required
-                            style={{ width: '100%', padding: '0.75rem', color: 'white' }}
+                            style={{ width: '100%', padding: '0.75rem' }}
                             value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })}
                         />
                     </div>
@@ -136,10 +132,6 @@ const AddTuitionModal = ({ students, onAdd, onClose }) => {
                     </div>
                 </form>
             </div>
-            <style>{`
-        .form-label { display: block; margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--text-secondary); }
-        .glass { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 8px; outline: none; }
-      `}</style>
         </div>
     );
 };

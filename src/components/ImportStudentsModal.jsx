@@ -148,15 +148,11 @@ const ImportStudentsModal = ({ classes, onImport, onClose }) => {
     };
 
     return (
-        <div className="modal-overlay" style={{
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-            background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
-        }}>
-            <div className="modal-content glass card" style={{ width: '90%', maxWidth: '800px', maxHeight: '90vh', overflowY: 'auto', position: 'relative' }}>
+        <div className="modal-overlay">
+            <div className="modal-content card" style={{ width: '90%', maxWidth: '800px', maxHeight: '90vh', overflowY: 'auto' }}>
                 <button
                     onClick={onClose}
-                    style={{ position: 'absolute', right: '1.5rem', top: '1.5rem', background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                    className="btn-close-modal"
                 >
                     <X size={24} />
                 </button>
@@ -171,7 +167,7 @@ const ImportStudentsModal = ({ classes, onImport, onClose }) => {
                 <div className="modal-body">
                     {/* Step 1: Download Template */}
                     <div style={{ marginBottom: '2rem' }}>
-                        <h3 style={{ fontSize: '1rem', marginBottom: '0.75rem', color: 'white' }}>Bước 1: Tải file mẫu</h3>
+                        <h3 className="form-label" style={{ fontSize: '1rem' }}>Bước 1: Tải file mẫu</h3>
                         <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1rem' }}>
                             Sử dụng file mẫu để đảm bảo dữ liệu được nhập đúng định dạng.
                         </p>
@@ -182,7 +178,7 @@ const ImportStudentsModal = ({ classes, onImport, onClose }) => {
 
                     {/* Step 2: Upload File */}
                     <div style={{ marginBottom: '2rem' }}>
-                        <h3 style={{ fontSize: '1rem', marginBottom: '0.75rem', color: 'white' }}>Bước 2: Tải lên file của bạn</h3>
+                        <h3 className="form-label" style={{ fontSize: '1rem' }}>Bước 2: Tải lên file của bạn</h3>
                         <div
                             onClick={() => fileInputRef.current.click()}
                             style={{
@@ -205,7 +201,7 @@ const ImportStudentsModal = ({ classes, onImport, onClose }) => {
                                 style={{ display: 'none' }}
                             />
                             <Upload size={32} color="var(--primary)" style={{ marginBottom: '1rem' }} />
-                            <p style={{ color: 'white', fontWeight: 500 }}>
+                            <p style={{ color: 'var(--text-primary)', fontWeight: 600 }}>
                                 {file ? file.name : 'Nhấn để chọn file hoặc kéo thả vào đây'}
                             </p>
                             <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: '0.5rem' }}>
@@ -217,7 +213,7 @@ const ImportStudentsModal = ({ classes, onImport, onClose }) => {
                     {/* Step 3: Preview */}
                     {(parsedData.length > 0 || errors.length > 0) && (
                         <div>
-                            <h3 style={{ fontSize: '1rem', marginBottom: '0.75rem', color: 'white' }}>Bước 3: Kiểm tra và xác nhận</h3>
+                            <h3 className="form-label" style={{ fontSize: '1rem' }}>Bước 3: Kiểm tra và xác nhận</h3>
 
                             {errors.length > 0 && (
                                 <div className="glass" style={{ borderLeft: '4px solid var(--danger)', padding: '1rem', marginBottom: '1.5rem', background: 'rgba(239, 68, 68, 0.1)' }}>
@@ -249,7 +245,7 @@ const ImportStudentsModal = ({ classes, onImport, onClose }) => {
                                             <tbody>
                                                 {parsedData.map((s, i) => (
                                                     <tr key={i}>
-                                                        <td style={{ color: 'white' }}>{s.name}</td>
+                                                        <td style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{s.name}</td>
                                                         <td>{s.className}</td>
                                                         <td style={{ textAlign: 'center' }}>{s.birthYear}</td>
                                                         <td>{s.phone || '-'}</td>

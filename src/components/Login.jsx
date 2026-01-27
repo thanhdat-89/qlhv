@@ -33,8 +33,8 @@ const Login = ({ onLogin }) => {
                     <Lock size={32} />
                 </div>
 
-                <h1 style={{ marginBottom: '0.5rem', fontSize: '1.5rem' }}>Quản Lý Học Viên</h1>
-                <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', fontSize: '0.9rem' }}>
+                <h1 style={{ marginBottom: '0.5rem', fontSize: '1.5rem', color: 'var(--text-primary)' }}>Quản Lý Học Viên</h1>
+                <p style={{ color: 'var(--text-primary)', marginBottom: '2rem', fontSize: '0.9rem', opacity: 0.8 }}>
                     Vui lòng nhập mật khẩu quản lý để truy cập
                 </p>
 
@@ -46,9 +46,10 @@ const Login = ({ onLogin }) => {
                             placeholder="Nhập mật khẩu..."
                             style={{
                                 width: '100%', padding: '0.85rem 1rem',
-                                color: 'white', textAlign: 'center',
+                                color: 'var(--text-primary)', textAlign: 'center',
                                 border: error ? '1px solid var(--danger)' : '1px solid var(--glass-border)',
-                                fontSize: '1.1rem', letterSpacing: '0.2rem'
+                                fontSize: '1.1rem', letterSpacing: '0.2rem',
+                                background: 'white'
                             }}
                             autoFocus
                             value={password}
@@ -72,7 +73,7 @@ const Login = ({ onLogin }) => {
                     </button>
                 </form>
 
-                <p style={{ marginTop: '2.5rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)' }}>
+                <p style={{ marginTop: '2.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)', opacity: 0.5 }}>
                     &copy; 2024 Website Quản lý học viên
                 </p>
             </div>
@@ -83,7 +84,7 @@ const Login = ({ onLogin }) => {
                     to { opacity: 1; transform: scale(1) translateY(0); }
                 }
                 .login-card:hover {
-                    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+                    box-shadow: var(--shadow);
                     border-color: var(--primary);
                     transition: all 0.5s;
                 }

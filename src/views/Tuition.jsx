@@ -60,26 +60,16 @@ const Tuition = ({ db }) => {
                 />
             )}
 
-            <div className="glass" style={{ padding: '0.25rem', borderRadius: 'var(--radius)', display: 'flex', gap: '0.25rem', width: 'fit-content', marginBottom: '1.5rem' }}>
+            <div className="tab-group">
                 <button
                     onClick={() => setViewMode('status')}
-                    className={`btn ${viewMode === 'status' ? 'btn-primary' : ''}`}
-                    style={{
-                        padding: '0.6rem 1.5rem',
-                        background: viewMode === 'status' ? '' : 'transparent',
-                        color: viewMode === 'status' ? 'white' : 'rgba(255, 255, 255, 0.7)',
-                    }}
+                    className={`tab-item ${viewMode === 'status' ? 'active' : ''}`}
                 >
                     Tình trạng thu phí
                 </button>
                 <button
                     onClick={() => setViewMode('history')}
-                    className={`btn ${viewMode === 'history' ? 'btn-primary' : ''}`}
-                    style={{
-                        padding: '0.6rem 1.5rem',
-                        background: viewMode === 'history' ? '' : 'transparent',
-                        color: viewMode === 'history' ? 'white' : 'rgba(255, 255, 255, 0.7)',
-                    }}
+                    className={`tab-item ${viewMode === 'history' ? 'active' : ''}`}
                 >
                     Lịch sử giao dịch
                 </button>
@@ -87,12 +77,11 @@ const Tuition = ({ db }) => {
 
             {viewMode === 'status' && (
                 <div style={{ marginBottom: '1.5rem' }}>
-                    <label className="form-label" style={{ color: 'var(--text-secondary)', marginBottom: '0.5rem', display: 'block' }}>Lọc theo lớp</label>
-                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <label className="form-label">Lọc theo lớp</label>
+                    <div className="filter-group">
                         <button
                             onClick={() => setSelectedClassId('all')}
-                            className={`btn ${selectedClassId === 'all' ? 'btn-glass active' : 'btn-glass'}`}
-                            style={{ border: selectedClassId === 'all' ? '1px solid var(--primary)' : '' }}
+                            className={`btn btn-glass filter-item ${selectedClassId === 'all' ? 'active' : ''}`}
                         >
                             Tất cả lớp
                         </button>
@@ -100,8 +89,7 @@ const Tuition = ({ db }) => {
                             <button
                                 key={c.id}
                                 onClick={() => setSelectedClassId(c.id)}
-                                className={`btn ${selectedClassId === c.id ? 'btn-glass active' : 'btn-glass'}`}
-                                style={{ border: selectedClassId === c.id ? '1px solid var(--primary)' : '' }}
+                                className={`btn btn-glass filter-item ${selectedClassId === c.id ? 'active' : ''}`}
                             >
                                 {c.name}
                             </button>
@@ -131,7 +119,7 @@ const Tuition = ({ db }) => {
                         <tbody>
                             {filteredStudents.map((s) => (
                                 <tr key={s.id}>
-                                    <td style={{ color: 'white', fontWeight: 500 }}>{s.name}</td>
+                                    <td style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{s.name}</td>
                                     <td>{s.className}</td>
                                     <td style={{ textAlign: 'center' }}>{s.tuition.scheduledCount}</td>
                                     <td style={{ color: 'var(--text-primary)', textAlign: 'right' }}>
@@ -172,7 +160,7 @@ const Tuition = ({ db }) => {
                                 return (
                                     <tr key={f.id}>
                                         <td>{new Date(f.date).toLocaleDateString('vi-VN')}</td>
-                                        <td style={{ color: 'white', fontWeight: 500 }}>{student?.name || 'N/A'}</td>
+                                        <td style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{student?.name || 'N/A'}</td>
                                         <td style={{ color: 'var(--success)', fontWeight: 600 }}>
                                             {new Intl.NumberFormat('vi-VN').format(f.amount)} đ
                                         </td>

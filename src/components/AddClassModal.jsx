@@ -31,13 +31,9 @@ const AddClassModal = ({ onAdd, onUpdate, onClose, initialData }) => {
     };
 
     return (
-        <div className="modal-overlay" style={{
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-            background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
-        }}>
-            <div className="modal-content glass card" style={{ width: '100%', maxWidth: '600px', position: 'relative' }}>
-                <button onClick={onClose} style={{ position: 'absolute', right: '1.5rem', top: '1.5rem', background: 'transparent', border: 'none', color: 'var(--text-secondary)' }}>
+        <div className="modal-overlay">
+            <div className="modal-content card" style={{ maxWidth: '600px' }}>
+                <button onClick={onClose} className="btn-close-modal">
                     <X size={24} />
                 </button>
                 <h2 style={{ marginBottom: '1.5rem' }}>{initialData ? 'Chỉnh sửa lớp học' : 'Tạo lớp học mới'}</h2>
@@ -46,7 +42,6 @@ const AddClassModal = ({ onAdd, onUpdate, onClose, initialData }) => {
                         <label className="form-label">Tên lớp học</label>
                         <input
                             className="glass" type="text" required
-                            style={{ width: '100%', padding: '0.75rem', color: 'white' }}
                             value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })}
                             placeholder="Ví dụ: Piano Nâng Cao"
                         />
@@ -55,7 +50,7 @@ const AddClassModal = ({ onAdd, onUpdate, onClose, initialData }) => {
                         <div>
                             <label className="form-label">Hệ lớp</label>
                             <select
-                                className="glass" style={{ width: '100%', padding: '0.75rem', color: 'white' }}
+                                className="glass"
                                 value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })}
                             >
                                 <option value="Cơ bản">Cơ bản</option>
@@ -66,7 +61,6 @@ const AddClassModal = ({ onAdd, onUpdate, onClose, initialData }) => {
                             <label className="form-label">Học phí mỗi buổi (đ)</label>
                             <input
                                 className="glass" type="number" required
-                                style={{ width: '100%', padding: '0.75rem', color: 'white' }}
                                 value={formData.feePerSession} onChange={e => setFormData({ ...formData, feePerSession: e.target.value })}
                             />
                         </div>
@@ -98,7 +92,7 @@ const AddClassModal = ({ onAdd, onUpdate, onClose, initialData }) => {
                     </div>
                     <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
                         <button type="button" onClick={onClose} className="btn btn-glass" style={{ flex: 1 }}>Hủy</button>
-                        <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>Tạo lớp học</button>
+                        <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>{initialData ? 'Cập nhật' : 'Tạo lớp học'}</button>
                     </div>
                 </form>
             </div>

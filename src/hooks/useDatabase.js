@@ -121,7 +121,9 @@ export const useDatabase = () => {
 
         // Sum fees for all attended extra sessions for this student within their active period
         const extraSessions = extraAttendance.filter(a => {
-            if (a.studentId !== studentId || !a.status) return false;
+            if (a.studentId !== studentId) return false;
+            if (a.isExcused) return false; // Exclude excused sessions
+            if (!a.status) return false; // Exclude absent sessions (unless present)
 
             // Check if within enrollment bounds
             const extraDate = new Date(a.date);

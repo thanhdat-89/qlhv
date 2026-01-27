@@ -52,7 +52,7 @@ const Attendance = ({ db }) => {
                             return (
                                 <tr key={record.id}>
                                     <td>{new Date(record.date).toLocaleDateString('vi-VN')}</td>
-                                    <td style={{ color: 'white', fontWeight: 500 }}>
+                                    <td style={{ color: 'var(--text-primary)', fontWeight: 500 }}>
                                         {student?.name || 'N/A'}
                                     </td>
                                     <td style={{ color: 'var(--text-primary)', textAlign: 'right' }}>
@@ -62,6 +62,10 @@ const Attendance = ({ db }) => {
                                         {record.status ? (
                                             <span className="label label-success" style={{ display: 'flex', alignItems: 'center', gap: '4px', width: 'fit-content', margin: '0 auto' }}>
                                                 <BadgeCheck size={14} /> Hiện diện
+                                            </span>
+                                        ) : record.isExcused ? (
+                                            <span className="label label-warning" style={{ display: 'inline-block', background: '#fff7ed', color: '#c2410c', border: '1px solid #ffedd5' }}>
+                                                Xin nghỉ
                                             </span>
                                         ) : (
                                             <span className="label label-danger" style={{ display: 'inline-block' }}>Vắng mặt</span>
