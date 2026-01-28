@@ -109,19 +109,24 @@ export const useDatabase = () => {
             status: 'N/A'
         };
 
-        // Helper to parse date string (DD/MM/YYYY or YYYY-MM-DD) to Date object safely
+        // Helper to parse date string (DD/MM/YYYY or YYYY-MM-DD or ISO) to Date object safely
         const parseDate = (dateStr) => {
             if (!dateStr) return new Date();
-            if (dateStr instanceof Date) return dateStr;
+            if (dateStr instanceof Date) return new Date(dateStr);
 
-            // Try YYYY-MM-DD
-            if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
-                const [y, m, d] = dateStr.split('-').map(Number);
-                return new Date(y, m - 1, d);
+            const str = String(dateStr);
+
+            // 1. Try YYYY-MM-DD (matches ISO start or plain date)
+            const isoMatch = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+            if (isoMatch) {
+                const y = parseInt(isoMatch[1], 10);
+                const m = parseInt(isoMatch[2], 10) - 1;
+                const d = parseInt(isoMatch[3], 10);
+                return new Date(y, m, d);
             }
 
-            // Try DD/MM/YYYY
-            const parts = dateStr.split('/');
+            // 2. Try DD/MM/YYYY
+            const parts = str.split('/');
             if (parts.length === 3) {
                 const d = parseInt(parts[0], 10);
                 const m = parseInt(parts[1], 10) - 1;
@@ -129,7 +134,8 @@ export const useDatabase = () => {
                 return new Date(y, m, d);
             }
 
-            return new Date(dateStr);
+            const fallback = new Date(str);
+            return isNaN(fallback.getTime()) ? new Date() : fallback;
         };
 
         const today = new Date();
@@ -167,7 +173,8 @@ export const useDatabase = () => {
 
         // --- Life-time Calculation (for balance) ---
         const lifeTimeStart = enrollDate;
-        const lifeTimeEnd = (leaveDate && leaveDate < endOfMonth) ? leaveDate : endOfMonth;
+        const lifeTimeEnd = new Date((leaveDate && leaveDate < endOfMonth) ? leaveDate : endOfMonth);
+        lifeTimeEnd.setHours(23, 59, 59, 999);
 
         let scheduledCountLifeTime = 0;
         if (lifeTimeStart <= lifeTimeEnd) {
@@ -188,6 +195,18 @@ export const useDatabase = () => {
             .reduce((sum, f) => sum + f.amount, 0);
 
         const balance = tuitionLifeTime - totalPaid;
+
+        // Debug logging for inaccurate balances
+        if (balance > 5000000 && scheduledCount < 10) {
+            console.log(`Balance Warning [${student.name}]:`, {
+                enrollDate: student.enrollDate,
+                parsedEnrollDate: enrollDate.toISOString().split('T')[0],
+                lifeTimeSessions: scheduledCountLifeTime,
+                tuitionLifeTime,
+                totalPaid,
+                balance
+            });
+        }
 
         return {
             scheduledCount,
