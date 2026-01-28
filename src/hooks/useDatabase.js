@@ -3,6 +3,7 @@ import { studentService } from '../services/studentService';
 import { classService } from '../services/classService';
 import { financeService } from '../services/financeService';
 import { holidayService } from '../services/holidayService';
+import { promotionService } from '../services/promotionService'; // Added promotionService import
 
 export const useDatabase = () => {
     const [students, setStudents] = useState([]);
@@ -10,18 +11,20 @@ export const useDatabase = () => {
     const [extraAttendance, setExtraAttendance] = useState([]);
     const [fees, setFees] = useState([]);
     const [holidays, setHolidays] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const [promotions, setPromotions] = useState([]); // Added promotions state
+    const [isLoading, setIsLoading] = useState(true); // Renamed to isLoading for consistency with original
 
     const fetchData = async () => {
         setIsLoading(true);
         try {
             // If Supabase is not configured, we don't attempt to fetch
-            const [studentsData, classesData, feesData, attendanceData, holidaysData] = await Promise.all([
+            const [studentsData, classesData, feesData, attendanceData, holidaysData, promotionsData] = await Promise.all([ // Added promotionsData
                 studentService.getAll().catch(e => { console.error(e); return []; }),
                 classService.getAll().catch(e => { console.error(e); return []; }),
-                financeService.getFees().catch(e => { console.error(e); return []; }),
-                financeService.getAttendance().catch(e => { console.error(e); return []; }),
-                holidayService.getAll().catch(e => { console.error(e); return []; })
+                financeService.getFees().catch(e => { console.error(e); return []; }), // Kept original getFees
+                financeService.getAttendance().catch(e => { console.error(e); return []; }), // Kept original getAttendance
+                holidayService.getAll().catch(e => { console.error(e); return []; }),
+                promotionService.getAll().catch(e => { console.error(e); return []; }) // Added promotionService call
             ]);
 
             // Sort classes by name (natural sort)
@@ -34,6 +37,7 @@ export const useDatabase = () => {
             setFees(feesData || []);
             setExtraAttendance(attendanceData || []);
             setHolidays(holidaysData || []);
+            setPromotions(promotionsData || []);
         } catch (error) {
             console.error("Failed to fetch data:", error);
         } finally {
@@ -168,8 +172,15 @@ export const useDatabase = () => {
 
         const discount = student.discountRate || 0;
         const feePerSession = studentClass.feePerSession || 0;
-        const scheduledTuition = Math.round(scheduledCount * feePerSession * (1 - discount));
-        const tuitionDue = Math.round((scheduledCount * feePerSession + totalExtraFee) * (1 - discount));
+
+        // Apply class-level promotion for the current month
+        const currentMonthStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+        const promotion = promotions.find(p => p.classId === student.classId && p.month === currentMonthStr);
+        const promotionDiscount = promotion ? promotion.discountRate : 0;
+
+        // Final Tuition = Base * (1 - Student Discount) * (1 - Promotion Discount)
+        const scheduledTuition = Math.round(scheduledCount * feePerSession * (1 - discount) * (1 - promotionDiscount));
+        const tuitionDue = Math.round((scheduledCount * feePerSession + totalExtraFee) * (1 - discount) * (1 - promotionDiscount));
 
         // --- Life-time Calculation (for balance) ---
         const lifeTimeStart = enrollDate;
@@ -198,7 +209,7 @@ export const useDatabase = () => {
 
         // Debug logging for inaccurate balances
         if (balance > 5000000 && scheduledCount < 10) {
-            console.log(`Balance Warning [${student.name}]:`, {
+            console.log(`Balance Warning[${student.name}]: `, {
                 enrollDate: student.enrollDate,
                 parsedEnrollDate: enrollDate.toISOString().split('T')[0],
                 lifeTimeSessions: scheduledCountLifeTime,
@@ -266,7 +277,7 @@ export const useDatabase = () => {
                 const idNum = parseInt(s.id.substring(1));
                 return isNaN(idNum) ? max : Math.max(max, idNum);
             }, 0);
-            const id = `S${String(maxId + 1).padStart(2, '0')}`;
+            const id = `S${String(maxId + 1).padStart(2, '0')} `;
             const studentWithId = { ...newStudent, id };
             const savedStudent = await studentService.create(studentWithId);
             setStudents(prev => [...prev, savedStudent]);
@@ -287,7 +298,7 @@ export const useDatabase = () => {
 
             const studentsWithIds = newStudentsData.map((s, index) => ({
                 ...s,
-                id: `S${String(maxId + 1 + index).padStart(2, '0')}`
+                id: `S${String(maxId + 1 + index).padStart(2, '0')} `
             }));
 
             const savedStudents = await studentService.bulkCreate(studentsWithIds);
@@ -306,7 +317,7 @@ export const useDatabase = () => {
                 const idNum = parseInt(c.id.substring(1));
                 return isNaN(idNum) ? max : Math.max(max, idNum);
             }, 0);
-            const id = `C${String(maxId + 1).padStart(2, '0')}`;
+            const id = `C${String(maxId + 1).padStart(2, '0')} `;
             const classWithId = { ...newClass, id };
             const savedClass = await classService.create(classWithId);
             setClasses(prev => {
@@ -325,7 +336,7 @@ export const useDatabase = () => {
 
     const addExtraAttendance = async (record) => {
         try {
-            const id = `EA${String(extraAttendance.length + 1).padStart(2, '0')}`;
+            const id = `EA${String(extraAttendance.length + 1).padStart(2, '0')} `;
             const recordWithId = { ...record, id };
             const savedRecord = await financeService.addAttendance(recordWithId);
             setExtraAttendance(prev => [...prev, savedRecord]);
@@ -343,7 +354,7 @@ export const useDatabase = () => {
                 const idNum = parseInt(f.id.substring(1));
                 return isNaN(idNum) ? max : Math.max(max, idNum);
             }, 0);
-            const id = `F${String(maxId + 1).padStart(2, '0')}`;
+            const id = `F${String(maxId + 1).padStart(2, '0')} `;
             const feeWithId = { ...fee, id };
             const savedFee = await financeService.addFee(feeWithId);
             setFees(prev => [...prev, savedFee]);
@@ -479,7 +490,7 @@ export const useDatabase = () => {
                 const idNum = parseInt(h.id.substring(1));
                 return isNaN(idNum) ? max : Math.max(max, idNum);
             }, 0);
-            const id = `H${String(maxId + 1).padStart(2, '0')}`;
+            const id = `H${String(maxId + 1).padStart(2, '0')} `;
             const savedHoliday = await holidayService.create({ ...holiday, id });
             setHolidays(prev => [...prev, savedHoliday]);
             return savedHoliday;
@@ -514,6 +525,42 @@ export const useDatabase = () => {
         }
     };
 
+    const addPromotion = async (promotion) => {
+        try {
+            const savedPromotion = await promotionService.create(promotion);
+            setPromotions(prev => [...prev, savedPromotion]);
+            return savedPromotion;
+        } catch (error) {
+            console.error('Failed to add promotion:', error);
+            alert('Lỗi khi thêm khuyến mãi: ' + (error.message || 'Vui lòng thử lại sau.'));
+            throw error;
+        }
+    };
+
+    const updatePromotion = async (id, updatedData) => {
+        try {
+            await promotionService.update(id, updatedData);
+            setPromotions(prev => prev.map(p => p.id === id ? { ...p, ...updatedData } : p));
+        } catch (error) {
+            console.error('Failed to update promotion:', error);
+            alert('Lỗi khi cập nhật khuyến mãi: ' + (error.message || 'Vui lòng thử lại sau.'));
+            throw error;
+        }
+    };
+
+    const deletePromotion = async (id) => {
+        if (window.confirm('Bạn có chắc chắn muốn xóa khuyến mãi này?')) {
+            try {
+                await promotionService.delete(id);
+                setPromotions(prev => prev.filter(p => p.id !== id));
+                alert('Đã xóa khuyến mãi thành công.');
+            } catch (error) {
+                console.error('Failed to delete promotion:', error);
+                alert('Lỗi khi xóa khuyến mãi: ' + (error.message || 'Vui lòng thử lại sau.'));
+            }
+        }
+    };
+
     return {
         isLoading,
         students: enhancedStudents,
@@ -521,6 +568,7 @@ export const useDatabase = () => {
         extraAttendance,
         fees,
         holidays,
+        promotions,
         views: {
             newStudents,
             leftStudents
@@ -533,14 +581,17 @@ export const useDatabase = () => {
             addExtraAttendance,
             addFee,
             addHoliday,
+            addPromotion,
             updateStudent,
             updateClass,
             updateExtraAttendance,
             updateHoliday,
+            updatePromotion,
             deleteStudent,
             deleteClass,
             deleteExtraAttendance,
-            deleteHoliday
+            deleteHoliday,
+            deletePromotion
         }
     };
 };
