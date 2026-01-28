@@ -24,7 +24,7 @@ const Tuition = ({ db }) => {
             'Học phí học bổ sung': s.tuition.totalExtraFee,
             'Đã đóng': s.tuition.totalPaid,
             'Giảm giá': `${s.discountRate * 100}%`,
-            'Học phí': s.tuition.tuitionDue,
+            'Học phí tháng này': s.tuition.tuitionDue,
             'Còn nợ': s.tuition.balance,
             'Trạng thái': s.tuition.status
         }));
@@ -111,7 +111,7 @@ const Tuition = ({ db }) => {
                                 <th style={{ textAlign: 'right' }}>Học phí học bổ sung</th>
                                 <th style={{ textAlign: 'right' }}>Đã đóng</th>
                                 <th style={{ textAlign: 'center' }}>Giảm giá</th>
-                                <th style={{ textAlign: 'right' }}>Học phí</th>
+                                <th style={{ textAlign: 'right' }}>Học phí tháng này</th>
                                 <th style={{ textAlign: 'right' }}>Còn nợ</th>
                                 <th style={{ textAlign: 'center' }}>Trạng thái</th>
                             </tr>
