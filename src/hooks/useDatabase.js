@@ -49,6 +49,14 @@ export const useDatabase = () => {
     // Helper: Get class by ID
     const getClass = (classId) => classes.find(c => c.id === classId);
 
+    // Helper: Get local YYYY-MM-DD string
+    const getLocalDateString = (date) => {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    };
+
     // Helper: Count sessions within a specific date range
     const countSessionsInRange = (schedule, startDate, endDate, classId) => {
         if (!schedule) return 0;
@@ -56,12 +64,15 @@ export const useDatabase = () => {
         let count = 0;
         const dayMap = { 0: 'CN', 1: 'T2', 2: 'T3', 3: 'T4', 4: 'T5', 5: 'T6', 6: 'T7' };
 
+        // Normalize to local start of day
         const current = new Date(startDate);
+        current.setHours(0, 0, 0, 0);
         const final = new Date(endDate);
+        final.setHours(0, 0, 0, 0);
 
         // Loop through each day in range
         while (current <= final) {
-            const dateStr = current.toISOString().split('T')[0];
+            const dateStr = getLocalDateString(current);
             const dayName = dayMap[current.getDay()];
 
             // Skip if this date falls within any holiday range for THIS class
@@ -98,12 +109,39 @@ export const useDatabase = () => {
             status: 'N/A'
         };
 
+        // Helper to parse date string (DD/MM/YYYY or YYYY-MM-DD) to Date object safely
+        const parseDate = (dateStr) => {
+            if (!dateStr) return new Date();
+            if (dateStr instanceof Date) return dateStr;
+
+            // Try YYYY-MM-DD
+            if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                const [y, m, d] = dateStr.split('-').map(Number);
+                return new Date(y, m - 1, d);
+            }
+
+            // Try DD/MM/YYYY
+            const parts = dateStr.split('/');
+            if (parts.length === 3) {
+                const d = parseInt(parts[0], 10);
+                const m = parseInt(parts[1], 10) - 1;
+                const y = parseInt(parts[2], 10);
+                return new Date(y, m, d);
+            }
+
+            return new Date(dateStr);
+        };
+
         const today = new Date();
         const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        startOfMonth.setHours(0, 0, 0, 0);
         const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        endOfMonth.setHours(23, 59, 59, 999);
 
-        const enrollDate = new Date(student.enrollDate);
-        const leaveDate = student.leaveDate ? new Date(student.leaveDate) : null;
+        const enrollDate = parseDate(student.enrollDate);
+        enrollDate.setHours(0, 0, 0, 0);
+        const leaveDate = student.leaveDate ? parseDate(student.leaveDate) : null;
+        if (leaveDate) leaveDate.setHours(23, 59, 59, 999);
 
         // --- Monthly Calculation (for display) ---
         const monthlyStart = enrollDate > startOfMonth ? enrollDate : startOfMonth;
@@ -116,19 +154,18 @@ export const useDatabase = () => {
 
         const extraSessionsThisMonth = extraAttendance.filter(a => {
             if (a.studentId !== studentId || a.isExcused || !a.status) return false;
-            const d = new Date(a.date);
+            const d = parseDate(a.date);
             return d >= monthlyStart && d <= monthlyEnd;
         });
         const extraCount = extraSessionsThisMonth.length;
         const totalExtraFee = extraSessionsThisMonth.reduce((sum, a) => sum + (a.fee || studentClass.feePerSession), 0);
 
-        const discount = student.discountRate;
-        const feePerSession = studentClass.feePerSession;
+        const discount = student.discountRate || 0;
+        const feePerSession = studentClass.feePerSession || 0;
         const scheduledTuition = Math.round(scheduledCount * feePerSession * (1 - discount));
         const tuitionDue = Math.round((scheduledCount * feePerSession + totalExtraFee) * (1 - discount));
 
         // --- Life-time Calculation (for balance) ---
-        // From enrollment date until end of current month
         const lifeTimeStart = enrollDate;
         const lifeTimeEnd = (leaveDate && leaveDate < endOfMonth) ? leaveDate : endOfMonth;
 
@@ -139,7 +176,7 @@ export const useDatabase = () => {
 
         const extraSessionsLifeTime = extraAttendance.filter(a => {
             if (a.studentId !== studentId || a.isExcused || !a.status) return false;
-            const d = new Date(a.date);
+            const d = parseDate(a.date);
             return d >= lifeTimeStart && d <= lifeTimeEnd;
         });
         const totalExtraFeeLifeTime = extraSessionsLifeTime.reduce((sum, a) => sum + (a.fee || studentClass.feePerSession), 0);
