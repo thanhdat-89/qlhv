@@ -140,10 +140,18 @@ const ImportStudentsModal = ({ classes, onImport, onClose }) => {
         setErrors(newErrors);
     };
 
-    const handleConfirmImport = () => {
+    const handleConfirmImport = async () => {
         if (parsedData.length > 0) {
-            onImport(parsedData);
-            onClose();
+            setIsProcessing(true);
+            try {
+                await onImport(parsedData);
+                onClose();
+            } catch (error) {
+                // Error is handled by alert in useDatabase
+                console.error('Import confirmation error:', error);
+            } finally {
+                setIsProcessing(false);
+            }
         }
     };
 
@@ -265,11 +273,11 @@ const ImportStudentsModal = ({ classes, onImport, onClose }) => {
                     <button className="btn btn-glass" onClick={onClose} style={{ minWidth: '120px' }}>Hủy bỏ</button>
                     <button
                         className="btn btn-primary"
-                        disabled={parsedData.length === 0}
+                        disabled={parsedData.length === 0 || isProcessing}
                         onClick={handleConfirmImport}
                         style={{ minWidth: '160px' }}
                     >
-                        Xác nhận nhập ({parsedData.length})
+                        {isProcessing ? 'Đang xử lý...' : `Xác nhận nhập (${parsedData.length})`}
                     </button>
                 </div>
             </div>

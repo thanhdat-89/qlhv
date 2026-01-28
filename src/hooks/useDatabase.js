@@ -228,13 +228,25 @@ export const useDatabase = () => {
     };
 
     const bulkAddStudents = async (newStudentsData) => {
-        const startingId = students.length + 1;
-        const studentsWithIds = newStudentsData.map((s, index) => ({
-            ...s,
-            id: `S${String(startingId + index).padStart(2, '0')}`
-        }));
-        const savedStudents = await studentService.bulkCreate(studentsWithIds);
-        setStudents(prev => [...prev, ...savedStudents]);
+        try {
+            const maxId = students.reduce((max, s) => {
+                const idNum = parseInt(s.id.substring(1));
+                return isNaN(idNum) ? max : Math.max(max, idNum);
+            }, 0);
+
+            const studentsWithIds = newStudentsData.map((s, index) => ({
+                ...s,
+                id: `S${String(maxId + 1 + index).padStart(2, '0')}`
+            }));
+
+            const savedStudents = await studentService.bulkCreate(studentsWithIds);
+            setStudents(prev => [...prev, ...savedStudents]);
+            return savedStudents;
+        } catch (error) {
+            console.error('Failed to bulk add students:', error);
+            alert('Lỗi khi nhập danh sách học viên: ' + (error.message || 'Vui lòng thử lại sau.'));
+            throw error;
+        }
     };
 
     const addClass = async (newClass) => {
