@@ -32,7 +32,7 @@ const Students = ({ db }) => {
             'Số điện thoại': s.phone || '',
             'Ngày nhập học': new Date(s.enrollDate).toLocaleDateString('vi-VN'),
             'Trạng thái': s.status,
-            'Học phí': s.tuition.tuitionDue,
+            'Học phí tháng này': s.tuition.tuitionDue,
             'Tình trạng học phí': s.tuition.status
         }));
 
@@ -188,7 +188,7 @@ const Students = ({ db }) => {
                                     <th>Số điện thoại</th>
                                     <th>Ngày nhập học</th>
                                     <th style={{ textAlign: 'center' }}>Trạng thái</th>
-                                    <th style={{ textAlign: 'right' }}>Học phí</th>
+                                    <th style={{ textAlign: 'right' }}>Học phí tháng này</th>
                                     <th style={{ textAlign: 'center' }}>Tình trạng</th>
                                     <th style={{ textAlign: 'right' }}>Thao tác</th>
                                 </tr>
