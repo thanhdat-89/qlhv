@@ -35,6 +35,16 @@ export const financeService = {
         return fee;
     },
 
+    deleteFee: async (id) => {
+        if (!supabase) throw new Error('Cấu hình database chưa hoàn thiện.');
+        const { error } = await supabase
+            .from('fees')
+            .delete()
+            .eq('id', id);
+        if (error) throw error;
+        return id;
+    },
+
     getAttendance: async () => {
         if (!supabase) return [];
         const { data, error } = await supabase
@@ -104,5 +114,25 @@ export const financeService = {
             .eq('id', id);
         if (error) throw error;
         return id;
+    },
+
+    deleteByStudent: async (studentId) => {
+        if (!supabase) throw new Error('Cấu hình database chưa hoàn thiện.');
+
+        // Delete all fees for this student
+        const { error: feeError } = await supabase
+            .from('fees')
+            .delete()
+            .eq('student_id', studentId);
+        if (feeError) throw feeError;
+
+        // Delete all attendance for this student
+        const { error: attError } = await supabase
+            .from('extra_attendance')
+            .delete()
+            .eq('student_id', studentId);
+        if (attError) throw attError;
+
+        return studentId;
     }
 };

@@ -81,5 +81,18 @@ export const holidayService = {
             throw error;
         }
         return id;
+    },
+
+    deleteByClass: async (classId) => {
+        if (!supabase) throw new Error('Cấu hình database chưa hoàn thiện.');
+        const { error } = await supabase
+            .from('holidays')
+            .delete()
+            .eq('class_id', classId);
+        if (error) {
+            console.error('Supabase Error (deleteByClass holiday):', error);
+            throw error;
+        }
+        return classId;
     }
 };

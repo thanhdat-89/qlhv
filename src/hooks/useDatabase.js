@@ -293,28 +293,63 @@ export const useDatabase = () => {
     };
 
     const updateStudent = async (id, updatedData) => {
-        await studentService.update(id, updatedData);
-        setStudents(prev => prev.map(s => s.id === id ? { ...s, ...updatedData } : s));
+        try {
+            await studentService.update(id, updatedData);
+            setStudents(prev => prev.map(s => s.id === id ? { ...s, ...updatedData } : s));
+        } catch (error) {
+            console.error('Failed to update student:', error);
+            alert('Lỗi khi cập nhật học viên: ' + (error.message || 'Vui lòng thử lại sau.'));
+            throw error;
+        }
     };
 
     const updateClass = async (id, updatedData) => {
-        await classService.update(id, updatedData);
-        setClasses(prev => {
-            const updated = prev.map(c => c.id === id ? { ...c, ...updatedData } : c);
-            return updated.sort((a, b) =>
-                a.name.localeCompare(b.name, 'vi', { numeric: true, sensitivity: 'base' })
-            );
-        });
+        try {
+            await classService.update(id, updatedData);
+            setClasses(prev => {
+                const updated = prev.map(c => c.id === id ? { ...c, ...updatedData } : c);
+                return updated.sort((a, b) =>
+                    a.name.localeCompare(b.name, 'vi', { numeric: true, sensitivity: 'base' })
+                );
+            });
+        } catch (error) {
+            console.error('Failed to update class:', error);
+            alert('Lỗi khi cập nhật lớp học: ' + (error.message || 'Vui lòng thử lại sau.'));
+            throw error;
+        }
     };
 
     const updateExtraAttendance = async (id, updatedData) => {
-        await financeService.updateAttendance(id, updatedData);
-        setExtraAttendance(prev => prev.map(a => a.id === id ? { ...a, ...updatedData } : a));
+        try {
+            await financeService.updateAttendance(id, updatedData);
+            setExtraAttendance(prev => prev.map(a => a.id === id ? { ...a, ...updatedData } : a));
+        } catch (error) {
+            console.error('Failed to update attendance:', error);
+            alert('Lỗi khi cập nhật điểm danh: ' + (error.message || 'Vui lòng thử lại sau.'));
+            throw error;
+        }
     };
 
     const deleteStudent = async (id) => {
-        await studentService.delete(id);
-        setStudents(prev => prev.filter(s => s.id !== id));
+        if (window.confirm('Bạn có chắc chắn muốn xóa học viên này? Toàn bộ lịch sử đóng tiền và điểm danh của học viên cũng sẽ bị xóa.')) {
+            try {
+                // 1. Delete associated records in Supabase (satisfy foreign key constraints)
+                await financeService.deleteByStudent(id);
+
+                // 2. Delete the student themselves
+                await studentService.delete(id);
+
+                // 3. Update local state
+                setStudents(prev => prev.filter(s => s.id !== id));
+                setFees(prev => prev.filter(f => f.studentId !== id));
+                setExtraAttendance(prev => prev.filter(a => a.studentId !== id));
+
+                alert('Đã xóa học viên thành công.');
+            } catch (error) {
+                console.error('Failed to delete student:', error);
+                alert('Lỗi khi xóa học viên: ' + (error.message || 'Vui lòng thử lại sau.'));
+            }
+        }
     };
 
     const deleteClass = async (id) => {
@@ -324,14 +359,36 @@ export const useDatabase = () => {
             return;
         }
         if (window.confirm('Bạn có chắc chắn muốn xóa lớp này không?')) {
-            await classService.delete(id);
-            setClasses(prev => prev.filter(c => c.id !== id));
+            try {
+                // Delete associated holidays for this class
+                await holidayService.deleteByClass(id);
+
+                // Delete the class
+                await classService.delete(id);
+
+                // Update local state
+                setClasses(prev => prev.filter(c => c.id !== id));
+                setHolidays(prev => prev.filter(h => h.classId !== id));
+
+                alert('Đã xóa lớp học thành công.');
+            } catch (error) {
+                console.error('Failed to delete class:', error);
+                alert('Lỗi khi xóa lớp học: ' + (error.message || 'Vui lòng thử lại sau.'));
+            }
         }
     };
 
     const deleteExtraAttendance = async (id) => {
-        await financeService.deleteAttendance(id);
-        setExtraAttendance(prev => prev.filter(a => a.id !== id));
+        if (window.confirm('Bạn có chắc chắn muốn xóa ghi nhận buổi học này?')) {
+            try {
+                await financeService.deleteAttendance(id);
+                setExtraAttendance(prev => prev.filter(a => a.id !== id));
+                alert('Đã xóa ghi nhận thành công.');
+            } catch (error) {
+                console.error('Failed to delete attendance:', error);
+                alert('Lỗi khi xóa ghi nhận: ' + (error.message || 'Vui lòng thử lại sau.'));
+            }
+        }
     };
 
     const addHoliday = async (holiday) => {
@@ -352,13 +409,27 @@ export const useDatabase = () => {
     };
 
     const updateHoliday = async (id, updatedData) => {
-        await holidayService.update(id, updatedData);
-        setHolidays(prev => prev.map(h => h.id === id ? { ...h, ...updatedData } : h));
+        try {
+            await holidayService.update(id, updatedData);
+            setHolidays(prev => prev.map(h => h.id === id ? { ...h, ...updatedData } : h));
+        } catch (error) {
+            console.error('Failed to update holiday:', error);
+            alert('Lỗi khi cập nhật lịch nghỉ: ' + (error.message || 'Vui lòng thử lại sau.'));
+            throw error;
+        }
     };
 
     const deleteHoliday = async (id) => {
-        await holidayService.delete(id);
-        setHolidays(prev => prev.filter(h => h.id !== id));
+        if (window.confirm('Bạn có chắc chắn muốn xóa lịch nghỉ này?')) {
+            try {
+                await holidayService.delete(id);
+                setHolidays(prev => prev.filter(h => h.id !== id));
+                alert('Đã xóa lịch nghỉ thành công.');
+            } catch (error) {
+                console.error('Failed to delete holiday:', error);
+                alert('Lỗi khi xóa lịch nghỉ: ' + (error.message || 'Vui lòng thử lại sau.'));
+            }
+        }
     };
 
     return {
