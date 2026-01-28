@@ -331,6 +331,15 @@ export const useDatabase = () => {
     };
 
     const deleteStudent = async (id) => {
+        const password = window.prompt('Hành động này sẽ xóa vĩnh viễn dữ liệu học viên. Vui lòng nhập mật khẩu quản lý để tiếp tục:');
+
+        if (password === null) return; // User cancelled
+
+        if (password !== 'cqt263') {
+            alert('Mật khẩu không chính xác. Thao tác xóa bị hủy.');
+            return;
+        }
+
         if (window.confirm('Bạn có chắc chắn muốn xóa học viên này? Toàn bộ lịch sử đóng tiền và điểm danh của học viên cũng sẽ bị xóa.')) {
             try {
                 // 1. Delete associated records in Supabase (satisfy foreign key constraints)
@@ -358,6 +367,16 @@ export const useDatabase = () => {
             alert('Không thể xóa lớp đang có học viên. Vui lòng chuyển học viên sang lớp khác trước.');
             return;
         }
+
+        const password = window.prompt('Hành động này sẽ xóa vĩnh viễn lớp học. Vui lòng nhập mật khẩu quản lý để tiếp tục:');
+
+        if (password === null) return; // User cancelled
+
+        if (password !== 'cqt263') {
+            alert('Mật khẩu không chính xác. Thao tác xóa bị hủy.');
+            return;
+        }
+
         if (window.confirm('Bạn có chắc chắn muốn xóa lớp này không?')) {
             try {
                 // Delete associated holidays for this class
