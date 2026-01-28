@@ -24,8 +24,13 @@ export const useDatabase = () => {
                 holidayService.getAll().catch(e => { console.error(e); return []; })
             ]);
 
+            // Sort classes by name (natural sort)
+            const sortedClasses = (classesData || []).sort((a, b) =>
+                a.name.localeCompare(b.name, 'vi', { numeric: true, sensitivity: 'base' })
+            );
+
             setStudents(studentsData || []);
-            setClasses(classesData || []);
+            setClasses(sortedClasses);
             setFees(feesData || []);
             setExtraAttendance(attendanceData || []);
             setHolidays(holidaysData || []);
@@ -241,7 +246,12 @@ export const useDatabase = () => {
             const id = `C${String(maxId + 1).padStart(2, '0')}`;
             const classWithId = { ...newClass, id };
             const savedClass = await classService.create(classWithId);
-            setClasses(prev => [...prev, savedClass]);
+            setClasses(prev => {
+                const updated = [...prev, savedClass];
+                return updated.sort((a, b) =>
+                    a.name.localeCompare(b.name, 'vi', { numeric: true, sensitivity: 'base' })
+                );
+            });
             return savedClass;
         } catch (error) {
             console.error('Failed to add class:', error);
@@ -289,7 +299,12 @@ export const useDatabase = () => {
 
     const updateClass = async (id, updatedData) => {
         await classService.update(id, updatedData);
-        setClasses(prev => prev.map(c => c.id === id ? { ...c, ...updatedData } : c));
+        setClasses(prev => {
+            const updated = prev.map(c => c.id === id ? { ...c, ...updatedData } : c);
+            return updated.sort((a, b) =>
+                a.name.localeCompare(b.name, 'vi', { numeric: true, sensitivity: 'base' })
+            );
+        });
     };
 
     const updateExtraAttendance = async (id, updatedData) => {
