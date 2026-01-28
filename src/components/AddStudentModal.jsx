@@ -16,20 +16,27 @@ const AddStudentModal = ({ classes, onAdd, onUpdate, onClose, initialData }) => 
     });
 
 
-
-    const handleSubmit = (e) => {
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        const data = {
-            ...formData,
-            birthYear: parseInt(formData.birthYear),
-            discountRate: parseFloat(formData.discountRate) / 100
-        };
-        if (initialData) {
-            onUpdate(initialData.id, data);
-        } else {
-            onAdd(data);
+        setIsSubmitting(true);
+        try {
+            const data = {
+                ...formData,
+                birthYear: parseInt(formData.birthYear),
+                discountRate: parseFloat(formData.discountRate) / 100
+            };
+            if (initialData) {
+                await onUpdate(initialData.id, data);
+            } else {
+                await onAdd(data);
+            }
+            onClose();
+        } catch (error) {
+            console.error('Submit error:', error);
+        } finally {
+            setIsSubmitting(false);
         }
-        onClose();
     };
 
     return (
@@ -107,7 +114,9 @@ const AddStudentModal = ({ classes, onAdd, onUpdate, onClose, initialData }) => 
                     </div>
                     <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
                         <button type="button" onClick={onClose} className="btn btn-glass" style={{ flex: 1 }}>Hủy</button>
-                        <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>Lưu học viên</button>
+                        <button type="submit" disabled={isSubmitting} className="btn btn-primary" style={{ flex: 1 }}>
+                            {isSubmitting ? 'Đang lưu...' : 'Lưu học viên'}
+                        </button>
                     </div>
                 </form>
             </div>

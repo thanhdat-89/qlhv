@@ -19,15 +19,20 @@ const AddClassModal = ({ onAdd, onUpdate, onClose, initialData }) => {
         setFormData({ ...formData, schedule: { ...formData.schedule, [period]: updated } });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        const data = { ...formData, feePerSession: parseInt(formData.feePerSession) };
-        if (initialData) {
-            onUpdate(initialData.id, data);
-        } else {
-            onAdd(data);
+        try {
+            const data = { ...formData, feePerSession: parseInt(formData.feePerSession) };
+            if (initialData) {
+                await onUpdate(initialData.id, data);
+            } else {
+                await onAdd(data);
+            }
+            onClose();
+        } catch (error) {
+            // Error is already handled by alert in useDatabase
+            console.error('Submit error:', error);
         }
-        onClose();
     };
 
     return (

@@ -205,10 +205,21 @@ export const useDatabase = () => {
 
     // Actions
     const addStudent = async (newStudent) => {
-        const id = `S${String(students.length + 1).padStart(2, '0')}`;
-        const studentWithId = { ...newStudent, id };
-        const savedStudent = await studentService.create(studentWithId);
-        setStudents(prev => [...prev, savedStudent]);
+        try {
+            const maxId = students.reduce((max, s) => {
+                const idNum = parseInt(s.id.substring(1));
+                return isNaN(idNum) ? max : Math.max(max, idNum);
+            }, 0);
+            const id = `S${String(maxId + 1).padStart(2, '0')}`;
+            const studentWithId = { ...newStudent, id };
+            const savedStudent = await studentService.create(studentWithId);
+            setStudents(prev => [...prev, savedStudent]);
+            return savedStudent;
+        } catch (error) {
+            console.error('Failed to add student:', error);
+            alert('Lỗi khi thêm học viên: ' + (error.message || 'Vui lòng thử lại sau.'));
+            throw error;
+        }
     };
 
     const bulkAddStudents = async (newStudentsData) => {
@@ -222,10 +233,21 @@ export const useDatabase = () => {
     };
 
     const addClass = async (newClass) => {
-        const id = `C${String(classes.length + 1).padStart(2, '0')}`;
-        const classWithId = { ...newClass, id };
-        const savedClass = await classService.create(classWithId);
-        setClasses(prev => [...prev, savedClass]);
+        try {
+            const maxId = classes.reduce((max, c) => {
+                const idNum = parseInt(c.id.substring(1));
+                return isNaN(idNum) ? max : Math.max(max, idNum);
+            }, 0);
+            const id = `C${String(maxId + 1).padStart(2, '0')}`;
+            const classWithId = { ...newClass, id };
+            const savedClass = await classService.create(classWithId);
+            setClasses(prev => [...prev, savedClass]);
+            return savedClass;
+        } catch (error) {
+            console.error('Failed to add class:', error);
+            alert('Lỗi khi tạo lớp học: ' + (error.message || 'Vui lòng thử lại sau.'));
+            throw error;
+        }
     };
 
     const addExtraAttendance = async (record) => {
@@ -243,10 +265,21 @@ export const useDatabase = () => {
     };
 
     const addFee = async (fee) => {
-        const id = `F${String(fees.length + 1).padStart(2, '0')}`;
-        const feeWithId = { ...fee, id };
-        const savedFee = await financeService.addFee(feeWithId);
-        setFees(prev => [...prev, savedFee]);
+        try {
+            const maxId = fees.reduce((max, f) => {
+                const idNum = parseInt(f.id.substring(1));
+                return isNaN(idNum) ? max : Math.max(max, idNum);
+            }, 0);
+            const id = `F${String(maxId + 1).padStart(2, '0')}`;
+            const feeWithId = { ...fee, id };
+            const savedFee = await financeService.addFee(feeWithId);
+            setFees(prev => [...prev, savedFee]);
+            return savedFee;
+        } catch (error) {
+            console.error('Failed to add fee:', error);
+            alert('Lỗi khi thêm học phí: ' + (error.message || 'Vui lòng thử lại sau.'));
+            throw error;
+        }
     };
 
     const updateStudent = async (id, updatedData) => {
@@ -288,13 +321,17 @@ export const useDatabase = () => {
 
     const addHoliday = async (holiday) => {
         try {
-            const id = `H${String(holidays.length + 1).padStart(2, '0')}`;
+            const maxId = holidays.reduce((max, h) => {
+                const idNum = parseInt(h.id.substring(1));
+                return isNaN(idNum) ? max : Math.max(max, idNum);
+            }, 0);
+            const id = `H${String(maxId + 1).padStart(2, '0')}`;
             const savedHoliday = await holidayService.create({ ...holiday, id });
             setHolidays(prev => [...prev, savedHoliday]);
             return savedHoliday;
         } catch (error) {
             console.error('Failed to add holiday:', error);
-            alert('Lỗi khi thêm lịch nghỉ: ' + (error.message || JSON.stringify(error)));
+            alert('Lỗi khi thêm lịch nghỉ: ' + (error.message || 'Vui lòng thử lại sau.'));
             throw error;
         }
     };

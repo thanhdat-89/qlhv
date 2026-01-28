@@ -43,10 +43,14 @@ const AddTuitionModal = ({ students, onAdd, onClose }) => {
         });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        onAdd({ ...formData, amount: parseInt(formData.amount) });
-        onClose();
+        try {
+            await onAdd({ ...formData, amount: parseInt(formData.amount) });
+            onClose();
+        } catch (error) {
+            console.error('Submit error:', error);
+        }
     };
 
     return (
