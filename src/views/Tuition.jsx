@@ -203,12 +203,22 @@ const Tuition = ({ db }) => {
                                     <td className="hide-mobile" style={{ textAlign: 'center' }}>{getTuitionLabel(s.tuition.status)}</td>
                                     <td style={{ textAlign: 'right' }}>
                                         <button
-                                            className="btn btn-glass"
-                                            style={{ padding: '0.4rem 0.75rem', color: 'var(--success)', border: '1px solid rgba(22, 163, 74, 0.2)', background: 'rgba(22, 163, 74, 0.05)' }}
+                                            className="btn btn-primary"
+                                            style={{
+                                                padding: '0.45rem 1rem',
+                                                background: 'var(--success)',
+                                                border: 'none',
+                                                boxShadow: '0 4px 12px rgba(22, 163, 74, 0.2)',
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: '0.5rem',
+                                                fontSize: '0.85rem'
+                                            }}
                                             onClick={() => handleOpenModal(s.id)}
                                             title="Thu học phí"
                                         >
-                                            <Banknote size={16} /> <span style={{ fontSize: '0.75rem' }}>Thu phí</span>
+                                            <Banknote size={18} />
+                                            <span>Thu phí</span>
                                         </button>
                                     </td>
                                 </tr>
