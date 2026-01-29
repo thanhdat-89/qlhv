@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X } from 'lucide-react';
+import { X, UserPlus, Save } from 'lucide-react';
 
 const AddStudentModal = ({ classes, onAdd, onUpdate, onClose, initialData }) => {
     const [formData, setFormData] = useState(initialData ? {
@@ -42,7 +42,7 @@ const AddStudentModal = ({ classes, onAdd, onUpdate, onClose, initialData }) => 
     return (
         <div className="modal-overlay">
             <div className="modal-content card" style={{ maxWidth: '500px', width: '90%', padding: '1.25rem' }}>
-                <button onClick={onClose} style={{ position: 'absolute', right: '1.5rem', top: '1.5rem', background: 'transparent', border: 'none', color: 'var(--text-secondary)' }}>
+                <button onClick={onClose} className="btn-close-modal">
                     <X size={24} />
                 </button>
                 <h2 style={{ marginBottom: '1.5rem' }}>{initialData ? 'Chỉnh sửa học viên' : 'Thêm học viên mới'}</h2>
@@ -114,8 +114,8 @@ const AddStudentModal = ({ classes, onAdd, onUpdate, onClose, initialData }) => 
                     </div>
                     <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
                         <button type="button" onClick={onClose} className="btn btn-glass" style={{ flex: 1 }}>Hủy</button>
-                        <button type="submit" disabled={isSubmitting} className="btn btn-primary" style={{ flex: 1 }}>
-                            {isSubmitting ? 'Đang lưu...' : 'Lưu học viên'}
+                        <button type="submit" disabled={isSubmitting} className="btn btn-primary" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                            <Save size={18} /> {isSubmitting ? 'Đang lưu...' : 'Lưu học viên'}
                         </button>
                     </div>
                 </form>

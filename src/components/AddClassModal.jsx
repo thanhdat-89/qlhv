@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X } from 'lucide-react';
+import { X, Save } from 'lucide-react';
 
 const AddClassModal = ({ onAdd, onUpdate, onClose, initialData }) => {
     const [formData, setFormData] = useState(initialData || {
@@ -100,7 +100,9 @@ const AddClassModal = ({ onAdd, onUpdate, onClose, initialData }) => {
                     </div>
                     <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
                         <button type="button" onClick={onClose} className="btn btn-glass" style={{ flex: 1 }}>Hủy</button>
-                        <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>{initialData ? 'Cập nhật' : 'Tạo lớp học'}</button>
+                        <button type="submit" className="btn btn-primary" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                            <Save size={18} /> {initialData ? 'Cập nhật' : 'Tạo lớp học'}
+                        </button>
                     </div>
                 </form>
             </div>

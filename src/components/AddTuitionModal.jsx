@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, FilePlus } from 'lucide-react';
 
 const AddTuitionModal = ({ students, onAdd, onClose, preSelectedStudentId }) => {
     const preSelectedStudent = preSelectedStudentId ? students.find(s => s.id === preSelectedStudentId) : null;
@@ -60,7 +60,7 @@ const AddTuitionModal = ({ students, onAdd, onClose, preSelectedStudentId }) => 
     return (
         <div className="modal-overlay">
             <div className="modal-content card" style={{ maxWidth: '400px', width: '90%', margin: '0.5rem', padding: '1.25rem' }}>
-                <button onClick={onClose} style={{ position: 'absolute', right: '1.5rem', top: '1.5rem', background: 'transparent', border: 'none', color: 'var(--text-secondary)' }}>
+                <button onClick={onClose} className="btn-close-modal">
                     <X size={24} />
                 </button>
                 <h2 style={{ marginBottom: '1.5rem' }}>Thu học phí</h2>
@@ -150,7 +150,9 @@ const AddTuitionModal = ({ students, onAdd, onClose, preSelectedStudentId }) => 
                     </div>
                     <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
                         <button type="button" onClick={onClose} className="btn btn-glass" style={{ flex: 1 }}>Hủy</button>
-                        <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>Lưu phiếu thu</button>
+                        <button type="submit" className="btn btn-primary" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                            <FilePlus size={18} /> Lưu phiếu thu
+                        </button>
                     </div>
                 </form>
             </div>

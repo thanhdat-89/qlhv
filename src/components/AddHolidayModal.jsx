@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Calendar, Plus, Trash2 } from 'lucide-react';
+import { X, Calendar, Plus, Trash2, Save } from 'lucide-react';
 
 const AddHolidayModal = ({ onAdd, onClose, classes }) => {
     const [formData, setFormData] = useState({
@@ -34,7 +34,7 @@ const AddHolidayModal = ({ onAdd, onClose, classes }) => {
     return (
         <div className="modal-overlay">
             <div className="modal-content card" style={{ maxWidth: '400px' }}>
-                <button onClick={onClose} style={{ position: 'absolute', right: '1.5rem', top: '1.5rem', background: 'transparent', border: 'none', color: 'var(--text-secondary)' }}>
+                <button onClick={onClose} className="btn-close-modal">
                     <X size={24} />
                 </button>
                 <h2 style={{ marginBottom: '1.5rem' }}>Thêm Ngày Nghỉ</h2>
@@ -43,7 +43,7 @@ const AddHolidayModal = ({ onAdd, onClose, classes }) => {
                         <label className="form-label">Ngày nghỉ (Bắt đầu)</label>
                         <input
                             className="glass" type="date" required
-                            style={{ width: '100%', padding: '0.75rem' }}
+                            style={{ width: '100%', padding: '0.75rem', boxSizing: 'border-box' }}
                             value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value, endDate: e.target.value > formData.endDate ? e.target.value : formData.endDate })}
                         />
                     </div>
@@ -62,7 +62,7 @@ const AddHolidayModal = ({ onAdd, onClose, classes }) => {
                             <label className="form-label">Ngày kết thúc</label>
                             <input
                                 className="glass" type="date" required
-                                style={{ width: '100%', padding: '0.75rem' }}
+                                style={{ width: '100%', padding: '0.75rem', boxSizing: 'border-box' }}
                                 min={formData.date}
                                 value={formData.endDate} onChange={e => setFormData({ ...formData, endDate: e.target.value })}
                             />
@@ -71,7 +71,7 @@ const AddHolidayModal = ({ onAdd, onClose, classes }) => {
                     <div>
                         <label className="form-label">Loại nghỉ</label>
                         <select
-                            className="glass" style={{ width: '100%', padding: '0.75rem' }}
+                            className="glass" style={{ width: '100%', padding: '0.75rem', boxSizing: 'border-box' }}
                             value={formData.type} onChange={e => setFormData({ ...formData, type: e.target.value })}
                         >
                             <option value="Nghỉ Lễ">Nghỉ Lễ (Tất cả các lớp)</option>
@@ -83,7 +83,7 @@ const AddHolidayModal = ({ onAdd, onClose, classes }) => {
                         <div>
                             <label className="form-label">Áp dụng cho</label>
                             <select
-                                className="glass" style={{ width: '100%', padding: '0.75rem' }}
+                                className="glass" style={{ width: '100%', padding: '0.75rem', boxSizing: 'border-box' }}
                                 value={formData.classId} onChange={e => setFormData({ ...formData, classId: e.target.value })}
                             >
                                 <option value="">Tất cả các lớp</option>
@@ -98,15 +98,15 @@ const AddHolidayModal = ({ onAdd, onClose, classes }) => {
                         <label className="form-label">Mô tả / Lý do</label>
                         <textarea
                             className="glass" rows="2"
-                            style={{ width: '100%', padding: '0.75rem', resize: 'none' }}
+                            style={{ width: '100%', padding: '0.75rem', resize: 'none', boxSizing: 'border-box' }}
                             value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })}
                             placeholder="Ví dụ: Tết Nguyên Đán, Nghỉ ốm..."
                         />
                     </div>
                     <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
                         <button type="button" onClick={onClose} className="btn btn-glass" style={{ flex: 1 }}>Hủy</button>
-                        <button type="submit" disabled={isSubmitting} className="btn btn-primary" style={{ flex: 1 }}>
-                            {isSubmitting ? 'Đang thêm...' : 'Thêm lịch nghỉ'}
+                        <button type="submit" disabled={isSubmitting} className="btn btn-primary" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                            <Save size={18} /> {isSubmitting ? 'Đang thêm...' : 'Thêm lịch nghỉ'}
                         </button>
                     </div>
                 </form>

@@ -1,3 +1,7 @@
+* {
+    box-sizing: border-box;
+}
+
 :root {
     --primary: #4f46e5;
     --primary-hover: #4338ca;

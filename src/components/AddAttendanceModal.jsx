@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, Save } from 'lucide-react';
 
 const AddAttendanceModal = ({ students, onAdd, onUpdate, onClose, initialData }) => {
     const [searchQuery, setSearchQuery] = useState('');
@@ -71,7 +71,7 @@ const AddAttendanceModal = ({ students, onAdd, onUpdate, onClose, initialData })
     return (
         <div className="modal-overlay">
             <div className="modal-content card" style={{ maxWidth: '400px', width: '90%', padding: '1.25rem' }}>
-                <button onClick={onClose} style={{ position: 'absolute', right: '1.5rem', top: '1.5rem', background: 'transparent', border: 'none', color: 'var(--text-secondary)' }}>
+                <button onClick={onClose} className="btn-close-modal">
                     <X size={24} />
                 </button>
                 <h2 style={{ marginBottom: '1.5rem' }}>{initialData ? 'Chỉnh sửa buổi học' : 'Ghi nhận buổi học'}</h2>
@@ -175,8 +175,8 @@ const AddAttendanceModal = ({ students, onAdd, onUpdate, onClose, initialData })
                     </div>
                     <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
                         <button type="button" onClick={onClose} className="btn btn-glass" style={{ flex: 1 }}>Hủy</button>
-                        <button type="submit" disabled={isSubmitting} className="btn btn-primary" style={{ flex: 2 }}>
-                            {isSubmitting ? 'Đang lưu...' : 'Lưu ghi nhận'}
+                        <button type="submit" disabled={isSubmitting} className="btn btn-primary" style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                            <Save size={18} /> {isSubmitting ? 'Đang lưu...' : 'Lưu ghi nhận'}
                         </button>
                     </div>
                 </form>

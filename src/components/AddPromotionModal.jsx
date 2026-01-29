@@ -42,19 +42,21 @@ const AddPromotionModal = ({ classes, onAdd, onUpdate, onClose, initialData }) =
 
     return (
         <div className="modal-overlay">
-            <div className="modal-content glass card animate-slide-up" style={{ maxWidth: '500px' }}>
-                <div className="modal-header">
-                    <h2>{initialData ? 'Chỉnh sửa Khuyến mãi' : 'Thêm Khuyến mãi Mới'}</h2>
-                    <button onClick={onClose} className="btn-icon">
-                        <X size={20} />
-                    </button>
-                </div>
+            <div className="modal-content card" style={{ maxWidth: '400px', width: '90%', padding: '1.25rem' }}>
+                <button onClick={onClose} className="btn-close-modal">
+                    <X size={24} />
+                </button>
 
-                <form onSubmit={handleSubmit} className="modal-body">
-                    <div className="form-group">
+                <h2 style={{ marginBottom: '1.5rem' }}>
+                    {initialData ? 'Chỉnh sửa Khuyến mãi' : 'Thêm Khuyến mãi Mới'}
+                </h2>
+
+                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                    <div>
                         <label className="form-label">Lớp học áp dụng</label>
                         <select
                             className="glass"
+                            style={{ width: '100%', boxSizing: 'border-box' }}
                             value={formData.classId}
                             onChange={(e) => setFormData({ ...formData, classId: e.target.value })}
                             required
@@ -66,22 +68,24 @@ const AddPromotionModal = ({ classes, onAdd, onUpdate, onClose, initialData }) =
                         </select>
                     </div>
 
-                    <div className="form-group">
+                    <div>
                         <label className="form-label">Tháng áp dụng</label>
                         <input
                             type="month"
                             className="glass"
+                            style={{ width: '100%', boxSizing: 'border-box' }}
                             value={formData.month}
                             onChange={(e) => setFormData({ ...formData, month: e.target.value })}
                             required
                         />
                     </div>
 
-                    <div className="form-group">
+                    <div>
                         <label className="form-label">Phần trăm giảm giá (%)</label>
                         <input
                             type="number"
                             className="glass"
+                            style={{ width: '100%', boxSizing: 'border-box' }}
                             min="0"
                             max="100"
                             value={formData.discountRate}
@@ -90,10 +94,11 @@ const AddPromotionModal = ({ classes, onAdd, onUpdate, onClose, initialData }) =
                         />
                     </div>
 
-                    <div className="form-group">
+                    <div>
                         <label className="form-label">Mô tả chương trình (tùy chọn)</label>
                         <textarea
                             className="glass"
+                            style={{ width: '100%', resize: 'none', boxSizing: 'border-box' }}
                             rows="3"
                             value={formData.description}
                             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -101,11 +106,11 @@ const AddPromotionModal = ({ classes, onAdd, onUpdate, onClose, initialData }) =
                         />
                     </div>
 
-                    <div className="modal-footer" style={{ marginTop: '2rem' }}>
-                        <button type="button" onClick={onClose} className="btn btn-glass">
+                    <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                        <button type="button" onClick={onClose} className="btn btn-glass" style={{ flex: 1 }}>
                             Hủy
                         </button>
-                        <button type="submit" className="btn btn-primary">
+                        <button type="submit" className="btn btn-primary" style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                             <Save size={18} /> {initialData ? 'Cập nhật' : 'Lưu khuyến mãi'}
                         </button>
                     </div>
