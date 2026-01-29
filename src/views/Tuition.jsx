@@ -8,6 +8,17 @@ const Tuition = ({ db }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedClassId, setSelectedClassId] = useState('all');
     const [viewMode, setViewMode] = useState('status'); // status, history
+    const [preSelectedStudentId, setPreSelectedStudentId] = useState(null);
+
+    const handleOpenModal = (studentId = null) => {
+        setPreSelectedStudentId(studentId);
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setPreSelectedStudentId(null);
+    };
 
     const filteredStudents = selectedClassId === 'all'
         ? students
@@ -49,7 +60,7 @@ const Tuition = ({ db }) => {
                 <h1>Quản Lý Thu Học Phí</h1>
                 <div style={{ display: 'flex', gap: '1rem' }}>
                     <button className="btn btn-glass" onClick={handleExport}><Download size={18} /> Xuất file</button>
-                    <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}><Plus size={18} /> Thu học phí</button>
+                    <button className="btn btn-primary" onClick={() => handleOpenModal()}><Plus size={18} /> Thu học phí</button>
                 </div>
             </div>
 
@@ -57,7 +68,8 @@ const Tuition = ({ db }) => {
                 <AddTuitionModal
                     students={students}
                     onAdd={actions.addFee}
-                    onClose={() => setIsModalOpen(false)}
+                    onClose={handleCloseModal}
+                    preSelectedStudentId={preSelectedStudentId}
                 />
             )}
 
@@ -149,6 +161,16 @@ const Tuition = ({ db }) => {
                                         {new Intl.NumberFormat('vi-VN').format(s.tuition.balance)} đ
                                     </td>
                                     <td style={{ textAlign: 'center' }}>{getTuitionLabel(s.tuition.status)}</td>
+                                    <td style={{ textAlign: 'right' }}>
+                                        <button
+                                            className="btn btn-glass"
+                                            style={{ padding: '0.4rem 0.75rem', color: 'var(--success)', border: '1px solid rgba(22, 163, 74, 0.2)', background: 'rgba(22, 163, 74, 0.05)' }}
+                                            onClick={() => handleOpenModal(s.id)}
+                                            title="Thu học phí"
+                                        >
+                                            <Banknote size={16} /> <span style={{ fontSize: '0.75rem' }}>Thu phí</span>
+                                        </button>
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>

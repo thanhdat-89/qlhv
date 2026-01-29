@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 
-const AddTuitionModal = ({ students, onAdd, onClose }) => {
-    const [searchQuery, setSearchQuery] = useState('');
+const AddTuitionModal = ({ students, onAdd, onClose, preSelectedStudentId }) => {
+    const preSelectedStudent = preSelectedStudentId ? students.find(s => s.id === preSelectedStudentId) : null;
+
+    const [searchQuery, setSearchQuery] = useState(preSelectedStudent ? preSelectedStudent.name : '');
     const [selectedClassFilter, setSelectedClassFilter] = useState('all');
     const [formData, setFormData] = useState({
-        studentId: students[0]?.id || '',
-        amount: students[0]?.tuition?.balance || 0,
+        studentId: preSelectedStudentId || students[0]?.id || '',
+        amount: preSelectedStudent?.tuition?.balance || students[0]?.tuition?.balance || 0,
         date: new Date().toISOString().split('T')[0],
         method: 'Tiền mặt'
     });
@@ -22,8 +24,10 @@ const AddTuitionModal = ({ students, onAdd, onClose }) => {
         return matchesSearch && matchesClass;
     });
 
-    // Auto-sync student selection when filtered list changes
+    // Auto-sync student selection when filtered list changes (only if not pre-selected)
     useEffect(() => {
+        if (preSelectedStudentId) return;
+
         if (filteredStudents.length > 0) {
             const currentIsValid = filteredStudents.some(s => s.id === formData.studentId);
             if (!currentIsValid) {
@@ -32,7 +36,7 @@ const AddTuitionModal = ({ students, onAdd, onClose }) => {
         } else if (formData.studentId !== '') {
             setFormData(prev => ({ ...prev, studentId: '' }));
         }
-    }, [searchQuery, selectedClassFilter]);
+    }, [searchQuery, selectedClassFilter, preSelectedStudentId]);
 
     const handleStudentChange = (studentId) => {
         const student = students.find(s => s.id === studentId);
@@ -93,11 +97,24 @@ const AddTuitionModal = ({ students, onAdd, onClose }) => {
                             ))}
                         </div>
                         <select
-                            className="glass" style={{ width: '100%', padding: '0.75rem' }}
-                            value={formData.studentId} onChange={e => handleStudentChange(e.target.value)}
+                            className="glass"
+                            style={{
+                                width: '100%',
+                                padding: '0.75rem',
+                                background: preSelectedStudentId ? '#f1f5f9' : 'var(--glass)',
+                                cursor: preSelectedStudentId ? 'not-allowed' : 'pointer'
+                            }}
+                            value={formData.studentId}
+                            onChange={e => handleStudentChange(e.target.value)}
+                            disabled={!!preSelectedStudentId}
                         >
                             {filteredStudents.map(s => <option key={s.id} value={s.id}>{s.name} - {s.className}</option>)}
                         </select>
+                        {preSelectedStudentId && (
+                            <p style={{ fontSize: '0.75rem', color: 'var(--primary)', marginTop: '0.5rem', fontWeight: 500 }}>
+                                * Đang thu phí cho học viên được chọn từ trang Học phí
+                            </p>
+                        )}
                     </div>
                     <div>
                         <label className="form-label">Số tiền đóng (đ)</label>
