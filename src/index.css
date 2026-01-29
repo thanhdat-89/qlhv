@@ -320,13 +320,18 @@ tr:hover td {
     .sticky-col {
         position: sticky !important;
         left: 0 !important;
-        z-index: 20 !important;
+        z-index: 25 !important;
+        width: 130px !important;
+        max-width: 130px !important;
         box-shadow: 4px 0 8px rgba(0, 0, 0, 0.05);
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        background-color: #ffffff !important;
     }
 
     th.sticky-col {
         background-color: #f8fafc !important;
-        /* Header row bg */
     }
 
     td.sticky-col {
@@ -337,24 +342,40 @@ tr:hover td {
         background-color: #f1f5f9 !important;
     }
 
-    /* Optional: 2nd column sticky if needed */
-    .sticky-col-2 {
+    /* Combined sticky columns for history views */
+    .sticky-date {
         position: sticky !important;
-        left: 100px !important;
-        /* Adjust based on col 1 width */
-        z-index: 15 !important;
-        box-shadow: 4px 0 8px rgba(0, 0, 0, 0.05);
+        left: 0 !important;
+        z-index: 26 !important;
+        width: 90px !important;
+        max-width: 90px !important;
+        background-color: #ffffff !important;
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
     }
 
-    th.sticky-col-2 {
+    th.sticky-date {
         background-color: #f8fafc !important;
     }
 
-    td.sticky-col-2 {
+    .sticky-name-2 {
+        position: sticky !important;
+        left: 90px !important;
+        z-index: 25 !important;
+        width: 130px !important;
+        max-width: 130px !important;
         background-color: #ffffff !important;
+        box-shadow: 4px 0 8px rgba(0, 0, 0, 0.05);
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
     }
 
-    tr:hover td.sticky-col-2 {
+    th.sticky-name-2 {
+        background-color: #f8fafc !important;
+    }
+
+    tr:hover td.sticky-date,
+    tr:hover td.sticky-name-2 {
         background-color: #f1f5f9 !important;
     }
 }

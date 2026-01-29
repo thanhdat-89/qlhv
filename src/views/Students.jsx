@@ -202,7 +202,7 @@ const Students = ({ db }) => {
                             <tbody>
                                 {displayStudents().map((s) => (
                                     <tr key={s.id}>
-                                        <td className="sticky-col" style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{s.name}</td>
+                                        <td className="sticky-col" style={{ color: 'var(--text-primary)', fontWeight: 500 }} title={s.name}>{s.name}</td>
                                         <td>{s.className}</td>
                                         <td style={{ textAlign: 'center' }}>{s.birthYear}</td>
                                         <td style={{ color: 'var(--text-primary)' }}>{s.phone || '-'}</td>
@@ -245,8 +245,8 @@ const Students = ({ db }) => {
                     <table>
                         <thead>
                             <tr>
-                                <th>Ngày nhập học</th>
-                                <th className="sticky-col">Họ tên</th>
+                                <th className="sticky-date">Ngày nhập học</th>
+                                <th className="sticky-name-2">Họ tên</th>
                                 <th style={{ textAlign: 'center' }}>Năm sinh</th>
                                 <th>Lớp</th>
                                 <th style={{ textAlign: 'center' }}>Trạng thái</th>
@@ -255,10 +255,10 @@ const Students = ({ db }) => {
                         <tbody>
                             {enrollmentHistory.map((s) => (
                                 <tr key={s.id}>
-                                    <td style={{ color: 'var(--primary)', fontWeight: 600 }}>
+                                    <td className="sticky-date" style={{ color: 'var(--primary)', fontWeight: 600 }}>
                                         {new Date(s.enrollDate).toLocaleDateString('vi-VN')}
                                     </td>
-                                    <td className="sticky-col" style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{s.name}</td>
+                                    <td className="sticky-name-2" style={{ color: 'var(--text-primary)', fontWeight: 500 }} title={s.name}>{s.name}</td>
                                     <td style={{ textAlign: 'center' }}>{s.birthYear}</td>
                                     <td>{s.className}</td>
                                     <td style={{ textAlign: 'center' }}>{getStatusLabel(s.status)}</td>

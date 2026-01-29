@@ -38,8 +38,8 @@ const Attendance = ({ db }) => {
                 <table>
                     <thead>
                         <tr>
-                            <th className="sticky-col">Ngày</th>
-                            <th className="sticky-col-2">Học viên</th>
+                            <th className="sticky-date">Ngày</th>
+                            <th className="sticky-name-2">Học viên</th>
                             <th style={{ textAlign: 'right' }}>Học phí</th>
                             <th style={{ textAlign: 'center' }}>Trạng thái</th>
                             <th>Ghi chú</th>
@@ -51,8 +51,8 @@ const Attendance = ({ db }) => {
                             const student = students.find(s => s.id === record.studentId);
                             return (
                                 <tr key={record.id}>
-                                    <td className="sticky-col">{new Date(record.date).toLocaleDateString('vi-VN')}</td>
-                                    <td className="sticky-col-2" style={{ color: 'var(--text-primary)', fontWeight: 500 }}>
+                                    <td className="sticky-date">{new Date(record.date).toLocaleDateString('vi-VN')}</td>
+                                    <td className="sticky-name-2" style={{ color: 'var(--text-primary)', fontWeight: 500 }} title={student?.name}>
                                         {student?.name || 'N/A'}
                                     </td>
                                     <td style={{ color: 'var(--text-primary)', textAlign: 'right' }}>
