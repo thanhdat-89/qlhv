@@ -216,7 +216,7 @@ const Students = ({ db }) => {
                                         </td>
                                         <td>
                                             <div style={{ fontWeight: 500 }}>{s.className}</div>
-                                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Năm sinh: {s.birthYear}</div>
+                                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>NS: {s.birthYear}</div>
                                         </td>
                                         <td style={{ color: 'var(--text-primary)' }}>{s.phone || '-'}</td>
                                         <td>{new Date(s.enrollDate).toLocaleDateString('vi-VN')}</td>
@@ -280,7 +280,7 @@ const Students = ({ db }) => {
                                     </td>
                                     <td>
                                         <div style={{ fontWeight: 500 }}>{s.className}</div>
-                                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Năm sinh: {s.birthYear}</div>
+                                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>NS: {s.birthYear}</div>
                                     </td>
                                     <td style={{ textAlign: 'center' }}>{getStatusLabel(s.status)}</td>
                                 </tr>
