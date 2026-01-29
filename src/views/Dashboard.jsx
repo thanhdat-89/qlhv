@@ -14,7 +14,7 @@ const Dashboard = ({ db }) => {
     // Stats for cards
     const totalStudents = filteredStudents.length;
     const totalRevenue = fees.reduce((sum, f) => sum + f.amount, 0);
-    const activeStudents = filteredStudents.filter(s => s.status === 'Đang học').length;
+    const newStudents = filteredStudents.filter(s => s.status === 'Mới nhập học').length;
 
 
 
@@ -54,8 +54,8 @@ const Dashboard = ({ db }) => {
                         <TrendingUp size={32} />
                     </div>
                     <div>
-                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', fontWeight: 500 }}>Đang học</p>
-                        <h2 style={{ fontSize: '1.75rem', marginTop: '0.25rem' }}>{activeStudents}</h2>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', fontWeight: 500 }}>Học viên mới</p>
+                        <h2 style={{ fontSize: '1.75rem', marginTop: '0.25rem' }}>{newStudents}</h2>
                     </div>
                 </div>
                 <div className="glass card" style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
