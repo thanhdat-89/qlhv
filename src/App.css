@@ -92,27 +92,20 @@
     .filter-container input {
         width: 100% !important;
     }
-}
 
+    .grid-2 {
+        grid-template-columns: 1fr;
+    }
 
-.view-header .btn {
-    width: 100%;
-    justify-content: center;
-}
+    .mobile-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-.grid-2 {
-    grid-template-columns: 1fr;
-}
-
-.mobile-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.mobile-overlay.active {
-    display: block;
-}
+    .mobile-overlay.active {
+        display: block;
+    }
 }
 
 .stats-grid {
