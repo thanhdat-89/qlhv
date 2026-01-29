@@ -3,7 +3,7 @@ import { Download, Upload, ShieldAlert, CheckCircle2, AlertCircle } from 'lucide
 import { backupService } from '../services/backupService';
 
 const Settings = ({ db }) => {
-    const { actions } = db;
+    const { actions, automatedBackups } = db;
     const [isProcessing, setIsProcessing] = useState(false);
     const [message, setMessage] = useState(null);
 
@@ -26,6 +26,28 @@ const Settings = ({ db }) => {
         } catch (error) {
             console.error(error);
             setMessage({ type: 'error', text: 'Lỗi khi sao lưu dữ liệu: ' + error.message });
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    const handleDownloadBackup = async (backupId) => {
+        setIsProcessing(true);
+        try {
+            const data = await backupService.downloadBackup(backupId);
+            const blob = new Blob([JSON.stringify(data.data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = data.filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            setMessage({ type: 'success', text: 'Tải file sao lưu tự động thành công!' });
+        } catch (error) {
+            console.error(error);
+            setMessage({ type: 'error', text: 'Lỗi khi tải file sao lưu: ' + error.message });
         } finally {
             setIsProcessing(false);
         }
@@ -153,6 +175,58 @@ const Settings = ({ db }) => {
                         <strong style={{ color: 'var(--warning)', display: 'block', marginBottom: '0.25rem' }}>Lưu ý quan trọng:</strong>
                         Việc khôi phục dữ liệu sẽ không thể hoàn tác. Hãy chắc chắn rằng bạn đang sử dụng đúng file sao lưu gần nhất.
                     </div>
+                </div>
+            </div>
+
+            <div className="glass card" style={{ padding: '2rem', marginTop: '2rem' }}>
+                <h2 style={{ marginBottom: '1.5rem', fontSize: '1.25rem' }}>Lịch sử sao lưu tự động (Thứ 2 hàng tuần)</h2>
+                <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', fontSize: '0.875rem' }}>
+                    Hệ thống tự động sao lưu dữ liệu vào mỗi Thứ 2. Các bản sao lưu sẽ tự động được xóa sau 28 ngày.
+                </p>
+
+                <div className="table-container" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <thead>
+                            <tr style={{ borderBottom: '1px solid var(--glass-border)' }}>
+                                <th style={{ textAlign: 'left', padding: '1rem' }}>Ngày sao lưu</th>
+                                <th style={{ textAlign: 'left', padding: '1rem' }}>Tên file</th>
+                                <th style={{ textAlign: 'right', padding: '1rem' }}>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {automatedBackups.length > 0 ? (
+                                automatedBackups.map(backup => (
+                                    <tr key={backup.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
+                                        <td style={{ padding: '1rem', color: 'var(--text-primary)' }}>
+                                            {new Date(backup.created_at).toLocaleDateString('vi-VN', {
+                                                day: '2-digit', month: '2-digit', year: 'numeric',
+                                                hour: '2-digit', minute: '2-digit'
+                                            })}
+                                        </td>
+                                        <td style={{ padding: '1rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                                            {backup.filename}
+                                        </td>
+                                        <td style={{ padding: '1rem', textAlign: 'right' }}>
+                                            <button
+                                                className="btn btn-glass"
+                                                onClick={() => handleDownloadBackup(backup.id)}
+                                                disabled={isProcessing}
+                                                style={{ fontSize: '0.75rem', padding: '0.5rem 0.75rem' }}
+                                            >
+                                                <Download size={14} /> Tải xuống
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="3" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                                        Chưa có bản sao lưu tự động nào.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
