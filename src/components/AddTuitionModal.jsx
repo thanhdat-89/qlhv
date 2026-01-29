@@ -10,7 +10,7 @@ const AddTuitionModal = ({ students, onAdd, onClose, preSelectedStudentId }) => 
         studentId: preSelectedStudentId || students[0]?.id || '',
         amount: preSelectedStudent?.tuition?.balance || students[0]?.tuition?.balance || 0,
         date: new Date().toISOString().split('T')[0],
-        method: 'Tiền mặt'
+        method: 'Chuyển khoản'
     });
 
     // Get unique classes from students
