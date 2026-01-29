@@ -25,7 +25,8 @@ const Tuition = ({ db }) => {
     const filteredStudents = students
         .filter(s => selectedClassId === 'all' || s.classId === selectedClassId)
         .filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()))
-        .filter(s => selectedStatus === 'all' || s.tuition.status === selectedStatus);
+        .filter(s => selectedStatus === 'all' || s.tuition.status === selectedStatus)
+        .sort((a, b) => a.className.localeCompare(b.className));
 
     const handleExport = () => {
         const dataToExport = filteredStudents.map(s => ({
