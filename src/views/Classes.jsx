@@ -3,7 +3,7 @@ import { Plus, Edit2, Trash2 } from 'lucide-react';
 import AddClassModal from '../components/AddClassModal';
 
 const Classes = ({ db }) => {
-    const { classes, actions } = db;
+    const { classes, students, actions } = db;
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingClass, setEditingClass] = useState(null);
 
@@ -75,6 +75,7 @@ const Classes = ({ db }) => {
                             <th>Tên lớp</th>
                             <th>Hệ lớp</th>
                             <th style={{ textAlign: 'right' }}>Học phí/buổi</th>
+                            <th style={{ textAlign: 'center' }}>Hệ số nợ (HV nợ)</th>
                             <th>Thời khóa biểu dự kiến</th>
                             <th style={{ textAlign: 'right' }}>Thao tác</th>
                         </tr>
@@ -91,6 +92,16 @@ const Classes = ({ db }) => {
                                 </td>
                                 <td style={{ color: 'var(--text-primary)', textAlign: 'right' }}>
                                     {new Intl.NumberFormat('vi-VN').format(c.feePerSession)} đ
+                                </td>
+                                <td style={{ textAlign: 'center' }}>
+                                    {(() => {
+                                        const debtCount = students.filter(s => s.classId === c.id && (s.tuition.balance || 0) > 0).length;
+                                        return debtCount > 0 ? (
+                                            <span style={{ color: 'var(--warning)', fontWeight: 600 }}>{debtCount} H/V</span>
+                                        ) : (
+                                            <span style={{ color: 'var(--text-secondary)' }}>-</span>
+                                        );
+                                    })()}
                                 </td>
                                 <td style={{ padding: '0.75rem 1rem' }}>{renderSchedule(c.schedule)}</td>
                                 <td style={{ textAlign: 'right' }}>

@@ -188,6 +188,7 @@ const Dashboard = ({ db }) => {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1rem' }}>
                     {classes.map(c => {
                         const classStudents = filteredStudents.filter(s => s.classId === c.id);
+                        const debtCount = classStudents.filter(s => (s.tuition.balance || 0) > 0).length;
                         return (
                             <div key={c.id} className="glass" style={{ padding: '1rem', borderRadius: '8px' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '0.5rem' }}>
@@ -199,11 +200,21 @@ const Dashboard = ({ db }) => {
                                 <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
                                     {new Intl.NumberFormat('vi-VN').format(c.feePerSession)} đ/buổi
                                 </p>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                    <Users size={16} color="var(--primary)" />
-                                    <span style={{ fontSize: '0.875rem', color: 'var(--text-primary)' }}>
-                                        {classStudents.length} học viên
-                                    </span>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        <Users size={16} color="var(--primary)" />
+                                        <span style={{ fontSize: '0.875rem', color: 'var(--text-primary)' }}>
+                                            {classStudents.length} học viên
+                                        </span>
+                                    </div>
+                                    {debtCount > 0 && (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                            <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: 'var(--warning)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: 'white' }}>!</div>
+                                            <span style={{ fontSize: '0.875rem', color: 'var(--warning)', fontWeight: 600 }}>
+                                                {debtCount} còn nợ
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         );
