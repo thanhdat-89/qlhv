@@ -90,6 +90,7 @@ const Sidebar = ({ activeView, setActiveView, isMobileOpen, setIsMobileOpen, onL
                         }}
                     />
                 </div>
+                <h2 style={{ fontSize: '1.25rem', color: 'var(--text-primary)', marginTop: '0.5rem' }}>Quản Lý Học Viên</h2>
             </div>
 
             <nav style={{ flex: 1, padding: '1rem' }}>
