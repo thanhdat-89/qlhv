@@ -85,7 +85,7 @@ const AddStudentModal = ({ classes, onAdd, onUpdate, onClose, initialData }) => 
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                         <div>
-                            <label className="form-label">Giảm giá (%)</label>
+                            <label className="form-label">Ưu đãi, giảm giá (%)</label>
                             <input
                                 className="glass" type="number"
                                 style={{ width: '100%', padding: '0.75rem' }}
