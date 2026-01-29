@@ -1,16 +1,17 @@
 import { useState } from 'react';
-import { Lock, LogIn, AlertCircle } from 'lucide-react';
+import { Lock, LogIn, AlertCircle, User } from 'lucide-react';
 
 const Login = ({ onLogin }) => {
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (password === 'cqt263') {
+        if (username === 'admin' && password === 'cqt263') {
             onLogin();
         } else {
-            setError('Mật khẩu không chính xác!');
+            setError('Tài khoản hoặc mật khẩu không chính xác!');
             setPassword('');
         }
     };
@@ -35,41 +36,68 @@ const Login = ({ onLogin }) => {
 
                 <h1 style={{ marginBottom: '0.5rem', fontSize: '1.5rem', color: 'var(--text-primary)' }}>Quản Lý Học Viên</h1>
                 <p style={{ color: 'var(--text-primary)', marginBottom: '2rem', fontSize: '0.9rem', opacity: 0.8 }}>
-                    Vui lòng nhập mật khẩu quản lý để truy cập
+                    Vui lòng nhập tài khoản và mật khẩu quản lý để truy cập
                 </p>
 
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                     <div style={{ position: 'relative' }}>
+                        <div style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }}>
+                            <User size={18} />
+                        </div>
                         <input
                             className="glass"
-                            type="password"
-                            placeholder="Nhập mật khẩu..."
+                            type="text"
+                            placeholder="Tài khoản..."
                             style={{
-                                width: '100%', padding: '0.85rem 1rem',
-                                color: 'var(--text-primary)', textAlign: 'center',
+                                width: '100%', padding: '0.85rem 1rem 0.85rem 3rem',
+                                color: 'var(--text-primary)',
                                 border: error ? '1px solid var(--danger)' : '1px solid var(--glass-border)',
-                                fontSize: '1.1rem', letterSpacing: '0.2rem',
+                                fontSize: '1rem',
                                 background: 'white'
                             }}
                             autoFocus
+                            value={username}
+                            onChange={(e) => {
+                                setUsername(e.target.value);
+                                if (error) setError('');
+                            }}
+                        />
+                    </div>
+
+                    <div style={{ position: 'relative' }}>
+                        <div style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }}>
+                            <Lock size={18} />
+                        </div>
+                        <input
+                            className="glass"
+                            type="password"
+                            placeholder="Mật khẩu..."
+                            style={{
+                                width: '100%', padding: '0.85rem 1rem 0.85rem 3rem',
+                                color: 'var(--text-primary)',
+                                border: error ? '1px solid var(--danger)' : '1px solid var(--glass-border)',
+                                fontSize: '1rem',
+                                background: 'white'
+                            }}
                             value={password}
                             onChange={(e) => {
                                 setPassword(e.target.value);
                                 if (error) setError('');
                             }}
                         />
-                        {error && (
-                            <div style={{
-                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                                color: 'var(--danger)', fontSize: '0.85rem', marginTop: '0.75rem'
-                            }}>
-                                <AlertCircle size={14} /> {error}
-                            </div>
-                        )}
                     </div>
 
+                    {error && (
+                        <div style={{
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                            color: 'var(--danger)', fontSize: '0.85rem'
+                        }}>
+                            <AlertCircle size={14} /> {error}
+                        </div>
+                    )}
+
                     <button type="submit" className="btn btn-primary" style={{ padding: '0.85rem', width: '100%', marginTop: '0.5rem' }}>
-                        <LogIn size={18} style={{ marginRight: '8px' }} /> Xác nhận truy cập
+                        <LogIn size={18} style={{ marginRight: '8px' }} /> Đăng nhập
                     </button>
                 </form>
 
