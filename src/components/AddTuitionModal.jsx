@@ -59,7 +59,7 @@ const AddTuitionModal = ({ students, onAdd, onClose, preSelectedStudentId }) => 
 
     return (
         <div className="modal-overlay">
-            <div className="modal-content card" style={{ maxWidth: '400px' }}>
+            <div className="modal-content card" style={{ maxWidth: '400px', width: '90%', margin: '0.5rem', padding: '1.25rem' }}>
                 <button onClick={onClose} style={{ position: 'absolute', right: '1.5rem', top: '1.5rem', background: 'transparent', border: 'none', color: 'var(--text-secondary)' }}>
                     <X size={24} />
                 </button>
@@ -71,16 +71,16 @@ const AddTuitionModal = ({ students, onAdd, onClose, preSelectedStudentId }) => 
                             type="text"
                             placeholder="Tìm kiếm học viên..."
                             className="glass"
-                            style={{ width: '100%', padding: '0.75rem', marginBottom: '0.5rem' }}
+                            style={{ width: '100%', padding: '0.75rem', marginBottom: '0.5rem', boxSizing: 'border-box' }}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
-                        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
                             <button
                                 type="button"
                                 onClick={() => setSelectedClassFilter('all')}
                                 className={`btn ${selectedClassFilter === 'all' ? 'btn-primary' : 'btn-glass'}`}
-                                style={{ padding: '0.25rem 0.75rem', fontSize: '0.75rem' }}
+                                style={{ padding: '0.25rem 0.6rem', fontSize: '0.7rem', minWidth: 'fit-content' }}
                             >
                                 Tất cả
                             </button>
@@ -90,7 +90,7 @@ const AddTuitionModal = ({ students, onAdd, onClose, preSelectedStudentId }) => 
                                     type="button"
                                     onClick={() => setSelectedClassFilter(c.id)}
                                     className={`btn ${selectedClassFilter === c.id ? 'btn-primary' : 'btn-glass'}`}
-                                    style={{ padding: '0.25rem 0.75rem', fontSize: '0.75rem' }}
+                                    style={{ padding: '0.25rem 0.6rem', fontSize: '0.7rem', minWidth: 'fit-content' }}
                                 >
                                     {c.name}
                                 </button>
@@ -102,7 +102,8 @@ const AddTuitionModal = ({ students, onAdd, onClose, preSelectedStudentId }) => 
                                 width: '100%',
                                 padding: '0.75rem',
                                 background: preSelectedStudentId ? '#f1f5f9' : 'var(--glass)',
-                                cursor: preSelectedStudentId ? 'not-allowed' : 'pointer'
+                                cursor: preSelectedStudentId ? 'not-allowed' : 'pointer',
+                                boxSizing: 'border-box'
                             }}
                             value={formData.studentId}
                             onChange={e => handleStudentChange(e.target.value)}
@@ -120,7 +121,7 @@ const AddTuitionModal = ({ students, onAdd, onClose, preSelectedStudentId }) => 
                         <label className="form-label">Số tiền đóng (đ)</label>
                         <input
                             className="glass" type="number" required
-                            style={{ width: '100%', padding: '0.75rem' }}
+                            style={{ width: '100%', padding: '0.75rem', boxSizing: 'border-box' }}
                             value={formData.amount} onChange={e => setFormData({ ...formData, amount: e.target.value })}
                         />
                     </div>
@@ -128,7 +129,7 @@ const AddTuitionModal = ({ students, onAdd, onClose, preSelectedStudentId }) => 
                         <label className="form-label">Ngày đóng</label>
                         <input
                             className="glass" type="date" required
-                            style={{ width: '100%', padding: '0.75rem' }}
+                            style={{ width: '100%', padding: '0.75rem', boxSizing: 'border-box' }}
                             value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })}
                         />
                     </div>

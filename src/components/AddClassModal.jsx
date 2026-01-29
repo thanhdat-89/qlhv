@@ -37,7 +37,7 @@ const AddClassModal = ({ onAdd, onUpdate, onClose, initialData }) => {
 
     return (
         <div className="modal-overlay">
-            <div className="modal-content card" style={{ maxWidth: '600px' }}>
+            <div className="modal-content card" style={{ maxWidth: '600px', width: '90%', padding: '1.25rem' }}>
                 <button onClick={onClose} className="btn-close-modal">
                     <X size={24} />
                 </button>
@@ -49,6 +49,7 @@ const AddClassModal = ({ onAdd, onUpdate, onClose, initialData }) => {
                             className="glass" type="text" required
                             value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })}
                             placeholder="Ví dụ: Piano Nâng Cao"
+                            style={{ width: '100%', boxSizing: 'border-box' }}
                         />
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
@@ -57,6 +58,7 @@ const AddClassModal = ({ onAdd, onUpdate, onClose, initialData }) => {
                             <select
                                 className="glass"
                                 value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })}
+                                style={{ width: '100%', boxSizing: 'border-box' }}
                             >
                                 <option value="Cơ bản">Cơ bản</option>
                                 <option value="Cánh diều">Cánh diều</option>
@@ -67,6 +69,7 @@ const AddClassModal = ({ onAdd, onUpdate, onClose, initialData }) => {
                             <input
                                 className="glass" type="number" required
                                 value={formData.feePerSession} onChange={e => setFormData({ ...formData, feePerSession: e.target.value })}
+                                style={{ width: '100%', boxSizing: 'border-box' }}
                             />
                         </div>
                     </div>

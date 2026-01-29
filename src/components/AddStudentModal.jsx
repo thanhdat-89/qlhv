@@ -41,7 +41,7 @@ const AddStudentModal = ({ classes, onAdd, onUpdate, onClose, initialData }) => 
 
     return (
         <div className="modal-overlay">
-            <div className="modal-content card" style={{ maxWidth: '500px' }}>
+            <div className="modal-content card" style={{ maxWidth: '500px', width: '90%', padding: '1.25rem' }}>
                 <button onClick={onClose} style={{ position: 'absolute', right: '1.5rem', top: '1.5rem', background: 'transparent', border: 'none', color: 'var(--text-secondary)' }}>
                     <X size={24} />
                 </button>
@@ -51,7 +51,7 @@ const AddStudentModal = ({ classes, onAdd, onUpdate, onClose, initialData }) => 
                         <label className="form-label">Họ tên</label>
                         <input
                             className="glass" type="text" required
-                            style={{ width: '100%', padding: '0.75rem' }}
+                            style={{ width: '100%', padding: '0.75rem', boxSizing: 'border-box' }}
                             value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })}
                         />
                     </div>
@@ -60,7 +60,7 @@ const AddStudentModal = ({ classes, onAdd, onUpdate, onClose, initialData }) => 
                         <input
                             className="glass" type="text"
                             placeholder="Ví dụ: 0912345678"
-                            style={{ width: '100%', padding: '0.75rem' }}
+                            style={{ width: '100%', padding: '0.75rem', boxSizing: 'border-box' }}
                             value={formData.phone || ''} onChange={e => setFormData({ ...formData, phone: e.target.value })}
                         />
                     </div>
@@ -69,14 +69,14 @@ const AddStudentModal = ({ classes, onAdd, onUpdate, onClose, initialData }) => 
                             <label className="form-label">Năm sinh</label>
                             <input
                                 className="glass" type="number" required
-                                style={{ width: '100%', padding: '0.75rem' }}
+                                style={{ width: '100%', padding: '0.75rem', boxSizing: 'border-box' }}
                                 value={formData.birthYear} onChange={e => setFormData({ ...formData, birthYear: e.target.value })}
                             />
                         </div>
                         <div>
                             <label className="form-label">Lớp học</label>
                             <select
-                                className="glass" style={{ width: '100%', padding: '0.75rem' }}
+                                className="glass" style={{ width: '100%', padding: '0.75rem', boxSizing: 'border-box' }}
                                 value={formData.classId} onChange={e => setFormData({ ...formData, classId: e.target.value })}
                             >
                                 {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -88,7 +88,7 @@ const AddStudentModal = ({ classes, onAdd, onUpdate, onClose, initialData }) => 
                             <label className="form-label">Ưu đãi, giảm giá (%)</label>
                             <input
                                 className="glass" type="number"
-                                style={{ width: '100%', padding: '0.75rem' }}
+                                style={{ width: '100%', padding: '0.75rem', boxSizing: 'border-box' }}
                                 value={formData.discountRate} onChange={e => setFormData({ ...formData, discountRate: e.target.value })}
                             />
                         </div>
@@ -96,7 +96,7 @@ const AddStudentModal = ({ classes, onAdd, onUpdate, onClose, initialData }) => 
                             <label className="form-label">Ngày nhập học</label>
                             <input
                                 className="glass" type="date"
-                                style={{ width: '100%', padding: '0.75rem' }}
+                                style={{ width: '100%', padding: '0.75rem', boxSizing: 'border-box' }}
                                 value={formData.enrollDate} onChange={e => setFormData({ ...formData, enrollDate: e.target.value })}
                             />
                         </div>
@@ -104,7 +104,7 @@ const AddStudentModal = ({ classes, onAdd, onUpdate, onClose, initialData }) => 
                     <div>
                         <label className="form-label">Trạng thái</label>
                         <select
-                            className="glass" style={{ width: '100%', padding: '0.75rem' }}
+                            className="glass" style={{ width: '100%', padding: '0.75rem', boxSizing: 'border-box' }}
                             value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value })}
                         >
                             <option value="Mới nhập học">Mới nhập học</option>
