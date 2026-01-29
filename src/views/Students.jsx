@@ -182,7 +182,7 @@ const Students = ({ db }) => {
                                     <th>Số điện thoại</th>
                                     <th>Ngày nhập học</th>
                                     <th style={{ textAlign: 'center' }}>Trạng thái</th>
-                                    <th style={{ textAlign: 'center' }}>Giảm giá</th>
+                                    <th style={{ textAlign: 'center' }}>Ưu đãi</th>
                                     <th style={{ textAlign: 'right' }}>Thao tác</th>
                                 </tr>
                             </thead>
