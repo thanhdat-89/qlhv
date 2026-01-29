@@ -118,16 +118,17 @@ const Tuition = ({ db }) => {
                             <tr>
                                 <th>Học viên</th>
                                 <th>Lớp</th>
-                                <th style={{ textAlign: 'center' }}>Số buổi theo TKB</th>
-                                <th style={{ textAlign: 'right' }}>Học phí theo TKB</th>
-                                <th style={{ textAlign: 'center' }}>Số buổi học bổ sung</th>
-                                <th style={{ textAlign: 'right' }}>Học phí học bổ sung</th>
-                                <th style={{ textAlign: 'right' }}>Đã đóng</th>
-                                <th style={{ textAlign: 'center' }}>Giảm giá (HV)</th>
-                                <th style={{ textAlign: 'center' }}>Khuyến mãi (Lớp)</th>
+                                <th className="hide-mobile" style={{ textAlign: 'center' }}>Số buổi theo TKB</th>
+                                <th className="hide-mobile" style={{ textAlign: 'right' }}>Học phí theo TKB</th>
+                                <th className="hide-mobile" style={{ textAlign: 'center' }}>Số buổi học bổ sung</th>
+                                <th className="hide-mobile" style={{ textAlign: 'right' }}>Học phí học bổ sung</th>
+                                <th className="hide-mobile" style={{ textAlign: 'right' }}>Đã đóng</th>
+                                <th className="hide-mobile" style={{ textAlign: 'center' }}>Giảm giá (HV)</th>
+                                <th className="hide-mobile" style={{ textAlign: 'center' }}>Khuyến mãi (Lớp)</th>
                                 <th style={{ textAlign: 'right' }}>Học phí tháng này</th>
                                 <th style={{ textAlign: 'right' }}>Còn nợ</th>
-                                <th style={{ textAlign: 'center' }}>Trạng thái</th>
+                                <th className="hide-mobile" style={{ textAlign: 'center' }}>Trạng thái</th>
+                                <th style={{ textAlign: 'right' }}>Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -135,19 +136,19 @@ const Tuition = ({ db }) => {
                                 <tr key={s.id}>
                                     <td style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{s.name}</td>
                                     <td>{s.className}</td>
-                                    <td style={{ textAlign: 'center' }}>{s.tuition.scheduledCount}</td>
-                                    <td style={{ color: 'var(--text-primary)', textAlign: 'right' }}>
+                                    <td className="hide-mobile" style={{ textAlign: 'center' }}>{s.tuition.scheduledCount}</td>
+                                    <td className="hide-mobile" style={{ color: 'var(--text-primary)', textAlign: 'right' }}>
                                         {new Intl.NumberFormat('vi-VN').format(s.tuition.scheduledTuition)} đ
                                     </td>
-                                    <td style={{ textAlign: 'center' }}>{s.tuition.extraCount}</td>
-                                    <td style={{ color: 'var(--secondary)', textAlign: 'right' }}>
+                                    <td className="hide-mobile" style={{ textAlign: 'center' }}>{s.tuition.extraCount}</td>
+                                    <td className="hide-mobile" style={{ color: 'var(--secondary)', textAlign: 'right' }}>
                                         {new Intl.NumberFormat('vi-VN').format(s.tuition.totalExtraFee)} đ
                                     </td>
-                                    <td style={{ color: 'var(--success)', textAlign: 'right' }}>
+                                    <td className="hide-mobile" style={{ color: 'var(--success)', textAlign: 'right' }}>
                                         {new Intl.NumberFormat('vi-VN').format(s.tuition.totalPaid)} đ
                                     </td>
-                                    <td style={{ textAlign: 'center' }}>{s.discountRate * 100}%</td>
-                                    <td style={{ textAlign: 'center' }}>
+                                    <td className="hide-mobile" style={{ textAlign: 'center' }}>{s.discountRate * 100}%</td>
+                                    <td className="hide-mobile" style={{ textAlign: 'center' }}>
                                         {s.tuition.promotionDiscount > 0 ? (
                                             <span className="label label-success" style={{ fontSize: '0.75rem' }}>
                                                 -{s.tuition.promotionDiscount * 100}%
@@ -160,7 +161,7 @@ const Tuition = ({ db }) => {
                                     <td style={{ color: s.tuition.balance > 0 ? 'var(--warning)' : 'var(--text-secondary)', textAlign: 'right' }}>
                                         {new Intl.NumberFormat('vi-VN').format(s.tuition.balance)} đ
                                     </td>
-                                    <td style={{ textAlign: 'center' }}>{getTuitionLabel(s.tuition.status)}</td>
+                                    <td className="hide-mobile" style={{ textAlign: 'center' }}>{getTuitionLabel(s.tuition.status)}</td>
                                     <td style={{ textAlign: 'right' }}>
                                         <button
                                             className="btn btn-glass"

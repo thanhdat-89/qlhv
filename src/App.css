@@ -106,6 +106,10 @@
     .mobile-overlay.active {
         display: block;
     }
+
+    .hide-mobile {
+        display: none !important;
+    }
 }
 
 .stats-grid {
