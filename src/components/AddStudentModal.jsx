@@ -64,7 +64,7 @@ const AddStudentModal = ({ classes, onAdd, onUpdate, onClose, initialData }) => 
                             value={formData.phone || ''} onChange={e => setFormData({ ...formData, phone: e.target.value })}
                         />
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div className="form-grid">
                         <div>
                             <label className="form-label">Năm sinh</label>
                             <input
@@ -83,7 +83,7 @@ const AddStudentModal = ({ classes, onAdd, onUpdate, onClose, initialData }) => 
                             </select>
                         </div>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div className="form-grid">
                         <div>
                             <label className="form-label">Ưu đãi, giảm giá (%)</label>
                             <input
