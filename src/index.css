@@ -328,6 +328,8 @@ tr:hover td {
         overflow: hidden !important;
         text-overflow: ellipsis !important;
         background-color: #ffffff !important;
+        direction: rtl !important;
+        text-align: left !important;
     }
 
     th.sticky-col {
@@ -368,6 +370,8 @@ tr:hover td {
         white-space: nowrap !important;
         overflow: hidden !important;
         text-overflow: ellipsis !important;
+        direction: rtl !important;
+        text-align: left !important;
     }
 
     th.sticky-name-2 {
@@ -388,6 +392,8 @@ tr:hover td {
         overflow: visible !important;
         z-index: 30 !important;
         box-shadow: 8px 0 15px rgba(0, 0, 0, 0.15);
+        direction: ltr !important;
+        text-align: left !important;
     }
 }
 
