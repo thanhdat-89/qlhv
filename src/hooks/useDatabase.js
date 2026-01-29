@@ -254,7 +254,9 @@ export const useDatabase = () => {
         const extraSessionsLifeTime = extraAttendance.filter(a => {
             if (a.studentId !== studentId || a.isExcused || !a.status) return false;
             const d = parseDate(a.date);
-            return d <= lifeTimeEnd;
+            // Only count extra sessions up to the PREVIOUS month for balance inclusion
+            const extraLimit = lifeTimeEnd < endOfPrevMonth ? lifeTimeEnd : endOfPrevMonth;
+            return d <= extraLimit;
         });
 
         extraSessionsLifeTime.forEach(a => {
