@@ -8,6 +8,7 @@ const Tuition = ({ db }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedClassId, setSelectedClassId] = useState('all');
     const [viewMode, setViewMode] = useState('status'); // status, history
+    const [searchQuery, setSearchQuery] = useState('');
     const [preSelectedStudentId, setPreSelectedStudentId] = useState(null);
 
     const handleOpenModal = (studentId = null) => {
@@ -20,9 +21,8 @@ const Tuition = ({ db }) => {
         setPreSelectedStudentId(null);
     };
 
-    const filteredStudents = selectedClassId === 'all'
-        ? students
-        : students.filter(s => s.classId === selectedClassId);
+    const filteredStudents = (selectedClassId === 'all' ? students : students.filter(s => s.classId === selectedClassId))
+        .filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
     const handleExport = () => {
         const dataToExport = filteredStudents.map(s => ({
@@ -62,6 +62,16 @@ const Tuition = ({ db }) => {
                     <button className="btn btn-glass" onClick={handleExport}><Download size={18} /> Xuất file</button>
                     <button className="btn btn-primary" onClick={() => handleOpenModal()}><Plus size={18} /> Thu học phí</button>
                 </div>
+            </div>
+
+            <div className="search-container">
+                <input
+                    type="text"
+                    placeholder="Tìm kiếm theo tên học viên..."
+                    className="glass"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                />
             </div>
 
             {isModalOpen && (
