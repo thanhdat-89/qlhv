@@ -110,6 +110,14 @@
     .hide-mobile {
         display: none !important;
     }
+
+    .show-mobile {
+        display: block !important;
+    }
+}
+
+.show-mobile {
+    display: none !important;
 }
 
 .stats-grid {

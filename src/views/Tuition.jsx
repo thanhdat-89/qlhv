@@ -114,7 +114,7 @@ const Tuition = ({ db, initialParams }) => {
                 <div style={{ marginBottom: '1.5rem', display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
                     <div style={{ flex: 1, minWidth: '300px' }}>
                         <label className="form-label">Lọc theo lớp</label>
-                        <div className="filter-group">
+                        <div className="filter-group hide-mobile">
                             <button
                                 onClick={() => setSelectedClassId('all')}
                                 className={`btn btn-glass filter-item ${selectedClassId === 'all' ? 'active' : ''}`}
@@ -130,6 +130,19 @@ const Tuition = ({ db, initialParams }) => {
                                     {c.name}
                                 </button>
                             ))}
+                        </div>
+                        <div className="show-mobile">
+                            <select
+                                className="glass"
+                                style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '12px', color: 'var(--text-primary)', border: '1px solid var(--glass-border)' }}
+                                value={selectedClassId}
+                                onChange={(e) => setSelectedClassId(e.target.value)}
+                            >
+                                <option value="all">Tất cả lớp</option>
+                                {classes.map(c => (
+                                    <option key={c.id} value={c.id}>{c.name}</option>
+                                ))}
+                            </select>
                         </div>
                     </div>
 
