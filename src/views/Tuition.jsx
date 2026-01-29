@@ -9,6 +9,7 @@ const Tuition = ({ db }) => {
     const [selectedClassId, setSelectedClassId] = useState('all');
     const [viewMode, setViewMode] = useState('status'); // status, history
     const [searchQuery, setSearchQuery] = useState('');
+    const [selectedStatus, setSelectedStatus] = useState('all');
     const [preSelectedStudentId, setPreSelectedStudentId] = useState(null);
 
     const handleOpenModal = (studentId = null) => {
@@ -21,8 +22,10 @@ const Tuition = ({ db }) => {
         setPreSelectedStudentId(null);
     };
 
-    const filteredStudents = (selectedClassId === 'all' ? students : students.filter(s => s.classId === selectedClassId))
-        .filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    const filteredStudents = students
+        .filter(s => selectedClassId === 'all' || s.classId === selectedClassId)
+        .filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()))
+        .filter(s => selectedStatus === 'all' || s.tuition.status === selectedStatus);
 
     const handleExport = () => {
         const dataToExport = filteredStudents.map(s => ({
@@ -99,24 +102,50 @@ const Tuition = ({ db }) => {
             </div>
 
             {viewMode === 'status' && (
-                <div style={{ marginBottom: '1.5rem' }}>
-                    <label className="form-label">Lọc theo lớp</label>
-                    <div className="filter-group">
-                        <button
-                            onClick={() => setSelectedClassId('all')}
-                            className={`btn btn-glass filter-item ${selectedClassId === 'all' ? 'active' : ''}`}
-                        >
-                            Tất cả lớp
-                        </button>
-                        {classes.map(c => (
+                <div style={{ marginBottom: '1.5rem', display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+                    <div style={{ flex: 1, minWidth: '300px' }}>
+                        <label className="form-label">Lọc theo lớp</label>
+                        <div className="filter-group">
                             <button
-                                key={c.id}
-                                onClick={() => setSelectedClassId(c.id)}
-                                className={`btn btn-glass filter-item ${selectedClassId === c.id ? 'active' : ''}`}
+                                onClick={() => setSelectedClassId('all')}
+                                className={`btn btn-glass filter-item ${selectedClassId === 'all' ? 'active' : ''}`}
                             >
-                                {c.name}
+                                Tất cả lớp
                             </button>
-                        ))}
+                            {classes.map(c => (
+                                <button
+                                    key={c.id}
+                                    onClick={() => setSelectedClassId(c.id)}
+                                    className={`btn btn-glass filter-item ${selectedClassId === c.id ? 'active' : ''}`}
+                                >
+                                    {c.name}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="form-label">Lọc theo trạng thái</label>
+                        <div className="filter-group">
+                            <button
+                                onClick={() => setSelectedStatus('all')}
+                                className={`btn btn-glass filter-item ${selectedStatus === 'all' ? 'active' : ''}`}
+                            >
+                                Tất cả
+                            </button>
+                            <button
+                                onClick={() => setSelectedStatus('Còn nợ')}
+                                className={`btn btn-glass filter-item ${selectedStatus === 'Còn nợ' ? 'active' : ''}`}
+                            >
+                                Còn nợ
+                            </button>
+                            <button
+                                onClick={() => setSelectedStatus('Đã hoàn thành')}
+                                className={`btn btn-glass filter-item ${selectedStatus === 'Đã hoàn thành' ? 'active' : ''}`}
+                            >
+                                Đã hoàn thành
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
