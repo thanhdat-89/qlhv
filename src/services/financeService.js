@@ -57,6 +57,7 @@ export const financeService = {
             studentId: a.student_id,
             date: a.date,
             status: a.status,
+            isExcused: a.is_excused,
             fee: a.fee,
             notes: a.notes || ''
         }));
@@ -69,6 +70,7 @@ export const financeService = {
             student_id: record.studentId,
             date: record.date,
             status: record.status,
+            is_excused: record.isExcused,
             fee: record.fee,
             notes: record.notes || ''
         };
@@ -95,6 +97,7 @@ export const financeService = {
         if (data.studentId !== undefined) dbData.student_id = data.studentId;
         if (data.date !== undefined) dbData.date = data.date;
         if (data.status !== undefined) dbData.status = data.status;
+        if (data.isExcused !== undefined) dbData.is_excused = data.isExcused;
         if (data.fee !== undefined) dbData.fee = data.fee;
         if (data.notes !== undefined) dbData.notes = data.notes;
 

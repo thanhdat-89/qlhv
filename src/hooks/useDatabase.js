@@ -195,9 +195,6 @@ export const useDatabase = () => {
         const endOfPrevMonth = new Date(prevMonthDate.getFullYear(), prevMonthDate.getMonth() + 1, 0);
         endOfPrevMonth.setHours(23, 59, 59, 999);
 
-        const extraMonthlyStart = enrollDate > startOfPrevMonth ? enrollDate : startOfPrevMonth;
-        const extraMonthlyEnd = (leaveDate && leaveDate < endOfPrevMonth) ? leaveDate : endOfPrevMonth;
-
         let scheduledCount = 0;
         if (monthlyStart <= monthlyEnd) {
             scheduledCount = countSessionsInRange(studentClass.schedule, monthlyStart, monthlyEnd, student.classId);
@@ -206,7 +203,7 @@ export const useDatabase = () => {
         const extraSessionsPrevMonth = extraAttendance.filter(a => {
             if (a.studentId !== studentId || a.isExcused || !a.status) return false;
             const d = parseDate(a.date);
-            return d >= extraMonthlyStart && d <= extraMonthlyEnd;
+            return d >= startOfPrevMonth && d <= endOfPrevMonth;
         });
         const extraCount = extraSessionsPrevMonth.length;
         const totalExtraFee = extraSessionsPrevMonth.reduce((sum, a) => sum + (a.fee || studentClass.feePerSession), 0);
@@ -257,7 +254,7 @@ export const useDatabase = () => {
         const extraSessionsLifeTime = extraAttendance.filter(a => {
             if (a.studentId !== studentId || a.isExcused || !a.status) return false;
             const d = parseDate(a.date);
-            return d >= enrollDate && d <= lifeTimeEnd;
+            return d <= lifeTimeEnd;
         });
 
         extraSessionsLifeTime.forEach(a => {
