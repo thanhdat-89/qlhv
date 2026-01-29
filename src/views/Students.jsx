@@ -195,8 +195,7 @@ const Students = ({ db }) => {
                             <thead>
                                 <tr>
                                     <th className="sticky-col">Họ tên</th>
-                                    <th>Lớp</th>
-                                    <th style={{ textAlign: 'center' }}>Năm sinh</th>
+                                    <th>Lớp / Năm sinh</th>
                                     <th>Số điện thoại</th>
                                     <th>Ngày nhập học</th>
                                     <th style={{ textAlign: 'center' }}>Trạng thái</th>
@@ -215,8 +214,10 @@ const Students = ({ db }) => {
                                         >
                                             {s.name}
                                         </td>
-                                        <td>{s.className}</td>
-                                        <td style={{ textAlign: 'center' }}>{s.birthYear}</td>
+                                        <td>
+                                            <div style={{ fontWeight: 500 }}>{s.className}</div>
+                                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Năm sinh: {s.birthYear}</div>
+                                        </td>
                                         <td style={{ color: 'var(--text-primary)' }}>{s.phone || '-'}</td>
                                         <td>{new Date(s.enrollDate).toLocaleDateString('vi-VN')}</td>
                                         <td style={{ textAlign: 'center' }}>{getStatusLabel(s.status)}</td>
@@ -259,8 +260,7 @@ const Students = ({ db }) => {
                             <tr>
                                 <th className="sticky-date">Ngày nhập học</th>
                                 <th className="sticky-name-2">Họ tên</th>
-                                <th style={{ textAlign: 'center' }}>Năm sinh</th>
-                                <th>Lớp</th>
+                                <th>Lớp / Năm sinh</th>
                                 <th style={{ textAlign: 'center' }}>Trạng thái</th>
                             </tr>
                         </thead>
@@ -278,8 +278,10 @@ const Students = ({ db }) => {
                                     >
                                         {s.name}
                                     </td>
-                                    <td style={{ textAlign: 'center' }}>{s.birthYear}</td>
-                                    <td>{s.className}</td>
+                                    <td>
+                                        <div style={{ fontWeight: 500 }}>{s.className}</div>
+                                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Năm sinh: {s.birthYear}</div>
+                                    </td>
                                     <td style={{ textAlign: 'center' }}>{getStatusLabel(s.status)}</td>
                                 </tr>
                             ))}
