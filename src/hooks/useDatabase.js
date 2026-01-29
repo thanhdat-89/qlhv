@@ -188,18 +188,28 @@ export const useDatabase = () => {
         const monthlyStart = enrollDate > startOfMonth ? enrollDate : startOfMonth;
         const monthlyEnd = (leaveDate && leaveDate < endOfMonth) ? leaveDate : endOfMonth;
 
+        // Extra sessions logic: Calculate for PREVIOUS month
+        const prevMonthDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+        const startOfPrevMonth = new Date(prevMonthDate.getFullYear(), prevMonthDate.getMonth(), 1);
+        startOfPrevMonth.setHours(0, 0, 0, 0);
+        const endOfPrevMonth = new Date(prevMonthDate.getFullYear(), prevMonthDate.getMonth() + 1, 0);
+        endOfPrevMonth.setHours(23, 59, 59, 999);
+
+        const extraMonthlyStart = enrollDate > startOfPrevMonth ? enrollDate : startOfPrevMonth;
+        const extraMonthlyEnd = (leaveDate && leaveDate < endOfPrevMonth) ? leaveDate : endOfPrevMonth;
+
         let scheduledCount = 0;
         if (monthlyStart <= monthlyEnd) {
             scheduledCount = countSessionsInRange(studentClass.schedule, monthlyStart, monthlyEnd, student.classId);
         }
 
-        const extraSessionsThisMonth = extraAttendance.filter(a => {
+        const extraSessionsPrevMonth = extraAttendance.filter(a => {
             if (a.studentId !== studentId || a.isExcused || !a.status) return false;
             const d = parseDate(a.date);
-            return d >= monthlyStart && d <= monthlyEnd;
+            return d >= extraMonthlyStart && d <= extraMonthlyEnd;
         });
-        const extraCount = extraSessionsThisMonth.length;
-        const totalExtraFee = extraSessionsThisMonth.reduce((sum, a) => sum + (a.fee || studentClass.feePerSession), 0);
+        const extraCount = extraSessionsPrevMonth.length;
+        const totalExtraFee = extraSessionsPrevMonth.reduce((sum, a) => sum + (a.fee || studentClass.feePerSession), 0);
 
         const discount = student.discountRate || 0;
         const feePerSession = studentClass.feePerSession || 0;
