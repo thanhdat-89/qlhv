@@ -1,8 +1,5 @@
 import { useMemo, useState } from 'react';
-import {
-    PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend,
-    BarChart, Bar, XAxis, YAxis, CartesianGrid
-} from 'recharts';
+
 import { Filter, TrendingUp, Users, DollarSign } from 'lucide-react';
 
 const Dashboard = ({ db }) => {
@@ -19,27 +16,7 @@ const Dashboard = ({ db }) => {
     const totalRevenue = fees.reduce((sum, f) => sum + f.amount, 0);
     const activeStudents = filteredStudents.filter(s => s.status === 'Đang học').length;
 
-    // Chart: Tuition Payment Status
-    const paymentStatusData = useMemo(() => {
-        const completed = filteredStudents.filter(s => s.tuition.status === 'Đã hoàn thành').length;
-        const pending = filteredStudents.filter(s => s.tuition.status === 'Còn nợ').length;
-        return [
-            { name: 'Đã hoàn thành', value: completed },
-            { name: 'Còn nợ', value: pending }
-        ];
-    }, [filteredStudents]);
 
-    // Chart: Monthly Revenue
-    const revenueData = useMemo(() => {
-        const monthly = fees.reduce((acc, f) => {
-            const month = new Date(f.date).toLocaleString('vi-VN', { month: 'short' });
-            acc[month] = (acc[month] || 0) + f.amount;
-            return acc;
-        }, {});
-        return Object.keys(monthly).map(key => ({ name: key, revenue: monthly[key] }));
-    }, [fees]);
-
-    const COLORS = ['var(--primary)', 'var(--secondary)', 'var(--warning)', 'var(--success)'];
 
     return (
         <div className="view-container">
@@ -92,98 +69,9 @@ const Dashboard = ({ db }) => {
                 </div>
             </div>
 
-            <div className="grid-2">
-                <div className="glass card">
-                    <h3 style={{ marginBottom: '1.5rem', fontSize: '1.1rem' }}>Tình trạng thu học phí</h3>
-                    <div style={{ height: '350px' }}>
-                        <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                                <Pie
-                                    data={paymentStatusData}
-                                    cx="50%"
-                                    cy="50%"
-                                    labelLine={true}
-                                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                                    outerRadius={100}
-                                    paddingAngle={5}
-                                    dataKey="value"
-                                >
-                                    <Cell fill="var(--success)" stroke="none" />
-                                    <Cell fill="var(--warning)" stroke="none" />
-                                </Pie>
-                                <Tooltip
-                                    contentStyle={{
-                                        background: 'rgba(255, 255, 255, 0.95)',
-                                        border: '1px solid #e2e8f0',
-                                        borderRadius: '12px',
-                                        padding: '12px',
-                                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-                                        backdropFilter: 'blur(4px)'
-                                    }}
-                                    itemStyle={{ color: 'var(--text-primary)', fontWeight: '600', fontSize: '14px' }}
-                                    labelStyle={{ color: 'var(--text-secondary)', marginBottom: '4px', fontSize: '12px' }}
-                                    formatter={(value) => [`${value} học viên`, 'Số lượng']}
-                                />
-                                <Legend
-                                    verticalAlign="bottom"
-                                    height={36}
-                                    iconType="circle"
-                                    formatter={(value) => <span style={{ color: 'var(--text-primary)', fontSize: '14px', fontWeight: 500 }}>{value}</span>}
-                                />
-                            </PieChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
 
-                <div className="glass card">
-                    <h3 style={{ marginBottom: '1.5rem', fontSize: '1.1rem' }}>Doanh thu theo tháng</h3>
-                    <div style={{ height: '350px' }}>
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={revenueData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                                <XAxis
-                                    dataKey="name"
-                                    stroke="var(--text-secondary)"
-                                    fontSize={12}
-                                    tick={{ fill: 'var(--text-secondary)' }}
-                                    axisLine={{ stroke: '#e2e8f0' }}
-                                    tickLine={false}
-                                />
-                                <YAxis
-                                    stroke="var(--text-secondary)"
-                                    fontSize={12}
-                                    tick={{ fill: 'var(--text-secondary)' }}
-                                    tickFormatter={(value) => `${(value / 1000000).toFixed(1)}M`}
-                                    axisLine={false}
-                                    tickLine={false}
-                                />
-                                <Tooltip
-                                    cursor={{ fill: '#f8fafc' }}
-                                    contentStyle={{
-                                        background: 'rgba(255, 255, 255, 0.95)',
-                                        border: '1px solid #e2e8f0',
-                                        borderRadius: '12px',
-                                        padding: '12px',
-                                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-                                        backdropFilter: 'blur(4px)'
-                                    }}
-                                    itemStyle={{ color: 'var(--text-primary)', fontWeight: '600', fontSize: '14px' }}
-                                    labelStyle={{ color: 'var(--text-secondary)', marginBottom: '4px', fontSize: '12px' }}
-                                    formatter={(value) => [new Intl.NumberFormat('vi-VN').format(value) + ' đ', 'Doanh thu']}
-                                />
-                                <Bar
-                                    dataKey="revenue"
-                                    fill="var(--primary)"
-                                    radius={[6, 6, 0, 0]}
-                                    maxBarSize={50}
-                                />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
-            </div>
 
-            <div className="glass card" style={{ marginTop: '1.5rem' }}>
+            <div className="glass card">
                 <h3 style={{ marginBottom: '1.5rem' }}>Danh sách lớp học</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1rem' }}>
                     {classes.map(c => {
