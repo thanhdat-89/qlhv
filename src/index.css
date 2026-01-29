@@ -378,6 +378,17 @@ tr:hover td {
     tr:hover td.sticky-name-2 {
         background-color: #f1f5f9 !important;
     }
+
+    /* Expanded state for viewing full name */
+    .sticky-col.expanded,
+    .sticky-name-2.expanded {
+        width: auto !important;
+        max-width: none !important;
+        white-space: normal !important;
+        overflow: visible !important;
+        z-index: 30 !important;
+        box-shadow: 8px 0 15px rgba(0, 0, 0, 0.15);
+    }
 }
 
 @media (max-width: 768px) {

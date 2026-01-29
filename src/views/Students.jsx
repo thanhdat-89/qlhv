@@ -13,6 +13,11 @@ const Students = ({ db }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [editingStudent, setEditingStudent] = useState(null);
+    const [expandedNameId, setExpandedNameId] = useState(null);
+
+    const toggleExpandName = (id) => {
+        setExpandedNameId(expandedNameId === id ? null : id);
+    };
 
     const handleEdit = (student) => {
         setEditingStudent(student);
@@ -185,7 +190,7 @@ const Students = ({ db }) => {
                         </div>
                     </div>
 
-                    <div className="table-container glass">
+                    <div className="table-container glass" onScroll={() => setExpandedNameId(null)}>
                         <table>
                             <thead>
                                 <tr>
@@ -202,7 +207,14 @@ const Students = ({ db }) => {
                             <tbody>
                                 {displayStudents().map((s) => (
                                     <tr key={s.id}>
-                                        <td className="sticky-col" style={{ color: 'var(--text-primary)', fontWeight: 500 }} title={s.name}>{s.name}</td>
+                                        <td
+                                            className={`sticky-col ${expandedNameId === s.id ? 'expanded' : ''}`}
+                                            style={{ color: 'var(--text-primary)', fontWeight: 500 }}
+                                            title={s.name}
+                                            onClick={() => toggleExpandName(s.id)}
+                                        >
+                                            {s.name}
+                                        </td>
                                         <td>{s.className}</td>
                                         <td style={{ textAlign: 'center' }}>{s.birthYear}</td>
                                         <td style={{ color: 'var(--text-primary)' }}>{s.phone || '-'}</td>
@@ -241,7 +253,7 @@ const Students = ({ db }) => {
             )}
 
             {viewMode === 'history' && (
-                <div className="table-container glass">
+                <div className="table-container glass" onScroll={() => setExpandedNameId(null)}>
                     <table>
                         <thead>
                             <tr>
@@ -258,7 +270,14 @@ const Students = ({ db }) => {
                                     <td className="sticky-date" style={{ color: 'var(--primary)', fontWeight: 600 }}>
                                         {new Date(s.enrollDate).toLocaleDateString('vi-VN')}
                                     </td>
-                                    <td className="sticky-name-2" style={{ color: 'var(--text-primary)', fontWeight: 500 }} title={s.name}>{s.name}</td>
+                                    <td
+                                        className={`sticky-name-2 ${expandedNameId === s.id ? 'expanded' : ''}`}
+                                        style={{ color: 'var(--text-primary)', fontWeight: 500 }}
+                                        title={s.name}
+                                        onClick={() => toggleExpandName(s.id)}
+                                    >
+                                        {s.name}
+                                    </td>
                                     <td style={{ textAlign: 'center' }}>{s.birthYear}</td>
                                     <td>{s.className}</td>
                                     <td style={{ textAlign: 'center' }}>{getStatusLabel(s.status)}</td>

@@ -11,6 +11,11 @@ const Tuition = ({ db, initialParams }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedStatus, setSelectedStatus] = useState('all');
     const [preSelectedStudentId, setPreSelectedStudentId] = useState(null);
+    const [expandedNameId, setExpandedNameId] = useState(null);
+
+    const toggleExpandName = (id) => {
+        setExpandedNameId(expandedNameId === id ? null : id);
+    };
 
     // Initial filter from navigation
     useEffect(() => {
@@ -172,7 +177,7 @@ const Tuition = ({ db, initialParams }) => {
                 </div>
             )}
 
-            <div className="table-container glass">
+            <div className="table-container glass" onScroll={() => setExpandedNameId(null)}>
                 {viewMode === 'status' ? (
                     <table>
                         <thead>
@@ -195,7 +200,14 @@ const Tuition = ({ db, initialParams }) => {
                         <tbody>
                             {filteredStudents.map((s) => (
                                 <tr key={s.id}>
-                                    <td className="sticky-col" style={{ color: 'var(--text-primary)', fontWeight: 500 }} title={s.name}>{s.name}</td>
+                                    <td
+                                        className={`sticky-col ${expandedNameId === s.id ? 'expanded' : ''}`}
+                                        style={{ color: 'var(--text-primary)', fontWeight: 500 }}
+                                        title={s.name}
+                                        onClick={() => toggleExpandName(s.id)}
+                                    >
+                                        {s.name}
+                                    </td>
                                     <td>{s.className}</td>
                                     <td className="hide-mobile" style={{ textAlign: 'center' }}>{s.tuition.scheduledCount}</td>
                                     <td className="hide-mobile" style={{ color: 'var(--text-primary)', textAlign: 'right' }}>
@@ -263,7 +275,12 @@ const Tuition = ({ db, initialParams }) => {
                                 return (
                                     <tr key={f.id}>
                                         <td className="sticky-date">{new Date(f.date).toLocaleDateString('vi-VN')}</td>
-                                        <td className="sticky-name-2" style={{ color: 'var(--text-primary)', fontWeight: 500 }} title={student?.name}>
+                                        <td
+                                            className={`sticky-name-2 ${expandedNameId === f.id ? 'expanded' : ''}`}
+                                            style={{ color: 'var(--text-primary)', fontWeight: 500 }}
+                                            title={student?.name}
+                                            onClick={() => toggleExpandName(f.id)}
+                                        >
                                             {student?.name || 'N/A'}
                                         </td>
                                         <td style={{ color: 'var(--success)', fontWeight: 600 }}>

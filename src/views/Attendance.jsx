@@ -6,6 +6,11 @@ const Attendance = ({ db }) => {
     const { extraAttendance, students, actions } = db;
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingAttendance, setEditingAttendance] = useState(null);
+    const [expandedNameId, setExpandedNameId] = useState(null);
+
+    const toggleExpandName = (id) => {
+        setExpandedNameId(expandedNameId === id ? null : id);
+    };
 
     const handleEdit = (record) => {
         setEditingAttendance(record);
@@ -34,7 +39,7 @@ const Attendance = ({ db }) => {
                 />
             )}
 
-            <div className="table-container glass">
+            <div className="table-container glass" onScroll={() => setExpandedNameId(null)}>
                 <table>
                     <thead>
                         <tr>
@@ -52,7 +57,12 @@ const Attendance = ({ db }) => {
                             return (
                                 <tr key={record.id}>
                                     <td className="sticky-date">{new Date(record.date).toLocaleDateString('vi-VN')}</td>
-                                    <td className="sticky-name-2" style={{ color: 'var(--text-primary)', fontWeight: 500 }} title={student?.name}>
+                                    <td
+                                        className={`sticky-name-2 ${expandedNameId === record.id ? 'expanded' : ''}`}
+                                        style={{ color: 'var(--text-primary)', fontWeight: 500 }}
+                                        title={student?.name}
+                                        onClick={() => toggleExpandName(record.id)}
+                                    >
                                         {student?.name || 'N/A'}
                                     </td>
                                     <td style={{ color: 'var(--text-primary)', textAlign: 'right' }}>
