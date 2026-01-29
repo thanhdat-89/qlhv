@@ -10,6 +10,7 @@ import {
     Gift,
     MessageSquare
 } from 'lucide-react';
+import logo from '../assets/logo.png';
 
 const Sidebar = ({ activeView, setActiveView, isMobileOpen, setIsMobileOpen, onLogout }) => {
     const menuItems = [
@@ -55,7 +56,7 @@ const Sidebar = ({ activeView, setActiveView, isMobileOpen, setIsMobileOpen, onL
                 ...(isMobile ? mobileSidebarStyle : {})
             }}
         >
-            <div style={{ padding: '2rem', textAlign: 'center', position: 'relative' }}>
+            <div style={{ padding: '2rem 1rem', textAlign: 'center', position: 'relative' }}>
                 {isMobile && (
                     <button
                         onClick={() => setIsMobileOpen(false)}
@@ -72,13 +73,23 @@ const Sidebar = ({ activeView, setActiveView, isMobileOpen, setIsMobileOpen, onL
                     </button>
                 )}
                 <div style={{
-                    width: '3rem', height: '3rem', background: 'var(--primary)',
-                    borderRadius: '12px', margin: '0 auto 1rem', display: 'flex',
-                    alignItems: 'center', justifyContent: 'center', color: 'white'
+                    width: '100%',
+                    marginBottom: '0.5rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
                 }}>
-                    <BookOpen />
+                    <img
+                        src={logo}
+                        alt="CQT Education Logo"
+                        style={{
+                            maxWidth: '100%',
+                            height: 'auto',
+                            maxHeight: '120px',
+                            objectFit: 'contain'
+                        }}
+                    />
                 </div>
-                <h2 style={{ fontSize: '1.25rem', color: 'var(--text-primary)' }}>Quản lý học viên</h2>
             </div>
 
             <nav style={{ flex: 1, padding: '1rem' }}>
