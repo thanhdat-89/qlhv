@@ -26,6 +26,40 @@ function App() {
         localStorage.setItem('hv_manager_auth', 'true');
     };
 
+    const handleLogout = () => {
+        setIsAuthenticated(false);
+        localStorage.removeItem('hv_manager_auth');
+        setActiveView('dashboard');
+    };
+
+    // Idle Timeout Logic (10 minutes)
+    useEffect(() => {
+        if (!isAuthenticated) return;
+
+        let timeout;
+        const TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
+
+        const resetTimer = () => {
+            if (timeout) clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                console.log('Idle timeout reached. Logging out...');
+                handleLogout();
+            }, TIMEOUT_MS);
+        };
+
+        // Events to track user activity
+        const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
+        events.forEach(event => document.addEventListener(event, resetTimer));
+
+        // Initial timer start
+        resetTimer();
+
+        return () => {
+            if (timeout) clearTimeout(timeout);
+            events.forEach(event => document.removeEventListener(event, resetTimer));
+        };
+    }, [isAuthenticated]);
+
     // Close mobile menu when switching views
     useEffect(() => {
         setIsMobileMenuOpen(false);
@@ -98,6 +132,7 @@ function App() {
                 setActiveView={setActiveView}
                 isMobileOpen={isMobileMenuOpen}
                 setIsMobileOpen={setIsMobileMenuOpen}
+                onLogout={handleLogout}
             />
             <main className="main-content">
                 {renderView()}

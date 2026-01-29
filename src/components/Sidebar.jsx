@@ -10,7 +10,7 @@ import {
     Gift
 } from 'lucide-react';
 
-const Sidebar = ({ activeView, setActiveView, isMobileOpen, setIsMobileOpen }) => {
+const Sidebar = ({ activeView, setActiveView, isMobileOpen, setIsMobileOpen, onLogout }) => {
     const menuItems = [
         { id: 'dashboard', label: 'Tổng quan', icon: LayoutDashboard },
         { id: 'students', label: 'Học viên', icon: Users },
@@ -110,7 +110,7 @@ const Sidebar = ({ activeView, setActiveView, isMobileOpen, setIsMobileOpen }) =
                     <Settings size={20} />
                     <span>Cài đặt</span>
                 </button>
-                <button className="btn nav-link" style={{ color: 'var(--danger)' }}>
+                <button className="btn nav-link" style={{ color: 'var(--danger)' }} onClick={onLogout}>
                     <LogOut size={20} />
                     <span>Đăng xuất</span>
                 </button>
