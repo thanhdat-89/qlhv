@@ -183,23 +183,50 @@ export const useDatabase = () => {
         const tuitionDue = Math.round((scheduledCount * feePerSession + totalExtraFee) * (1 - discount) * (1 - promotionDiscount));
 
         // --- Life-time Calculation (for balance) ---
-        const lifeTimeStart = enrollDate;
         const lifeTimeEnd = new Date((leaveDate && leaveDate < endOfMonth) ? leaveDate : endOfMonth);
         lifeTimeEnd.setHours(23, 59, 59, 999);
 
+        let tuitionLifeTime = 0;
         let scheduledCountLifeTime = 0;
-        if (lifeTimeStart <= lifeTimeEnd) {
-            scheduledCountLifeTime = countSessionsInRange(studentClass.schedule, lifeTimeStart, lifeTimeEnd, student.classId);
+
+        // 1. Calculate Lifetime Scheduled Tuition (Month by Month to apply promotions)
+        let iterDate = new Date(enrollDate.getFullYear(), enrollDate.getMonth(), 1);
+        const endIter = new Date(today.getFullYear(), today.getMonth(), 1);
+
+        while (iterDate <= endIter) {
+            const mStart = iterDate > enrollDate ? iterDate : enrollDate;
+            const mEndNext = new Date(iterDate.getFullYear(), iterDate.getMonth() + 1, 1);
+            const mEnd = new Date(mEndNext.getTime() - 1);
+            const actualEnd = mEnd < lifeTimeEnd ? mEnd : lifeTimeEnd;
+
+            if (mStart <= actualEnd) {
+                const monthScheduledCount = countSessionsInRange(studentClass.schedule, mStart, actualEnd, student.classId);
+                scheduledCountLifeTime += monthScheduledCount;
+
+                const monthStr = `${iterDate.getFullYear()}-${String(iterDate.getMonth() + 1).padStart(2, '0')}`;
+                const monthPromo = promotions.find(p => p.classId === student.classId && p.month === monthStr);
+                const monthPromoDiscount = monthPromo ? monthPromo.discountRate : 0;
+
+                tuitionLifeTime += Math.round(monthScheduledCount * feePerSession * (1 - discount) * (1 - monthPromoDiscount));
+            }
+            iterDate = mEndNext;
         }
 
+        // 2. Calculate Lifetime Extra Sessions (Apply month-specific promotions)
         const extraSessionsLifeTime = extraAttendance.filter(a => {
             if (a.studentId !== studentId || a.isExcused || !a.status) return false;
             const d = parseDate(a.date);
-            return d >= lifeTimeStart && d <= lifeTimeEnd;
+            return d >= enrollDate && d <= lifeTimeEnd;
         });
-        const totalExtraFeeLifeTime = extraSessionsLifeTime.reduce((sum, a) => sum + (a.fee || studentClass.feePerSession), 0);
 
-        const tuitionLifeTime = Math.round((scheduledCountLifeTime * feePerSession + totalExtraFeeLifeTime) * (1 - discount));
+        extraSessionsLifeTime.forEach(a => {
+            const d = parseDate(a.date);
+            const monthStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+            const monthPromo = promotions.find(p => p.classId === student.classId && p.month === monthStr);
+            const monthPromoDiscount = monthPromo ? monthPromo.discountRate : 0;
+            const sessionFee = a.fee || feePerSession;
+            tuitionLifeTime += Math.round(sessionFee * (1 - discount) * (1 - monthPromoDiscount));
+        });
 
         const totalPaid = fees
             .filter(f => f.studentId === studentId)
@@ -209,7 +236,7 @@ export const useDatabase = () => {
 
         // Debug logging for inaccurate balances
         if (balance > 5000000 && scheduledCount < 10) {
-            console.log(`Balance Warning[${student.name}]: `, {
+            console.log(`Balance Warning [${student.name}]:`, {
                 enrollDate: student.enrollDate,
                 parsedEnrollDate: enrollDate.toISOString().split('T')[0],
                 lifeTimeSessions: scheduledCountLifeTime,
@@ -227,6 +254,8 @@ export const useDatabase = () => {
             tuitionDue,
             totalPaid,
             balance,
+            promotionDiscount,
+            promotionDescription: promotion ? promotion.description : '',
             status: balance <= 0 ? 'Đã hoàn thành' : 'Còn nợ'
         };
     };
@@ -254,7 +283,7 @@ export const useDatabase = () => {
                 tuition: getStudentTuitionDetails(s.id)
             };
         }).sort((a, b) => a.name.localeCompare(b.name, 'vi', { sensitivity: 'base' }));
-    }, [students, classes, extraAttendance, fees]);
+    }, [students, classes, extraAttendance, fees, promotions, holidays]);
 
     // View: New Students (Current Month)
     const newStudents = useMemo(() => {

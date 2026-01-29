@@ -23,7 +23,8 @@ const Tuition = ({ db }) => {
             'Số buổi học bổ sung': s.tuition.extraCount,
             'Học phí học bổ sung': s.tuition.totalExtraFee,
             'Đã đóng': s.tuition.totalPaid,
-            'Giảm giá': `${s.discountRate * 100}%`,
+            'Giảm giá học viên': `${s.discountRate * 100}%`,
+            'Khuyến mãi lớp': `${(s.tuition.promotionDiscount || 0) * 100}%`,
             'Học phí tháng này': s.tuition.tuitionDue,
             'Còn nợ': s.tuition.balance,
             'Trạng thái': s.tuition.status
@@ -110,7 +111,8 @@ const Tuition = ({ db }) => {
                                 <th style={{ textAlign: 'center' }}>Số buổi học bổ sung</th>
                                 <th style={{ textAlign: 'right' }}>Học phí học bổ sung</th>
                                 <th style={{ textAlign: 'right' }}>Đã đóng</th>
-                                <th style={{ textAlign: 'center' }}>Giảm giá</th>
+                                <th style={{ textAlign: 'center' }}>Giảm giá (HV)</th>
+                                <th style={{ textAlign: 'center' }}>Khuyến mãi (Lớp)</th>
                                 <th style={{ textAlign: 'right' }}>Học phí tháng này</th>
                                 <th style={{ textAlign: 'right' }}>Còn nợ</th>
                                 <th style={{ textAlign: 'center' }}>Trạng thái</th>
@@ -133,6 +135,13 @@ const Tuition = ({ db }) => {
                                         {new Intl.NumberFormat('vi-VN').format(s.tuition.totalPaid)} đ
                                     </td>
                                     <td style={{ textAlign: 'center' }}>{s.discountRate * 100}%</td>
+                                    <td style={{ textAlign: 'center' }}>
+                                        {s.tuition.promotionDiscount > 0 ? (
+                                            <span className="label label-success" style={{ fontSize: '0.75rem' }}>
+                                                -{s.tuition.promotionDiscount * 100}%
+                                            </span>
+                                        ) : '-'}
+                                    </td>
                                     <td style={{ color: 'var(--text-primary)', textAlign: 'right' }}>
                                         {new Intl.NumberFormat('vi-VN').format(s.tuition.tuitionDue)} đ
                                     </td>
