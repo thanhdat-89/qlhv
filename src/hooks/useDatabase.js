@@ -3,7 +3,8 @@ import { studentService } from '../services/studentService';
 import { classService } from '../services/classService';
 import { financeService } from '../services/financeService';
 import { holidayService } from '../services/holidayService';
-import { promotionService } from '../services/promotionService'; // Added promotionService import
+import { promotionService } from '../services/promotionService';
+import { backupService } from '../services/backupService'; // Added promotionService import
 
 export const useDatabase = () => {
     const [students, setStudents] = useState([]);
@@ -11,8 +12,9 @@ export const useDatabase = () => {
     const [extraAttendance, setExtraAttendance] = useState([]);
     const [fees, setFees] = useState([]);
     const [holidays, setHolidays] = useState([]);
-    const [promotions, setPromotions] = useState([]); // Added promotions state
-    const [isLoading, setIsLoading] = useState(true); // Renamed to isLoading for consistency with original
+    const [promotions, setPromotions] = useState([]);
+    const [automatedBackups, setAutomatedBackups] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     const fetchData = async () => {
         setIsLoading(true);
@@ -38,6 +40,31 @@ export const useDatabase = () => {
             setExtraAttendance(attendanceData || []);
             setHolidays(holidaysData || []);
             setPromotions(promotionsData || []);
+
+            // Check for Auto-backup (Monday only)
+            const today = new Date();
+            if (today.getDay() === 1) { // 1 = Monday
+                const backups = await backupService.getBackups();
+                setAutomatedBackups(backups);
+
+                const todayStr = today.toISOString().split('T')[0];
+                const alreadyBackedUpToday = backups.some(b => b.created_at.startsWith(todayStr));
+
+                if (!alreadyBackedUpToday) {
+                    console.log('Monday detected. Performing automatic weekly backup...');
+                    try {
+                        await backupService.createAutomatedBackup();
+                        const updatedBackups = await backupService.getBackups();
+                        setAutomatedBackups(updatedBackups);
+                    } catch (e) {
+                        console.error('Auto-backup failed:', e);
+                    }
+                }
+            } else {
+                // Not Monday, but still fetch backups for the Settings view
+                const backups = await backupService.getBackups();
+                setAutomatedBackups(backups);
+            }
         } catch (error) {
             console.error("Failed to fetch data:", error);
         } finally {
@@ -621,6 +648,11 @@ export const useDatabase = () => {
             deleteExtraAttendance,
             deleteHoliday,
             deletePromotion
+        },
+        automatedBackups,
+        refreshBackups: async () => {
+            const backups = await backupService.getBackups();
+            setAutomatedBackups(backups);
         }
     };
 };
