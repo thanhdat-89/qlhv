@@ -659,6 +659,10 @@ export const useDatabase = () => {
             deleteMessage: async (id) => {
                 await messageService.delete(id);
                 setMessages(prev => prev.filter(m => m.id !== id));
+            },
+            updateMessage: async (id, updates) => {
+                const updated = await messageService.update(id, updates);
+                setMessages(prev => prev.map(m => m.id === id ? updated : m));
             }
         },
         automatedBackups,

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Send, Trash2, User, Clock, MessageSquare } from 'lucide-react';
+import { Send, Trash2, User, Clock, MessageSquare, CheckCircle, Eye } from 'lucide-react';
 
 const Messages = ({ db }) => {
     const { messages, actions } = db;
@@ -18,6 +18,28 @@ const Messages = ({ db }) => {
             alert('Lỗi khi gửi tin nhắn: ' + error.message);
         } finally {
             setIsSubmitting(false);
+        }
+    };
+
+    const handleResponse = async (id, type) => {
+        const name = window.prompt('Nhập tên của bạn (Tên giáo viên/Nhân viên):');
+        if (!name) return;
+
+        const msg = messages.find(m => m.id === id);
+        const responses = msg.responses || [];
+
+        const newResponse = {
+            user: name,
+            type: type, // 'read' or 'done'
+            at: new Date().toISOString()
+        };
+
+        try {
+            await actions.updateMessage(id, {
+                responses: [...responses, newResponse]
+            });
+        } catch (error) {
+            alert('Lỗi khi gửi phản hồi: ' + error.message);
         }
     };
 
@@ -106,9 +128,52 @@ const Messages = ({ db }) => {
                                         <Trash2 size={16} />
                                     </button>
                                 </div>
-                                <p style={{ margin: 0, lineHeight: 1.6, whiteSpace: 'pre-wrap', color: 'var(--text-primary)' }}>
+                                <p style={{ margin: 0, lineHeight: 1.6, whiteSpace: 'pre-wrap', color: 'var(--text-primary)', marginBottom: '1rem' }}>
                                     {msg.content}
                                 </p>
+
+                                {/* Responses List */}
+                                {msg.responses && msg.responses.length > 0 && (
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1.25rem' }}>
+                                        {msg.responses.map((resp, idx) => (
+                                            <div
+                                                key={idx}
+                                                style={{
+                                                    fontSize: '0.75rem',
+                                                    padding: '0.25rem 0.6rem',
+                                                    borderRadius: '6px',
+                                                    background: resp.type === 'read' ? 'rgba(34, 197, 94, 0.1)' : 'rgba(59, 130, 246, 0.1)',
+                                                    color: resp.type === 'read' ? '#166534' : '#1e40af',
+                                                    border: `1px solid ${resp.type === 'read' ? '#bbf7d0' : '#bfdbfe'}`,
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '4px'
+                                                }}
+                                            >
+                                                {resp.type === 'read' ? <Eye size={12} /> : <CheckCircle size={12} />}
+                                                <strong>{resp.user}:</strong> {resp.type === 'read' ? 'Đã đọc' : 'Đã thực hiện'}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Response Actions */}
+                                <div style={{ display: 'flex', gap: '0.75rem', borderTop: '1px solid var(--glass-border)', paddingTop: '1rem' }}>
+                                    <button
+                                        className="btn btn-glass"
+                                        style={{ flex: 1, fontSize: '0.85rem', color: '#16a34a', borderColor: '#bbf7d0' }}
+                                        onClick={() => handleResponse(msg.id, 'read')}
+                                    >
+                                        <Eye size={16} style={{ marginRight: '6px' }} /> Đã đọc
+                                    </button>
+                                    <button
+                                        className="btn btn-glass"
+                                        style={{ flex: 1, fontSize: '0.85rem', color: '#2563eb', borderColor: '#bfdbfe' }}
+                                        onClick={() => handleResponse(msg.id, 'done')}
+                                    >
+                                        <CheckCircle size={16} style={{ marginRight: '6px' }} /> Đã thực hiện
+                                    </button>
+                                </div>
                             </div>
                         ))
                     ) : (

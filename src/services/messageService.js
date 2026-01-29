@@ -34,5 +34,17 @@ export const messageService = {
 
         if (error) throw error;
         return true;
+    },
+
+    update: async (id, updates) => {
+        const { data, error } = await supabase
+            .from('messages')
+            .update(updates)
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data;
     }
 };
