@@ -315,6 +315,50 @@ tr:hover td {
     min-width: 800px;
 }
 
+/* Sticky Column for Mobile */
+@media (max-width: 768px) {
+    .sticky-col {
+        position: sticky !important;
+        left: 0 !important;
+        z-index: 20 !important;
+        box-shadow: 4px 0 8px rgba(0, 0, 0, 0.05);
+    }
+
+    th.sticky-col {
+        background-color: #f8fafc !important;
+        /* Header row bg */
+    }
+
+    td.sticky-col {
+        background-color: #ffffff !important;
+    }
+
+    tr:hover td.sticky-col {
+        background-color: #f1f5f9 !important;
+    }
+
+    /* Optional: 2nd column sticky if needed */
+    .sticky-col-2 {
+        position: sticky !important;
+        left: 100px !important;
+        /* Adjust based on col 1 width */
+        z-index: 15 !important;
+        box-shadow: 4px 0 8px rgba(0, 0, 0, 0.05);
+    }
+
+    th.sticky-col-2 {
+        background-color: #f8fafc !important;
+    }
+
+    td.sticky-col-2 {
+        background-color: #ffffff !important;
+    }
+
+    tr:hover td.sticky-col-2 {
+        background-color: #f1f5f9 !important;
+    }
+}
+
 @media (max-width: 768px) {
     .btn {
         padding: 0.6rem 1rem;

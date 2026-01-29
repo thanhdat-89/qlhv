@@ -177,7 +177,7 @@ const Tuition = ({ db, initialParams }) => {
                     <table>
                         <thead>
                             <tr>
-                                <th>Học viên</th>
+                                <th className="sticky-col">Học viên</th>
                                 <th>Lớp</th>
                                 <th className="hide-mobile" style={{ textAlign: 'center' }}>Số buổi theo TKB</th>
                                 <th className="hide-mobile" style={{ textAlign: 'right' }}>Học phí theo TKB</th>
@@ -195,7 +195,7 @@ const Tuition = ({ db, initialParams }) => {
                         <tbody>
                             {filteredStudents.map((s) => (
                                 <tr key={s.id}>
-                                    <td style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{s.name}</td>
+                                    <td className="sticky-col" style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{s.name}</td>
                                     <td>{s.className}</td>
                                     <td className="hide-mobile" style={{ textAlign: 'center' }}>{s.tuition.scheduledCount}</td>
                                     <td className="hide-mobile" style={{ color: 'var(--text-primary)', textAlign: 'right' }}>
@@ -251,8 +251,8 @@ const Tuition = ({ db, initialParams }) => {
                     <table>
                         <thead>
                             <tr>
-                                <th>Ngày đóng</th>
-                                <th>Học viên</th>
+                                <th className="sticky-col">Ngày đóng</th>
+                                <th className="sticky-col-2">Học viên</th>
                                 <th>Số tiền</th>
                                 <th>Hình thức</th>
                             </tr>
@@ -262,8 +262,8 @@ const Tuition = ({ db, initialParams }) => {
                                 const student = students.find(s => s.id === f.studentId);
                                 return (
                                     <tr key={f.id}>
-                                        <td>{new Date(f.date).toLocaleDateString('vi-VN')}</td>
-                                        <td style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{student?.name || 'N/A'}</td>
+                                        <td className="sticky-col">{new Date(f.date).toLocaleDateString('vi-VN')}</td>
+                                        <td className="sticky-col-2" style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{student?.name || 'N/A'}</td>
                                         <td style={{ color: 'var(--success)', fontWeight: 600 }}>
                                             {new Intl.NumberFormat('vi-VN').format(f.amount)} đ
                                         </td>
