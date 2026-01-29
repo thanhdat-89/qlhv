@@ -63,6 +63,10 @@
     }
 }
 
+.show-mobile {
+    display: none !important;
+}
+
 @media (max-width: 768px) {
     .app-container {
         display: block;
@@ -114,10 +118,6 @@
     .show-mobile {
         display: block !important;
     }
-}
-
-.show-mobile {
-    display: none !important;
 }
 
 .stats-grid {
