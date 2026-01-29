@@ -287,6 +287,7 @@ export const useDatabase = () => {
         }
 
         return {
+            feePerSession,
             scheduledCount,
             scheduledTuition,
             extraCount,
