@@ -207,9 +207,9 @@ const Tuition = ({ db }) => {
                                             className="btn btn-primary"
                                             style={{
                                                 padding: '0.45rem 1rem',
-                                                background: 'var(--success)',
+                                                background: 'var(--primary)',
                                                 border: 'none',
-                                                boxShadow: '0 4px 12px rgba(22, 163, 74, 0.2)',
+                                                boxShadow: '0 4px 12px rgba(99, 102, 241, 0.2)',
                                                 display: 'inline-flex',
                                                 alignItems: 'center',
                                                 gap: '0.5rem',
