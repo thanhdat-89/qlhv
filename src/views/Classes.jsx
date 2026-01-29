@@ -97,7 +97,7 @@ const Classes = ({ db }) => {
                                     {(() => {
                                         const debtCount = students.filter(s => s.classId === c.id && (s.tuition.balance || 0) > 0).length;
                                         return debtCount > 0 ? (
-                                            <span style={{ color: 'var(--warning)', fontWeight: 600 }}>{debtCount} H/V</span>
+                                            <span style={{ color: 'var(--danger)', fontWeight: 600 }}>{debtCount} H/V</span>
                                         ) : (
                                             <span style={{ color: 'var(--text-secondary)' }}>-</span>
                                         );

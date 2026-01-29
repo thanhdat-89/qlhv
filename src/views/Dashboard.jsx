@@ -97,8 +97,8 @@ const Dashboard = ({ db }) => {
                                     </div>
                                     {debtCount > 0 && (
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                            <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: 'var(--warning)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: 'white' }}>!</div>
-                                            <span style={{ fontSize: '0.875rem', color: 'var(--warning)', fontWeight: 600 }}>
+                                            <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: 'var(--danger)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: 'white' }}>!</div>
+                                            <span style={{ fontSize: '0.875rem', color: 'var(--danger)', fontWeight: 600 }}>
                                                 {debtCount} còn nợ
                                             </span>
                                         </div>
