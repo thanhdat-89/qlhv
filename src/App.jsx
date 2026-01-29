@@ -9,6 +9,7 @@ import Tuition from './views/Tuition';
 import Sidebar from './components/Sidebar';
 import SettingsView from './views/Settings';
 import Promotions from './views/Promotions';
+import Messages from './views/Messages';
 import Login from './components/Login';
 import './App.css';
 
@@ -74,6 +75,7 @@ function App() {
             case 'attendance': return <Attendance db={db} />;
             case 'tuition': return <Tuition db={db} />;
             case 'promotions': return <Promotions db={db} />;
+            case 'messages': return <Messages db={db} />;
             case 'settings': return <SettingsView db={db} />;
             default: return <Dashboard db={db} />;
         }

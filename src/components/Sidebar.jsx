@@ -7,7 +7,8 @@ import {
     Calendar,
     Settings,
     LogOut,
-    Gift
+    Gift,
+    MessageSquare
 } from 'lucide-react';
 
 const Sidebar = ({ activeView, setActiveView, isMobileOpen, setIsMobileOpen, onLogout }) => {
@@ -19,6 +20,7 @@ const Sidebar = ({ activeView, setActiveView, isMobileOpen, setIsMobileOpen, onL
         { id: 'attendance', label: 'Điểm danh', icon: CalendarCheck },
         { id: 'tuition', label: 'Học phí', icon: Wallet },
         { id: 'promotions', label: 'Khuyến mãi', icon: Gift },
+        { id: 'messages', label: 'Tin nhắn', icon: MessageSquare },
     ];
 
     const sidebarStyle = {

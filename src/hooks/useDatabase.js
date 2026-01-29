@@ -4,7 +4,8 @@ import { classService } from '../services/classService';
 import { financeService } from '../services/financeService';
 import { holidayService } from '../services/holidayService';
 import { promotionService } from '../services/promotionService';
-import { backupService } from '../services/backupService'; // Added promotionService import
+import { backupService } from '../services/backupService';
+import { messageService } from '../services/messageService'; // Added promotionService import
 
 export const useDatabase = () => {
     const [students, setStudents] = useState([]);
@@ -14,19 +15,21 @@ export const useDatabase = () => {
     const [holidays, setHolidays] = useState([]);
     const [promotions, setPromotions] = useState([]);
     const [automatedBackups, setAutomatedBackups] = useState([]);
+    const [messages, setMessages] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
     const fetchData = async () => {
         setIsLoading(true);
         try {
             // If Supabase is not configured, we don't attempt to fetch
-            const [studentsData, classesData, feesData, attendanceData, holidaysData, promotionsData] = await Promise.all([ // Added promotionsData
+            const [studentsData, classesData, feesData, attendanceData, holidaysData, promotionsData, messagesData] = await Promise.all([
                 studentService.getAll().catch(e => { console.error(e); return []; }),
                 classService.getAll().catch(e => { console.error(e); return []; }),
-                financeService.getFees().catch(e => { console.error(e); return []; }), // Kept original getFees
-                financeService.getAttendance().catch(e => { console.error(e); return []; }), // Kept original getAttendance
+                financeService.getFees().catch(e => { console.error(e); return []; }),
+                financeService.getAttendance().catch(e => { console.error(e); return []; }),
                 holidayService.getAll().catch(e => { console.error(e); return []; }),
-                promotionService.getAll().catch(e => { console.error(e); return []; }) // Added promotionService call
+                promotionService.getAll().catch(e => { console.error(e); return []; }),
+                messageService.getAll().catch(e => { console.error(e); return []; })
             ]);
 
             // Sort classes by name (natural sort)
@@ -40,6 +43,7 @@ export const useDatabase = () => {
             setExtraAttendance(attendanceData || []);
             setHolidays(holidaysData || []);
             setPromotions(promotionsData || []);
+            setMessages(messagesData || []);
 
             // Check for Auto-backup (Monday only)
             const today = new Date();
@@ -647,9 +651,18 @@ export const useDatabase = () => {
             deleteClass,
             deleteExtraAttendance,
             deleteHoliday,
-            deletePromotion
+            deletePromotion,
+            addMessage: async (content) => {
+                const newMessage = await messageService.add({ content });
+                setMessages(prev => [newMessage, ...prev]);
+            },
+            deleteMessage: async (id) => {
+                await messageService.delete(id);
+                setMessages(prev => prev.filter(m => m.id !== id));
+            }
         },
         automatedBackups,
+        messages,
         refreshBackups: async () => {
             const backups = await backupService.getBackups();
             setAutomatedBackups(backups);
