@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, CreditCard, Banknote, Download } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import AddTuitionModal from '../components/AddTuitionModal';
 
-const Tuition = ({ db }) => {
+const Tuition = ({ db, initialParams }) => {
     const { fees, students, classes, actions } = db;
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedClassId, setSelectedClassId] = useState('all');
@@ -11,6 +11,14 @@ const Tuition = ({ db }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedStatus, setSelectedStatus] = useState('all');
     const [preSelectedStudentId, setPreSelectedStudentId] = useState(null);
+
+    // Initial filter from navigation
+    useEffect(() => {
+        if (initialParams?.classId) {
+            setSelectedClassId(initialParams.classId);
+            setViewMode('status');
+        }
+    }, [initialParams]);
 
     const handleOpenModal = (studentId = null) => {
         setPreSelectedStudentId(studentId);

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 
 import { Filter, TrendingUp, Users, DollarSign } from 'lucide-react';
 
-const Dashboard = ({ db }) => {
+const Dashboard = ({ db, onNavigate }) => {
     const { students, fees, classes } = db;
     const [categoryFilter, setCategoryFilter] = useState('All');
 
@@ -15,8 +15,6 @@ const Dashboard = ({ db }) => {
     const totalStudents = filteredStudents.length;
     const totalRevenue = fees.reduce((sum, f) => sum + f.amount, 0);
     const newStudents = filteredStudents.filter(s => s.status === 'Mới nhập học').length;
-
-
 
     return (
         <div className="view-container">
@@ -69,8 +67,6 @@ const Dashboard = ({ db }) => {
                 </div>
             </div>
 
-
-
             <div className="glass card">
                 <h3 style={{ marginBottom: '1.5rem' }}>Danh sách lớp học</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1rem' }}>
@@ -78,7 +74,16 @@ const Dashboard = ({ db }) => {
                         const classStudents = filteredStudents.filter(s => s.classId === c.id);
                         const debtCount = classStudents.filter(s => (s.tuition.balance || 0) > 0).length;
                         return (
-                            <div key={c.id} className="glass" style={{ padding: '1rem', borderRadius: '8px' }}>
+                            <div
+                                key={c.id}
+                                className="glass card-hover"
+                                style={{
+                                    padding: '1rem',
+                                    borderRadius: '8px',
+                                    cursor: 'pointer'
+                                }}
+                                onClick={() => onNavigate('tuition', { classId: c.id })}
+                            >
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '0.5rem' }}>
                                     <h4 style={{ fontSize: '1rem', color: 'var(--text-primary)' }}>{c.name}</h4>
                                     <span className={`label ${c.category === 'Cơ bản' ? 'label-primary' : 'label-warning'}`} style={{ fontSize: '0.7rem' }}>

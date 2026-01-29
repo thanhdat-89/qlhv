@@ -15,6 +15,7 @@ import './App.css';
 
 function App() {
     const [activeView, setActiveView] = useState('dashboard');
+    const [viewParams, setViewParams] = useState({});
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(() => {
         return localStorage.getItem('hv_manager_auth') === 'true';
@@ -30,7 +31,12 @@ function App() {
     const handleLogout = () => {
         setIsAuthenticated(false);
         localStorage.removeItem('hv_manager_auth');
-        setActiveView('dashboard');
+        navigateToView('dashboard');
+    };
+
+    const navigateToView = (view, params = {}) => {
+        setActiveView(view);
+        setViewParams(params);
     };
 
     // Idle Timeout Logic (10 minutes)
@@ -68,16 +74,16 @@ function App() {
 
     const renderView = () => {
         switch (activeView) {
-            case 'dashboard': return <Dashboard db={db} />;
+            case 'dashboard': return <Dashboard db={db} onNavigate={navigateToView} />;
             case 'students': return <Students db={db} />;
             case 'classes': return <Classes db={db} />;
             case 'schedule': return <Schedule db={db} />;
             case 'attendance': return <Attendance db={db} />;
-            case 'tuition': return <Tuition db={db} />;
+            case 'tuition': return <Tuition db={db} initialParams={viewParams} />;
             case 'promotions': return <Promotions db={db} />;
             case 'messages': return <Messages db={db} />;
             case 'settings': return <SettingsView db={db} />;
-            default: return <Dashboard db={db} />;
+            default: return <Dashboard db={db} onNavigate={navigateToView} />;
         }
     };
 
@@ -131,7 +137,7 @@ function App() {
 
             <Sidebar
                 activeView={activeView}
-                setActiveView={setActiveView}
+                onNavigate={navigateToView}
                 isMobileOpen={isMobileMenuOpen}
                 setIsMobileOpen={setIsMobileMenuOpen}
                 onLogout={handleLogout}

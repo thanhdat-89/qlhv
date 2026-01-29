@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import logo from '../assets/logo.png';
 
-const Sidebar = ({ activeView, setActiveView, isMobileOpen, setIsMobileOpen, onLogout }) => {
+const Sidebar = ({ activeView, onNavigate, isMobileOpen, setIsMobileOpen, onLogout }) => {
     const menuItems = [
         { id: 'dashboard', label: 'Tổng quan', icon: LayoutDashboard },
         { id: 'students', label: 'Học viên', icon: Users },
@@ -101,7 +101,7 @@ const Sidebar = ({ activeView, setActiveView, isMobileOpen, setIsMobileOpen, onL
                         <button
                             key={item.id}
                             onClick={() => {
-                                setActiveView(item.id);
+                                onNavigate(item.id);
                                 if (isMobile) setIsMobileOpen(false);
                             }}
                             className={`btn nav-link ${isActive ? 'active' : ''}`}
@@ -116,7 +116,7 @@ const Sidebar = ({ activeView, setActiveView, isMobileOpen, setIsMobileOpen, onL
             <div style={{ padding: '1rem', borderTop: '1px solid var(--glass-border)' }}>
                 <button
                     onClick={() => {
-                        setActiveView('settings');
+                        onNavigate('settings');
                         if (isMobile) setIsMobileOpen(false);
                     }}
                     className={`btn nav-link ${activeView === 'settings' ? 'active' : ''}`}
