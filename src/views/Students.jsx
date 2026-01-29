@@ -80,12 +80,6 @@ const Students = ({ db }) => {
         }
     };
 
-    const getTuitionLabel = (status) => {
-        return status === 'Đã hoàn thành'
-            ? <span className="label label-success">{status}</span>
-            : <span className="label label-warning">{status}</span>;
-    };
-
     return (
         <div className="view-container">
             <div className="view-header">
@@ -188,8 +182,6 @@ const Students = ({ db }) => {
                                     <th>Số điện thoại</th>
                                     <th>Ngày nhập học</th>
                                     <th style={{ textAlign: 'center' }}>Trạng thái</th>
-                                    <th style={{ textAlign: 'right' }}>Học phí tháng này</th>
-                                    <th style={{ textAlign: 'center' }}>Tình trạng</th>
                                     <th style={{ textAlign: 'right' }}>Thao tác</th>
                                 </tr>
                             </thead>
@@ -202,11 +194,6 @@ const Students = ({ db }) => {
                                         <td style={{ color: 'var(--text-primary)' }}>{s.phone || '-'}</td>
                                         <td>{new Date(s.enrollDate).toLocaleDateString('vi-VN')}</td>
                                         <td style={{ textAlign: 'center' }}>{getStatusLabel(s.status)}</td>
-                                        <td style={{ color: 'var(--text-primary)', textAlign: 'right' }}>
-                                            {new Intl.NumberFormat('vi-VN').format(s.tuition.tuitionDue)} đ
-                                            {s.discountRate > 0 && <span style={{ fontSize: '0.75rem', color: 'var(--secondary)', marginLeft: '0.5rem' }}>(-{s.discountRate * 100}%)</span>}
-                                        </td>
-                                        <td style={{ textAlign: 'center' }}>{getTuitionLabel(s.tuition.status)}</td>
                                         <td style={{ textAlign: 'right' }}>
                                             <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
                                                 <button
