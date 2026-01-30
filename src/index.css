@@ -235,12 +235,18 @@ option {
 .nav-link {
     width: 100%;
     justify-content: flex-start;
+    align-items: flex-start;
+    line-height: 1.4;
     margin-bottom: 0.5rem;
     padding: 0.75rem 1rem;
     background: transparent;
     color: var(--text-secondary);
     border: 1px solid transparent;
     transition: all 0.2s ease;
+}
+
+.nav-link svg {
+    margin-top: 2px;
 }
 
 .nav-link:hover {
