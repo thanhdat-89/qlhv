@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Edit2, Trash2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, BadgeCheck } from 'lucide-react';
 import AddClassModal from '../components/AddClassModal';
 
 const Classes = ({ db }) => {
@@ -99,7 +99,9 @@ const Classes = ({ db }) => {
                                         return debtCount > 0 ? (
                                             <span style={{ color: 'var(--danger)', fontWeight: 600 }}>{debtCount} H/V</span>
                                         ) : (
-                                            <span style={{ color: 'var(--text-secondary)' }}>-</span>
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', color: 'var(--success)', fontWeight: 600 }}>
+                                                <BadgeCheck size={14} /> Đã hoàn thành
+                                            </div>
                                         );
                                     })()}
                                 </td>
