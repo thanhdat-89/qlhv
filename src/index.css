@@ -515,6 +515,17 @@ tr:hover td {
     gap: 1rem;
 }
 
+/* Info Box */
+.info-box {
+    background: white !important;
+    border: 1px solid var(--glass-border);
+    transition: transform 0.2s ease;
+}
+
+.info-box:hover {
+    transform: translateY(-2px);
+}
+
 @media (max-width: 640px) {
     .form-grid {
         grid-template-columns: 1fr;

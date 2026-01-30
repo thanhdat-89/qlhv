@@ -29,6 +29,22 @@ const Attendance = ({ db }) => {
                 <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}><Plus size={18} /> Ghi nhận buổi học</button>
             </div>
 
+            <div className="info-box glass" style={{ marginBottom: '2rem', padding: '1.25rem', borderLeft: '4px solid var(--primary)' }}>
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    <div className="icon-box icon-box-primary" style={{ padding: '0.5rem', borderRadius: '8px' }}>
+                        <BadgeCheck size={20} />
+                    </div>
+                    <div>
+                        <h3 style={{ fontSize: '1rem', marginBottom: '0.25rem', color: 'var(--text-primary)' }}>Hướng dẫn</h3>
+                        <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
+                            Phần này dùng để Điểm danh cho Học sinh học riêng có tính phí hoặc học bổ sung có tính phí, nhớ nhập học phí tương ứng của buổi học.
+                            <br />
+                            Đối với học sinh học bổ sung không tính phí có thể không điểm danh hoặc điểm danh để theo dõi nhớ ghi số học phí là 0 đồng.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             {isModalOpen && (
                 <AddAttendanceModal
                     students={students}
