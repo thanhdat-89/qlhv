@@ -25,7 +25,7 @@ const Attendance = ({ db }) => {
     return (
         <div className="view-container">
             <div className="view-header">
-                <h1>Điểm Danh Học Bổ Sung</h1>
+                <h1>Học Bổ Sung</h1>
                 <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}><Plus size={18} /> Ghi nhận buổi học</button>
             </div>
 
