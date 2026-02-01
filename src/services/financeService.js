@@ -91,6 +91,34 @@ export const financeService = {
         };
     },
 
+    bulkAddAttendance: async (records) => {
+        if (!supabase) throw new Error('Cấu hình database chưa hoàn thiện.');
+        const dbRecords = records.map(r => ({
+            id: r.id,
+            student_id: r.studentId,
+            date: r.date,
+            status: r.status,
+            is_excused: r.isExcused,
+            fee: r.fee,
+            notes: r.notes || ''
+        }));
+
+        const { data, error } = await supabase
+            .from('extra_attendance')
+            .insert(dbRecords)
+            .select();
+
+        if (error) {
+            console.error('Supabase Error (bulkAddAttendance):', error);
+            throw error;
+        }
+        return data.map(d => ({
+            ...records.find(r => r.id === d.id),
+            ...d,
+            studentId: d.student_id
+        }));
+    },
+
     updateAttendance: async (id, data) => {
         if (!supabase) throw new Error('Cấu hình database chưa hoàn thiện.');
         const dbData = {};

@@ -208,6 +208,14 @@ export const useDatabase = () => {
         const extraCount = extraSessionsPrevMonth.length;
         const totalExtraFee = extraSessionsPrevMonth.reduce((sum, a) => sum + (a.fee || studentClass.feePerSession), 0);
 
+        const extraSessionsCurrentMonth = extraAttendance.filter(a => {
+            if (a.studentId !== studentId) return false;
+            const d = parseDate(a.date);
+            return d >= startOfMonth && d <= endOfMonth;
+        });
+        const extraCountCurrentMonth = extraSessionsCurrentMonth.length;
+        const totalExtraFeeCurrentMonth = extraSessionsCurrentMonth.reduce((sum, a) => sum + (a.fee || studentClass.feePerSession), 0);
+
         const discount = student.discountRate || 0;
         const feePerSession = studentClass.feePerSession || 0;
 
@@ -292,6 +300,8 @@ export const useDatabase = () => {
             scheduledTuition,
             extraCount,
             totalExtraFee,
+            extraCountCurrentMonth,
+            totalExtraFeeCurrentMonth,
             tuitionDue,
             totalPaid,
             balance,
@@ -410,11 +420,28 @@ export const useDatabase = () => {
             const recordWithId = { ...record, id };
             const savedRecord = await financeService.addAttendance(recordWithId);
             setExtraAttendance(prev => [...prev, savedRecord]);
-            return savedRecord; // Return for the caller
+            return savedRecord;
         } catch (error) {
             console.error('Failed to add attendance:', error);
             alert('Lỗi khi thêm điểm danh: ' + (error.message || JSON.stringify(error)));
-            throw error; // Re-throw for the caller
+            throw error;
+        }
+    };
+
+    const bulkAddExtraAttendance = async (records) => {
+        try {
+            const startId = extraAttendance.length + 1;
+            const recordsWithIds = records.map((r, i) => ({
+                ...r,
+                id: `EA${String(startId + i).padStart(2, '0')} `
+            }));
+            const savedRecords = await financeService.bulkAddAttendance(recordsWithIds);
+            setExtraAttendance(prev => [...prev, ...savedRecords]);
+            return savedRecords;
+        } catch (error) {
+            console.error('Failed to bulk add attendance:', error);
+            alert('Lỗi khi lưu nhiều ghi nhận: ' + (error.message || JSON.stringify(error)));
+            throw error;
         }
     };
 
@@ -649,6 +676,7 @@ export const useDatabase = () => {
             bulkAddStudents,
             addClass,
             addExtraAttendance,
+            bulkAddExtraAttendance,
             addFee,
             addHoliday,
             addPromotion,

@@ -186,8 +186,8 @@ const Tuition = ({ db, initialParams }) => {
                                 <th>Lớp</th>
                                 <th className="hide-mobile" style={{ textAlign: 'center' }}>Số buổi theo TKB</th>
                                 <th className="hide-mobile" style={{ textAlign: 'right' }}>Học phí theo TKB</th>
-                                <th className="hide-mobile" style={{ textAlign: 'center' }}>Số buổi học bổ sung</th>
-                                <th className="hide-mobile" style={{ textAlign: 'right' }}>Học phí học bổ sung</th>
+                                <th className="hide-mobile" style={{ textAlign: 'center' }}>Bổ sung (T.Trước / Nay)</th>
+                                <th className="hide-mobile" style={{ textAlign: 'right' }}>Học phí bổ sung</th>
                                 <th className="hide-mobile" style={{ textAlign: 'right' }}>Đã đóng</th>
                                 <th className="hide-mobile" style={{ textAlign: 'center' }}>Giảm giá (HV)</th>
                                 <th className="hide-mobile" style={{ textAlign: 'center' }}>Khuyến mãi (Lớp)</th>
@@ -213,9 +213,22 @@ const Tuition = ({ db, initialParams }) => {
                                     <td className="hide-mobile" style={{ color: 'var(--text-primary)', textAlign: 'right' }}>
                                         {new Intl.NumberFormat('vi-VN').format(s.tuition.scheduledTuition)} đ
                                     </td>
-                                    <td className="hide-mobile" style={{ textAlign: 'center' }}>{s.tuition.extraCount}</td>
+                                    <td className="hide-mobile" style={{ textAlign: 'center' }}>
+                                        <span title="Tháng trước">{s.tuition.extraCount}</span>
+                                        <span style={{ margin: '0 4px', color: '#cbd5e1' }}>/</span>
+                                        <span title="Tháng này (Dự kiến)" style={{ color: s.tuition.extraCountCurrentMonth > 0 ? 'var(--primary)' : 'inherit', fontWeight: s.tuition.extraCountCurrentMonth > 0 ? 600 : 400 }}>
+                                            {s.tuition.extraCountCurrentMonth}
+                                        </span>
+                                    </td>
                                     <td className="hide-mobile" style={{ color: 'var(--secondary)', textAlign: 'right' }}>
-                                        {new Intl.NumberFormat('vi-VN').format(s.tuition.totalExtraFee)} đ
+                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+                                            <span>{new Intl.NumberFormat('vi-VN').format(s.tuition.totalExtraFee)} đ</span>
+                                            {s.tuition.totalExtraFeeCurrentMonth > 0 && (
+                                                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
+                                                    + {new Intl.NumberFormat('vi-VN').format(s.tuition.totalExtraFeeCurrentMonth)} đ (Dự kiến)
+                                                </span>
+                                            )}
+                                        </div>
                                     </td>
                                     <td className="hide-mobile" style={{ color: 'var(--success)', textAlign: 'right' }}>
                                         {new Intl.NumberFormat('vi-VN').format(s.tuition.totalPaid)} đ

@@ -49,6 +49,7 @@ const Attendance = ({ db }) => {
                 <AddAttendanceModal
                     students={students}
                     onAdd={actions.addExtraAttendance}
+                    onBulkAdd={actions.bulkAddExtraAttendance}
                     onUpdate={actions.updateExtraAttendance}
                     onClose={handleCloseModal}
                     initialData={editingAttendance}
