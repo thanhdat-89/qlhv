@@ -185,7 +185,7 @@ const AddAttendanceModal = ({ students, onAdd, onBulkAdd, onUpdate, onClose, ini
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                 />
-                                <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
+                                <div className="hide-mobile" style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
                                     <button
                                         type="button"
                                         onClick={() => setSelectedClassFilter('all')}
@@ -205,6 +205,19 @@ const AddAttendanceModal = ({ students, onAdd, onBulkAdd, onUpdate, onClose, ini
                                             {c.name}
                                         </button>
                                     ))}
+                                </div>
+                                <div className="show-mobile" style={{ marginBottom: '0.75rem' }}>
+                                    <select
+                                        className="glass"
+                                        style={{ width: '100%', padding: '0.6rem', fontSize: '0.85rem' }}
+                                        value={selectedClassFilter}
+                                        onChange={(e) => setSelectedClassFilter(e.target.value === 'all' ? 'all' : e.target.value)}
+                                    >
+                                        <option value="all">Tất cả lớp</option>
+                                        {classes.map(c => (
+                                            <option key={c.id} value={c.id}>{c.name}</option>
+                                        ))}
+                                    </select>
                                 </div>
                             </>
                         )}
