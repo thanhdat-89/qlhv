@@ -61,6 +61,7 @@ const Attendance = ({ db }) => {
                     <thead>
                         <tr>
                             <th className="sticky-date">Ngày</th>
+                            <th>Thứ</th>
                             <th className="sticky-name-2">Học viên</th>
                             <th style={{ textAlign: 'right' }}>Học phí</th>
                             <th style={{ textAlign: 'center' }}>Trạng thái</th>
@@ -74,6 +75,12 @@ const Attendance = ({ db }) => {
                             return (
                                 <tr key={record.id}>
                                     <td className="sticky-date">{new Date(record.date).toLocaleDateString('vi-VN')}</td>
+                                    <td style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>
+                                        {(() => {
+                                            const days = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+                                            return days[new Date(record.date).getDay()];
+                                        })()}
+                                    </td>
                                     <td
                                         className={`sticky-name-2 ${expandedNameId === record.id ? 'expanded' : ''}`}
                                         style={{ color: 'var(--text-primary)', fontWeight: 500 }}

@@ -16,6 +16,11 @@ const Tuition = ({ db, initialParams }) => {
     const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
+    const goToCurrentMonth = () => {
+        setSelectedMonth(new Date().getMonth());
+        setSelectedYear(new Date().getFullYear());
+    };
+
     const toggleExpandName = (id) => {
         setExpandedNameId(expandedNameId === id ? null : id);
     };
@@ -151,6 +156,13 @@ const Tuition = ({ db, initialParams }) => {
                                 return <option key={y} value={y}>{y}</option>;
                             })}
                         </select>
+                        <button
+                            className="btn btn-glass"
+                            style={{ fontSize: '0.85rem', padding: '0.6rem 1rem' }}
+                            onClick={goToCurrentMonth}
+                        >
+                            Hiện tại
+                        </button>
                     </div>
                 </div>
             </div>
