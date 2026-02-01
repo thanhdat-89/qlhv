@@ -416,7 +416,11 @@ export const useDatabase = () => {
 
     const addExtraAttendance = async (record) => {
         try {
-            const id = `EA${String(extraAttendance.length + 1).padStart(2, '0')} `;
+            const maxId = extraAttendance.reduce((max, a) => {
+                const idNum = parseInt(a.id.replace('EA', ''));
+                return isNaN(idNum) ? max : Math.max(max, idNum);
+            }, 0);
+            const id = `EA${String(maxId + 1).padStart(2, '0')} `;
             const recordWithId = { ...record, id };
             const savedRecord = await financeService.addAttendance(recordWithId);
             setExtraAttendance(prev => [...prev, savedRecord]);
@@ -430,10 +434,14 @@ export const useDatabase = () => {
 
     const bulkAddExtraAttendance = async (records) => {
         try {
-            const startId = extraAttendance.length + 1;
+            const maxId = extraAttendance.reduce((max, a) => {
+                const idNum = parseInt(a.id.replace('EA', ''));
+                return isNaN(idNum) ? max : Math.max(max, idNum);
+            }, 0);
+
             const recordsWithIds = records.map((r, i) => ({
                 ...r,
-                id: `EA${String(startId + i).padStart(2, '0')} `
+                id: `EA${String(maxId + 1 + i).padStart(2, '0')} `
             }));
             const savedRecords = await financeService.bulkAddAttendance(recordsWithIds);
             setExtraAttendance(prev => [...prev, ...savedRecords]);
