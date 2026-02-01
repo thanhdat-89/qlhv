@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Plus, Filter, Download, UserMinus, UserCheck, Edit2, Trash2, Upload } from 'lucide-react';
+import { Plus, Filter, Download, UserMinus, UserCheck, Edit2, Trash2, Upload, Calendar } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import AddStudentModal from '../components/AddStudentModal';
 import ImportStudentsModal from '../components/ImportStudentsModal';
+import AddAttendanceModal from '../components/AddAttendanceModal';
 
 const Students = ({ db }) => {
     const { students, views, classes, actions } = db;
@@ -13,6 +14,8 @@ const Students = ({ db }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [editingStudent, setEditingStudent] = useState(null);
+    const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false);
+    const [preSelectedStudentId, setPreSelectedStudentId] = useState(null);
     const [expandedNameId, setExpandedNameId] = useState(null);
 
     const toggleExpandName = (id) => {
@@ -27,6 +30,16 @@ const Students = ({ db }) => {
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setEditingStudent(null);
+    };
+
+    const handleOpenAttendanceModal = (studentId) => {
+        setPreSelectedStudentId(studentId);
+        setIsAttendanceModalOpen(true);
+    };
+
+    const handleCloseAttendanceModal = () => {
+        setIsAttendanceModalOpen(false);
+        setPreSelectedStudentId(null);
     };
 
     const handleExport = () => {
@@ -113,6 +126,17 @@ const Students = ({ db }) => {
                     onUpdate={actions.updateStudent}
                     onClose={handleCloseModal}
                     initialData={editingStudent}
+                />
+            )}
+
+            {isAttendanceModalOpen && (
+                <AddAttendanceModal
+                    students={students}
+                    onAdd={actions.addExtraAttendance}
+                    onBulkAdd={actions.bulkAddExtraAttendance}
+                    onUpdate={actions.updateExtraAttendance}
+                    onClose={handleCloseAttendanceModal}
+                    preSelectedStudentId={preSelectedStudentId}
                 />
             )}
 
@@ -226,6 +250,13 @@ const Students = ({ db }) => {
                                         </td>
                                         <td style={{ textAlign: 'right' }}>
                                             <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                                                <button
+                                                    onClick={() => handleOpenAttendanceModal(s.id)}
+                                                    className="btn btn-glass" style={{ padding: '0.4rem', borderRadius: '8px', border: 'none' }}
+                                                    title="Ghi nhận học bổ sung"
+                                                >
+                                                    <Calendar size={16} color="var(--secondary)" />
+                                                </button>
                                                 <button
                                                     onClick={() => handleEdit(s)}
                                                     className="btn btn-glass" style={{ padding: '0.4rem', borderRadius: '8px', border: 'none' }}

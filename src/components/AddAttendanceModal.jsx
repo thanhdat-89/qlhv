@@ -80,17 +80,18 @@ const CalendarPicker = ({ selectedDates, onToggleDate }) => {
     );
 };
 
-const AddAttendanceModal = ({ students, onAdd, onBulkAdd, onUpdate, onClose, initialData }) => {
-    const [searchQuery, setSearchQuery] = useState('');
+const AddAttendanceModal = ({ students, onAdd, onBulkAdd, onUpdate, onClose, initialData, preSelectedStudentId }) => {
+    const preSelectedStudent = preSelectedStudentId ? students.find(s => s.id === preSelectedStudentId) : null;
+    const [searchQuery, setSearchQuery] = useState(preSelectedStudent ? preSelectedStudent.name : '');
     const [selectedClassFilter, setSelectedClassFilter] = useState('all');
     const [selectedDates, setSelectedDates] = useState(
         initialData ? [initialData.date] : []
     );
     const [formData, setFormData] = useState(initialData || {
-        studentId: students[0]?.id || '',
+        studentId: preSelectedStudentId || students[0]?.id || '',
         status: true,
         isExcused: false,
-        fee: students[0]?.tuition?.feePerSession || 200000,
+        fee: preSelectedStudent?.tuition?.feePerSession || students[0]?.tuition?.feePerSession || 200000,
         notes: ''
     });
 
@@ -107,6 +108,8 @@ const AddAttendanceModal = ({ students, onAdd, onBulkAdd, onUpdate, onClose, ini
 
     // Auto-sync student selection when filtered list changes
     useEffect(() => {
+        if (preSelectedStudentId) return;
+
         if (!initialData && filteredStudents.length > 0) {
             const currentIsValid = filteredStudents.some(s => s.id === formData.studentId);
             if (!currentIsValid) {
@@ -115,7 +118,7 @@ const AddAttendanceModal = ({ students, onAdd, onBulkAdd, onUpdate, onClose, ini
         } else if (!initialData && filteredStudents.length === 0 && formData.studentId !== '') {
             setFormData(prev => ({ ...prev, studentId: '' }));
         }
-    }, [searchQuery, selectedClassFilter]);
+    }, [searchQuery, selectedClassFilter, preSelectedStudentId]);
 
     const handleStudentChange = (id) => {
         const student = students.find(s => s.id === id);
@@ -171,11 +174,13 @@ const AddAttendanceModal = ({ students, onAdd, onBulkAdd, onUpdate, onClose, ini
                 <button onClick={onClose} className="btn-close-modal">
                     <X size={24} />
                 </button>
-                <h2 style={{ marginBottom: '1.5rem' }}>{initialData ? 'Chỉnh sửa buổi học' : 'Ghi nhận nhiều buổi học'}</h2>
+                <h2 style={{ marginBottom: '1.5rem' }}>
+                    {initialData ? 'Chỉnh sửa buổi học' : preSelectedStudentId ? `Ghi nhận học bổ sung: ${preSelectedStudent?.name}` : 'Ghi nhận nhiều buổi học'}
+                </h2>
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                     <div>
                         <label className="form-label">Học viên</label>
-                        {!initialData && (
+                        {!initialData && !preSelectedStudentId && (
                             <>
                                 <input
                                     type="text"
@@ -222,9 +227,15 @@ const AddAttendanceModal = ({ students, onAdd, onBulkAdd, onUpdate, onClose, ini
                             </>
                         )}
                         <select
-                            className="glass" style={{ width: '100%', padding: '0.75rem', boxSizing: 'border-box' }}
+                            className="glass" style={{
+                                width: '100%',
+                                padding: '0.75rem',
+                                boxSizing: 'border-box',
+                                background: preSelectedStudentId ? '#f1f5f9' : 'var(--glass)',
+                                cursor: preSelectedStudentId ? 'not-allowed' : 'pointer'
+                            }}
                             value={formData.studentId} onChange={e => handleStudentChange(e.target.value)}
-                            disabled={!!initialData}
+                            disabled={!!initialData || !!preSelectedStudentId}
                         >
                             {initialData ? (
                                 <option value={formData.studentId}>{students.find(s => s.id === formData.studentId)?.name}</option>
