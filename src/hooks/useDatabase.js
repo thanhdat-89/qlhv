@@ -129,9 +129,13 @@ export const useDatabase = () => {
     };
 
     // Logic: Tuition calculation
-    const getStudentTuitionDetails = (studentId) => {
+    const getStudentTuitionDetails = (studentId, targetMonth, targetYear) => {
         const student = students.find(s => s.id === studentId);
         if (!student) return null;
+
+        const now = new Date();
+        const calculationMonth = targetMonth !== undefined ? targetMonth : now.getMonth();
+        const calculationYear = targetYear !== undefined ? targetYear : now.getFullYear();
 
         const studentClass = getClass(student.classId);
         if (!studentClass) return {
@@ -173,10 +177,9 @@ export const useDatabase = () => {
             return isNaN(fallback.getTime()) ? new Date() : fallback;
         };
 
-        const today = new Date();
-        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        const startOfMonth = new Date(calculationYear, calculationMonth, 1);
         startOfMonth.setHours(0, 0, 0, 0);
-        const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        const endOfMonth = new Date(calculationYear, calculationMonth + 1, 0);
         endOfMonth.setHours(23, 59, 59, 999);
 
         const enrollDate = parseDate(student.enrollDate);
@@ -188,111 +191,81 @@ export const useDatabase = () => {
         const monthlyStart = enrollDate > startOfMonth ? enrollDate : startOfMonth;
         const monthlyEnd = (leaveDate && leaveDate < endOfMonth) ? leaveDate : endOfMonth;
 
-        // Extra sessions logic: Calculate for PREVIOUS month
-        const prevMonthDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-        const startOfPrevMonth = new Date(prevMonthDate.getFullYear(), prevMonthDate.getMonth(), 1);
-        startOfPrevMonth.setHours(0, 0, 0, 0);
-        const endOfPrevMonth = new Date(prevMonthDate.getFullYear(), prevMonthDate.getMonth() + 1, 0);
-        endOfPrevMonth.setHours(23, 59, 59, 999);
-
         let scheduledCount = 0;
         if (monthlyStart <= monthlyEnd) {
             scheduledCount = countSessionsInRange(studentClass.schedule, monthlyStart, monthlyEnd, student.classId);
         }
 
-        const extraSessionsPrevMonth = extraAttendance.filter(a => {
+        // Extra sessions for target month
+        const extraSessionsSelected = extraAttendance.filter(a => {
             if (a.studentId !== studentId || a.isExcused || !a.status) return false;
-            const d = parseDate(a.date);
-            return d >= startOfPrevMonth && d <= endOfPrevMonth;
-        });
-        const extraCount = extraSessionsPrevMonth.length;
-        const totalExtraFee = extraSessionsPrevMonth.reduce((sum, a) => sum + (a.fee || studentClass.feePerSession), 0);
-
-        const extraSessionsCurrentMonth = extraAttendance.filter(a => {
-            if (a.studentId !== studentId) return false;
             const d = parseDate(a.date);
             return d >= startOfMonth && d <= endOfMonth;
         });
-        const extraCountCurrentMonth = extraSessionsCurrentMonth.length;
-        const totalExtraFeeCurrentMonth = extraSessionsCurrentMonth.reduce((sum, a) => sum + (a.fee || studentClass.feePerSession), 0);
+        const extraCount = extraSessionsSelected.length;
+        const totalExtraFee = extraSessionsSelected.reduce((sum, a) => sum + (a.fee || studentClass.feePerSession), 0);
 
         const discount = student.discountRate || 0;
         const feePerSession = studentClass.feePerSession || 0;
 
-        // Apply class-level promotion for the current month
-        const currentMonthStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
-        const promotion = promotions.find(p => p.classId === student.classId && p.month === currentMonthStr);
+        // Apply class-level promotion for the selected month
+        const selectedMonthStr = `${calculationYear}-${String(calculationMonth + 1).padStart(2, '0')}`;
+        const promotion = promotions.find(p => p.classId === student.classId && p.month === selectedMonthStr);
         const promotionDiscount = promotion ? promotion.discountRate : 0;
 
         // Final Tuition = Base * (1 - Student Discount) * (1 - Promotion Discount)
         const scheduledTuition = Math.round(scheduledCount * feePerSession * (1 - discount) * (1 - promotionDiscount));
         const tuitionDue = Math.round((scheduledCount * feePerSession + totalExtraFee) * (1 - discount) * (1 - promotionDiscount));
 
-        // --- Life-time Calculation (for balance) ---
-        const lifeTimeEnd = new Date((leaveDate && leaveDate < endOfMonth) ? leaveDate : endOfMonth);
-        lifeTimeEnd.setHours(23, 59, 59, 999);
+        // --- Balance Calculation (Relative to Target Month) ---
+        // Debt = (Scheduled + Extra up to Target Month) - Total Payments
+        const targetMonthEnd = new Date(calculationYear, calculationMonth + 1, 0);
+        targetMonthEnd.setHours(23, 59, 59, 999);
+        const balanceLimit = (leaveDate && leaveDate < targetMonthEnd) ? leaveDate : targetMonthEnd;
 
-        let tuitionLifeTime = 0;
-        let scheduledCountLifeTime = 0;
-
-        // 1. Calculate Lifetime Scheduled Tuition (Month by Month to apply promotions)
+        let tuitionIncurred = 0;
         let iterDate = new Date(enrollDate.getFullYear(), enrollDate.getMonth(), 1);
-        const endIter = new Date(today.getFullYear(), today.getMonth(), 1);
+        const endIter = new Date(balanceLimit.getFullYear(), balanceLimit.getMonth(), 1);
 
+        // 1. Scheduled Tuition up to Target Month
         while (iterDate <= endIter) {
             const mStart = iterDate > enrollDate ? iterDate : enrollDate;
             const mEndNext = new Date(iterDate.getFullYear(), iterDate.getMonth() + 1, 1);
             const mEnd = new Date(mEndNext.getTime() - 1);
-            const actualEnd = mEnd < lifeTimeEnd ? mEnd : lifeTimeEnd;
+            const actualEnd = mEnd < balanceLimit ? mEnd : balanceLimit;
 
             if (mStart <= actualEnd) {
                 const monthScheduledCount = countSessionsInRange(studentClass.schedule, mStart, actualEnd, student.classId);
-                scheduledCountLifeTime += monthScheduledCount;
-
                 const monthStr = `${iterDate.getFullYear()}-${String(iterDate.getMonth() + 1).padStart(2, '0')}`;
                 const monthPromo = promotions.find(p => p.classId === student.classId && p.month === monthStr);
                 const monthPromoDiscount = monthPromo ? monthPromo.discountRate : 0;
 
-                tuitionLifeTime += Math.round(monthScheduledCount * feePerSession * (1 - discount) * (1 - monthPromoDiscount));
+                tuitionIncurred += Math.round(monthScheduledCount * feePerSession * (1 - discount) * (1 - monthPromoDiscount));
             }
             iterDate = mEndNext;
         }
 
-        // 2. Calculate Lifetime Extra Sessions (Apply month-specific promotions)
-        const extraSessionsLifeTime = extraAttendance.filter(a => {
+        // 2. Extra Sessions up to Target Month
+        const extraSessionsUpToTarget = extraAttendance.filter(a => {
             if (a.studentId !== studentId || a.isExcused || !a.status) return false;
             const d = parseDate(a.date);
-            // Only count extra sessions up to the PREVIOUS month for balance inclusion
-            const extraLimit = lifeTimeEnd < endOfPrevMonth ? lifeTimeEnd : endOfPrevMonth;
-            return d <= extraLimit;
+            return d <= balanceLimit;
         });
 
-        extraSessionsLifeTime.forEach(a => {
+        extraSessionsUpToTarget.forEach(a => {
             const d = parseDate(a.date);
             const monthStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
             const monthPromo = promotions.find(p => p.classId === student.classId && p.month === monthStr);
             const monthPromoDiscount = monthPromo ? monthPromo.discountRate : 0;
             const sessionFee = a.fee || feePerSession;
-            tuitionLifeTime += Math.round(sessionFee * (1 - discount) * (1 - monthPromoDiscount));
+            tuitionIncurred += Math.round(sessionFee * (1 - discount) * (1 - monthPromoDiscount));
         });
 
         const totalPaid = fees
             .filter(f => f.studentId === studentId)
             .reduce((sum, f) => sum + f.amount, 0);
 
-        const balance = tuitionLifeTime - totalPaid;
-
-        // Debug logging for inaccurate balances
-        if (balance > 5000000 && scheduledCount < 10) {
-            console.log(`Balance Warning [${student.name}]:`, {
-                enrollDate: student.enrollDate,
-                parsedEnrollDate: enrollDate.toISOString().split('T')[0],
-                lifeTimeSessions: scheduledCountLifeTime,
-                tuitionLifeTime,
-                totalPaid,
-                balance
-            });
-        }
+        const balance = tuitionIncurred - totalPaid;
 
         return {
             feePerSession,
@@ -300,8 +273,6 @@ export const useDatabase = () => {
             scheduledTuition,
             extraCount,
             totalExtraFee,
-            extraCountCurrentMonth,
-            totalExtraFeeCurrentMonth,
             tuitionDue,
             totalPaid,
             balance,
@@ -680,6 +651,7 @@ export const useDatabase = () => {
         },
         actions: {
             refreshData: fetchData,
+            getStudentTuitionDetails,
             addStudent,
             bulkAddStudents,
             addClass,

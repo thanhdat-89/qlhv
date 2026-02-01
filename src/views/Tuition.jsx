@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Plus, CreditCard, Banknote, Download } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import AddTuitionModal from '../components/AddTuitionModal';
@@ -12,6 +12,9 @@ const Tuition = ({ db, initialParams }) => {
     const [selectedStatus, setSelectedStatus] = useState('all');
     const [preSelectedStudentId, setPreSelectedStudentId] = useState(null);
     const [expandedNameId, setExpandedNameId] = useState(null);
+
+    const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
     const toggleExpandName = (id) => {
         setExpandedNameId(expandedNameId === id ? null : id);
@@ -35,7 +38,15 @@ const Tuition = ({ db, initialParams }) => {
         setPreSelectedStudentId(null);
     };
 
-    const filteredStudents = students
+    // Recalculate tuition details based on selected month/year
+    const studentsWithMonthlyTuition = useMemo(() => {
+        return students.map(s => ({
+            ...s,
+            tuition: actions.getStudentTuitionDetails(s.id, selectedMonth, selectedYear)
+        }));
+    }, [students, actions, selectedMonth, selectedYear]);
+
+    const filteredStudents = studentsWithMonthlyTuition
         .filter(s => selectedClassId === 'all' || String(s.classId) === String(selectedClassId))
         .filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()))
         .filter(s => selectedStatus === 'all' || s.tuition.status === selectedStatus)
@@ -53,7 +64,7 @@ const Tuition = ({ db, initialParams }) => {
             'Đã đóng': s.tuition.totalPaid,
             'Giảm giá học viên': `${s.discountRate * 100}%`,
             'Khuyến mãi lớp': `${(s.tuition.promotionDiscount || 0) * 100}%`,
-            'Học phí tháng này': s.tuition.tuitionDue,
+            [`Học phí tháng ${selectedMonth + 1}`]: s.tuition.tuitionDue,
             'Còn nợ': s.tuition.balance,
             'Trạng thái': s.tuition.status
         }));
@@ -113,6 +124,35 @@ const Tuition = ({ db, initialParams }) => {
                 >
                     Lịch sử giao dịch
                 </button>
+            </div>
+
+            <div style={{ marginBottom: '1.5rem', display: 'flex', gap: '1.5rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+                <div>
+                    <label className="form-label">Chọn tháng thống kê</label>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <select
+                            className="glass"
+                            style={{ padding: '0.6rem 1rem', borderRadius: '12px', minWidth: '120px' }}
+                            value={selectedMonth}
+                            onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+                        >
+                            {Array.from({ length: 12 }, (_, i) => (
+                                <option key={i} value={i}>Tháng {i + 1}</option>
+                            ))}
+                        </select>
+                        <select
+                            className="glass"
+                            style={{ padding: '0.6rem 1rem', borderRadius: '12px', minWidth: '100px' }}
+                            value={selectedYear}
+                            onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                        >
+                            {Array.from({ length: 5 }, (_, i) => {
+                                const y = new Date().getFullYear() - 2 + i;
+                                return <option key={y} value={y}>{y}</option>;
+                            })}
+                        </select>
+                    </div>
+                </div>
             </div>
 
             {viewMode === 'status' && (
@@ -177,6 +217,12 @@ const Tuition = ({ db, initialParams }) => {
                 </div>
             )}
 
+            {viewMode === 'status' && (
+                <h2 style={{ fontSize: '1.8rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '1.5rem', marginTop: '1rem' }}>
+                    Học phí Tháng {selectedMonth + 1} năm {selectedYear}
+                </h2>
+            )}
+
             <div className="table-container glass" onScroll={() => setExpandedNameId(null)}>
                 {viewMode === 'status' ? (
                     <table>
@@ -184,14 +230,14 @@ const Tuition = ({ db, initialParams }) => {
                             <tr>
                                 <th className="sticky-col">Học viên</th>
                                 <th>Lớp</th>
-                                <th className="hide-mobile" style={{ textAlign: 'center' }}>Số buổi theo TKB</th>
-                                <th className="hide-mobile" style={{ textAlign: 'right' }}>Học phí theo TKB</th>
-                                <th className="hide-mobile" style={{ textAlign: 'center' }}>Bổ sung (T.Trước / Nay)</th>
+                                <th className="hide-mobile" style={{ textAlign: 'center' }}>Số buổi TKB</th>
+                                <th className="hide-mobile" style={{ textAlign: 'right' }}>Học phí TKB</th>
+                                <th className="hide-mobile" style={{ textAlign: 'center' }}>Số buổi bổ sung</th>
                                 <th className="hide-mobile" style={{ textAlign: 'right' }}>Học phí bổ sung</th>
                                 <th className="hide-mobile" style={{ textAlign: 'right' }}>Đã đóng</th>
                                 <th className="hide-mobile" style={{ textAlign: 'center' }}>Giảm giá (HV)</th>
                                 <th className="hide-mobile" style={{ textAlign: 'center' }}>Khuyến mãi (Lớp)</th>
-                                <th style={{ textAlign: 'right' }}>Học phí tháng này</th>
+                                <th style={{ textAlign: 'right' }}>Học phí tháng {selectedMonth + 1}</th>
                                 <th style={{ textAlign: 'right' }}>Còn nợ</th>
                                 <th className="hide-mobile" style={{ textAlign: 'center' }}>Trạng thái</th>
                                 <th style={{ textAlign: 'right' }}>Thao tác</th>
@@ -214,21 +260,10 @@ const Tuition = ({ db, initialParams }) => {
                                         {new Intl.NumberFormat('vi-VN').format(s.tuition.scheduledTuition)} đ
                                     </td>
                                     <td className="hide-mobile" style={{ textAlign: 'center' }}>
-                                        <span title="Tháng trước">{s.tuition.extraCount}</span>
-                                        <span style={{ margin: '0 4px', color: '#cbd5e1' }}>/</span>
-                                        <span title="Tháng này (Dự kiến)" style={{ color: s.tuition.extraCountCurrentMonth > 0 ? 'var(--primary)' : 'inherit', fontWeight: s.tuition.extraCountCurrentMonth > 0 ? 600 : 400 }}>
-                                            {s.tuition.extraCountCurrentMonth}
-                                        </span>
+                                        {s.tuition.extraCount}
                                     </td>
                                     <td className="hide-mobile" style={{ color: 'var(--secondary)', textAlign: 'right' }}>
-                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
-                                            <span>{new Intl.NumberFormat('vi-VN').format(s.tuition.totalExtraFee)} đ</span>
-                                            {s.tuition.totalExtraFeeCurrentMonth > 0 && (
-                                                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
-                                                    + {new Intl.NumberFormat('vi-VN').format(s.tuition.totalExtraFeeCurrentMonth)} đ (Dự kiến)
-                                                </span>
-                                            )}
-                                        </div>
+                                        {new Intl.NumberFormat('vi-VN').format(s.tuition.totalExtraFee)} đ
                                     </td>
                                     <td className="hide-mobile" style={{ color: 'var(--success)', textAlign: 'right' }}>
                                         {new Intl.NumberFormat('vi-VN').format(s.tuition.totalPaid)} đ

@@ -1,5 +1,84 @@
 import { useState, useEffect } from 'react';
-import { X, Save, Plus, Calendar as CalendarIcon, Trash2 } from 'lucide-react';
+import { X, Save, Plus, Calendar as CalendarIcon, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+
+const CalendarPicker = ({ selectedDates, onToggleDate }) => {
+    const [viewDate, setViewDate] = useState(new Date());
+
+    const daysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
+    const startDayOfMonth = (year, month) => new Date(year, month, 1).getDay(); // 0 (Sun) to 6 (Sat)
+
+    const year = viewDate.getFullYear();
+    const month = viewDate.getMonth();
+
+    const handlePrevMonth = () => setViewDate(new Date(year, month - 1, 1));
+    const handleNextMonth = () => setViewDate(new Date(year, month + 1, 1));
+
+    const totalDays = daysInMonth(year, month);
+    const firstDay = startDayOfMonth(year, month);
+
+    // Convert Sunday start to Monday start (0=Mon, 6=Sun)
+    const offset = firstDay === 0 ? 6 : firstDay - 1;
+
+    const days = [];
+    for (let i = 0; i < offset; i++) days.push(null);
+    for (let i = 1; i <= totalDays; i++) days.push(i);
+
+    const weekDays = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+
+    return (
+        <div className="glass" style={{ padding: '0.75rem', borderRadius: '12px', border: '1px solid var(--glass-border)', background: 'rgba(255, 255, 255, 0.3)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <button type="button" onClick={handlePrevMonth} className="btn-glass" style={{ padding: '0.4rem', borderRadius: '50%' }}>
+                    <ChevronLeft size={18} />
+                </button>
+                <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
+                    Tháng {month + 1}, {year}
+                </div>
+                <button type="button" onClick={handleNextMonth} className="btn-glass" style={{ padding: '0.4rem', borderRadius: '50%' }}>
+                    <ChevronRight size={18} />
+                </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px', textAlign: 'center' }}>
+                {weekDays.map(d => (
+                    <div key={d} style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-secondary)', paddingBottom: '4px' }}>
+                        {d}
+                    </div>
+                ))}
+                {days.map((day, i) => {
+                    if (day === null) return <div key={`empty-${i}`} />;
+
+                    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    const isSelected = selectedDates.includes(dateStr);
+                    const isToday = new Date().toISOString().split('T')[0] === dateStr;
+
+                    return (
+                        <button
+                            key={day}
+                            type="button"
+                            onClick={() => onToggleDate(dateStr)}
+                            style={{
+                                padding: '0.5rem 0',
+                                borderRadius: '8px',
+                                border: 'none',
+                                background: isSelected ? 'var(--primary)' : 'transparent',
+                                color: isSelected ? 'white' : 'var(--text-primary)',
+                                fontSize: '0.85rem',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                fontWeight: isSelected || isToday ? 600 : 400,
+                                outline: isToday && !isSelected ? '1px solid var(--primary)' : 'none'
+                            }}
+                            className={!isSelected ? 'card-hover' : ''}
+                        >
+                            {day}
+                        </button>
+                    );
+                })}
+            </div>
+        </div>
+    );
+};
 
 const AddAttendanceModal = ({ students, onAdd, onBulkAdd, onUpdate, onClose, initialData }) => {
     const [searchQuery, setSearchQuery] = useState('');
@@ -7,10 +86,6 @@ const AddAttendanceModal = ({ students, onAdd, onBulkAdd, onUpdate, onClose, ini
     const [selectedDates, setSelectedDates] = useState(
         initialData ? [initialData.date] : []
     );
-    const [currentDateInput, setCurrentDateInput] = useState(
-        new Date().toISOString().split('T')[0]
-    );
-
     const [formData, setFormData] = useState(initialData || {
         studentId: students[0]?.id || '',
         status: true,
@@ -49,12 +124,6 @@ const AddAttendanceModal = ({ students, onAdd, onBulkAdd, onUpdate, onClose, ini
             studentId: id,
             fee: student?.tuition?.feePerSession || formData.fee
         });
-    };
-
-    const addDate = () => {
-        if (currentDateInput && !selectedDates.includes(currentDateInput)) {
-            setSelectedDates([...selectedDates, currentDateInput].sort());
-        }
     };
 
     const removeDate = (date) => {
@@ -154,53 +223,49 @@ const AddAttendanceModal = ({ students, onAdd, onBulkAdd, onUpdate, onClose, ini
 
                     <div>
                         <label className="form-label">Chọn các ngày học</label>
-                        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                            <input
-                                className="glass" type="date"
-                                style={{ flex: 1, padding: '0.75rem', boxSizing: 'border-box' }}
-                                value={currentDateInput} onChange={e => setCurrentDateInput(e.target.value)}
-                            />
-                            <button
-                                type="button"
-                                onClick={addDate}
-                                className="btn btn-primary"
-                                style={{ padding: '0 1rem' }}
-                            >
-                                <Plus size={20} />
-                            </button>
-                        </div>
+                        <CalendarPicker
+                            selectedDates={selectedDates}
+                            onToggleDate={(date) => {
+                                if (selectedDates.includes(date)) {
+                                    setSelectedDates(selectedDates.filter(d => d !== date).sort());
+                                } else {
+                                    setSelectedDates([...selectedDates, date].sort());
+                                }
+                            }}
+                        />
 
                         {selectedDates.length > 0 && (
                             <div style={{
+                                marginTop: '1rem',
                                 display: 'flex',
                                 flexWrap: 'wrap',
-                                gap: '0.5rem',
-                                padding: '0.75rem',
-                                background: '#f8fafc',
+                                gap: '0.4rem',
+                                padding: '0.6rem',
+                                background: 'rgba(255, 255, 255, 0.5)',
                                 borderRadius: '12px',
-                                border: '1px solid #e2e8f0',
-                                maxHeight: '120px',
+                                border: '1px solid var(--glass-border)',
+                                maxHeight: '100px',
                                 overflowY: 'auto'
                             }}>
                                 {selectedDates.map(date => (
                                     <div key={date} style={{
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: '0.4rem',
+                                        gap: '0.3rem',
                                         background: 'white',
-                                        padding: '0.25rem 0.6rem',
-                                        borderRadius: '8px',
+                                        padding: '0.2rem 0.5rem',
+                                        borderRadius: '6px',
                                         border: '1px solid #cbd5e1',
-                                        fontSize: '0.85rem'
+                                        fontSize: '0.75rem'
                                     }}>
-                                        <CalendarIcon size={14} color="var(--primary)" />
+                                        <CalendarIcon size={12} color="var(--primary)" />
                                         {new Date(date).toLocaleDateString('vi-VN')}
                                         <button
                                             type="button"
                                             onClick={() => removeDate(date)}
                                             style={{ border: 'none', background: 'transparent', padding: '2px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
                                         >
-                                            <X size={14} color="var(--danger)" />
+                                            <X size={12} color="var(--danger)" />
                                         </button>
                                     </div>
                                 ))}
