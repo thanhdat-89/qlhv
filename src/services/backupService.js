@@ -40,7 +40,7 @@ export const backupService = {
             const { error } = await supabase
                 .from(table)
                 .delete()
-                .neq('id', 'placeholder'); // Delete all records where id is not 'placeholder' (effectively all)
+                .gte('id', 0); // Delete all records where id >= 0 (effectively all records)
 
             if (error) {
                 console.error(`Error clearing table ${table}:`, error);
