@@ -81,18 +81,26 @@ const CalendarPicker = ({ selectedDates, onToggleDate }) => {
     );
 };
 
-const AddAttendanceModal = ({ students, onAdd, onBulkAdd, onUpdate, onClose, initialData, preSelectedStudentId, currentSessions = [] }) => {
+const AddAttendanceModal = ({ students, onAdd, onBulkAdd, onUpdate, onBulkDelete, onClose, initialData, preSelectedStudentId, currentSessions = [] }) => {
     const preSelectedStudent = preSelectedStudentId ? students.find(s => s.id === preSelectedStudentId) : null;
     const [mode, setMode] = useState('manual'); // 'manual' or 'recurring'
     const [searchQuery, setSearchQuery] = useState(preSelectedStudent ? preSelectedStudent.name : '');
     const [selectedClassFilter, setSelectedClassFilter] = useState('all');
-    const [selectedDates, setSelectedDates] = useState(
-        initialData ? [initialData.date] : []
-    );
+
+    // Pre-select existing dates if in student-centric edit mode
+    const [selectedDates, setSelectedDates] = useState(() => {
+        if (initialData) return [initialData.date];
+        if (currentSessions.length > 0) return currentSessions.map(s => s.date).sort();
+        return [];
+    });
 
     // Analyze current sessions for pre-filling recurring pattern
     const detectedDays = useMemo(() => [...new Set(currentSessions.map(s => new Date(s.date).getDay()))], [currentSessions]);
-    const detectedFee = useMemo(() => currentSessions.length > 0 ? currentSessions[0].fee : (preSelectedStudent?.tuition?.feePerSession || students[0]?.tuition?.feePerSession || 200000), [currentSessions, preSelectedStudent, students]);
+    const detectedFee = useMemo(() => {
+        if (initialData) return initialData.fee;
+        if (currentSessions.length > 0) return currentSessions[0].fee;
+        return (preSelectedStudent?.tuition?.feePerSession || students[0]?.tuition?.feePerSession || 200000);
+    }, [currentSessions, preSelectedStudent, students, initialData]);
 
     const [recurringPattern, setRecurringPattern] = useState(
         detectedDays.length > 0 ? {
@@ -107,7 +115,7 @@ const AddAttendanceModal = ({ students, onAdd, onBulkAdd, onUpdate, onClose, ini
     const [formData, setFormData] = useState({
         studentId: preSelectedStudentId || students[0]?.id || '',
         fee: detectedFee,
-        notes: initialData?.notes || ''
+        notes: initialData?.notes || (currentSessions.length > 0 ? currentSessions[0].notes : '')
     });
 
     // Get unique classes from students and sort them
@@ -181,10 +189,18 @@ const AddAttendanceModal = ({ students, onAdd, onBulkAdd, onUpdate, onClose, ini
 
         const datesToCreate = mode === 'recurring'
             ? recurringPreviewDates.map(d => d.toISOString().split('T')[0])
-            : selectedDates;
+            : selectedDates.filter(date => !currentSessions.some(s => s.date === date));
 
-        if (datesToCreate.length === 0) {
-            alert('Vui lòng chọn ít nhất một ngày học.');
+        const sessionsToDelete = mode === 'manual'
+            ? currentSessions.filter(s => !selectedDates.includes(s.date))
+            : []; // In recurring mode, we might want a different logic, but let's stick to manual sync for now as requested
+
+        const sessionsToUpdate = mode === 'manual'
+            ? currentSessions.filter(s => selectedDates.includes(s.date))
+            : [];
+
+        if (datesToCreate.length === 0 && sessionsToDelete.length === 0 && sessionsToUpdate.length === 0 && !initialData) {
+            alert('Không có thay đổi nào để lưu.');
             return;
         }
 
@@ -195,17 +211,32 @@ const AddAttendanceModal = ({ students, onAdd, onBulkAdd, onUpdate, onClose, ini
                 fee: parseInt(formData.fee)
             };
 
+            // 1. Handle Deletions
+            if (sessionsToDelete.length > 0) {
+                await onBulkDelete(sessionsToDelete.map(s => s.id));
+            }
+
+            // 2. Handle Updates (if anything changed)
+            for (const session of sessionsToUpdate) {
+                if (session.fee !== commonData.fee || session.notes !== commonData.notes) {
+                    await onUpdate(session.id, { ...commonData, date: session.date });
+                }
+            }
+
+            // 3. Handle Additions
             if (initialData) {
-                await onUpdate(initialData.id, { ...commonData, date: datesToCreate[0] });
+                // If editing a specific single session (not from the week view)
+                await onUpdate(initialData.id, { ...commonData, date: selectedDates[0] });
             } else if (datesToCreate.length === 1) {
                 await onAdd({ ...commonData, date: datesToCreate[0] });
-            } else {
+            } else if (datesToCreate.length > 1) {
                 const records = datesToCreate.map(date => ({
                     ...commonData,
                     date
                 }));
                 await onBulkAdd(records);
             }
+
             onClose();
         } catch (error) {
             console.error('Form submission error:', error);

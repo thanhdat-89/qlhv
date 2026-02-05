@@ -237,6 +237,7 @@ const Attendance = ({ db }) => {
                     onAdd={actions.addExtraAttendance}
                     onBulkAdd={actions.bulkAddExtraAttendance}
                     onUpdate={actions.updateExtraAttendance}
+                    onBulkDelete={actions.bulkDeleteExtraAttendance}
                     onClose={handleCloseModal}
                     initialData={editingAttendance}
                     preSelectedStudentId={preSelectedStudentId}

@@ -577,6 +577,17 @@ export const useDatabase = () => {
         }
     };
 
+    const bulkDeleteExtraAttendance = async (ids) => {
+        try {
+            await financeService.bulkDeleteAttendance(ids);
+            setExtraAttendance(prev => prev.filter(a => !ids.includes(a.id)));
+        } catch (error) {
+            console.error('Failed to bulk delete attendance:', error);
+            alert('Lỗi khi xóa nhiều ghi nhận: ' + (error.message || 'Vui lòng thử lại sau.'));
+            throw error;
+        }
+    };
+
     const updateHoliday = async (id, updatedData) => {
         try {
             await holidayService.update(id, updatedData);
@@ -668,6 +679,7 @@ export const useDatabase = () => {
             deleteStudent,
             deleteClass,
             deleteExtraAttendance,
+            bulkDeleteExtraAttendance,
             deleteHoliday,
             deletePromotion,
             addMessage: async (content) => {
