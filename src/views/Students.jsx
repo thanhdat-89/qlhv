@@ -253,7 +253,7 @@ const Students = ({ db }) => {
                                                 <button
                                                     onClick={() => handleOpenAttendanceModal(s.id)}
                                                     className="btn btn-glass" style={{ padding: '0.4rem', borderRadius: '8px', border: 'none' }}
-                                                    title="Ghi nhận học bổ sung"
+                                                    title="Thêm lịch học bổ sung"
                                                 >
                                                     <Calendar size={16} color="var(--secondary)" />
                                                 </button>

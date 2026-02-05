@@ -178,7 +178,27 @@ const Tuition = ({ db, initialParams }) => {
                             >
                                 Tất cả lớp
                             </button>
-                            {classes.map(c => (
+                            {[...classes].sort((a, b) => {
+                                // Extract grade number from class name (e.g., "Toán 10 (CQT 02)" -> 10)
+                                const gradeA = a.name.match(/Toán (\d+)/);
+                                const gradeB = b.name.match(/Toán (\d+)/);
+
+                                // If both are math classes with grade numbers, sort by grade
+                                if (gradeA && gradeB) {
+                                    const numA = parseInt(gradeA[1]);
+                                    const numB = parseInt(gradeB[1]);
+                                    if (numA !== numB) return numA - numB;
+                                    // If same grade, sort by class code (CQT 01, CQT 02, etc.)
+                                    return a.name.localeCompare(b.name, 'vi');
+                                }
+
+                                // If only one is a math class, math classes come first
+                                if (gradeA) return -1;
+                                if (gradeB) return 1;
+
+                                // Otherwise, sort alphabetically
+                                return a.name.localeCompare(b.name, 'vi');
+                            }).map(c => (
                                 <button
                                     key={c.id}
                                     onClick={() => setSelectedClassId(c.id)}
@@ -196,7 +216,27 @@ const Tuition = ({ db, initialParams }) => {
                                 onChange={(e) => setSelectedClassId(e.target.value)}
                             >
                                 <option value="all">Tất cả lớp</option>
-                                {classes.map(c => (
+                                {[...classes].sort((a, b) => {
+                                    // Extract grade number from class name (e.g., "Toán 10 (CQT 02)" -> 10)
+                                    const gradeA = a.name.match(/Toán (\d+)/);
+                                    const gradeB = b.name.match(/Toán (\d+)/);
+
+                                    // If both are math classes with grade numbers, sort by grade
+                                    if (gradeA && gradeB) {
+                                        const numA = parseInt(gradeA[1]);
+                                        const numB = parseInt(gradeB[1]);
+                                        if (numA !== numB) return numA - numB;
+                                        // If same grade, sort by class code (CQT 01, CQT 02, etc.)
+                                        return a.name.localeCompare(b.name, 'vi');
+                                    }
+
+                                    // If only one is a math class, math classes come first
+                                    if (gradeA) return -1;
+                                    if (gradeB) return 1;
+
+                                    // Otherwise, sort alphabetically
+                                    return a.name.localeCompare(b.name, 'vi');
+                                }).map(c => (
                                     <option key={c.id} value={c.id}>{c.name}</option>
                                 ))}
                             </select>

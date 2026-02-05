@@ -196,9 +196,9 @@ export const useDatabase = () => {
             scheduledCount = countSessionsInRange(studentClass.schedule, monthlyStart, monthlyEnd, student.classId);
         }
 
-        // Extra sessions for target month
+        // Extra sessions for target month (ALL scheduled sessions, no attendance check)
         const extraSessionsSelected = extraAttendance.filter(a => {
-            if (a.studentId !== studentId || a.isExcused || !a.status) return false;
+            if (a.studentId !== studentId) return false;
             const d = parseDate(a.date);
             return d >= startOfMonth && d <= endOfMonth;
         });
@@ -245,9 +245,9 @@ export const useDatabase = () => {
             iterDate = mEndNext;
         }
 
-        // 2. Extra Sessions up to Target Month
+        // 2. Extra Sessions up to Target Month (ALL sessions, no attendance check)
         const extraSessionsUpToTarget = extraAttendance.filter(a => {
-            if (a.studentId !== studentId || a.isExcused || !a.status) return false;
+            if (a.studentId !== studentId) return false;
             const d = parseDate(a.date);
             return d <= balanceLimit;
         });

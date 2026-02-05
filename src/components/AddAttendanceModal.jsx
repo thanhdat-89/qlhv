@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import { X, Save, Plus, Calendar as CalendarIcon, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { X, Save, Plus, Calendar as CalendarIcon, Trash2, ChevronLeft, ChevronRight, Repeat } from 'lucide-react';
+import RecurringScheduleForm from './RecurringScheduleForm';
 
 const CalendarPicker = ({ selectedDates, onToggleDate }) => {
     const [viewDate, setViewDate] = useState(new Date());
@@ -80,24 +81,59 @@ const CalendarPicker = ({ selectedDates, onToggleDate }) => {
     );
 };
 
-const AddAttendanceModal = ({ students, onAdd, onBulkAdd, onUpdate, onClose, initialData, preSelectedStudentId }) => {
+const AddAttendanceModal = ({ students, onAdd, onBulkAdd, onUpdate, onClose, initialData, preSelectedStudentId, currentSessions = [] }) => {
     const preSelectedStudent = preSelectedStudentId ? students.find(s => s.id === preSelectedStudentId) : null;
+    const [mode, setMode] = useState('manual'); // 'manual' or 'recurring'
     const [searchQuery, setSearchQuery] = useState(preSelectedStudent ? preSelectedStudent.name : '');
     const [selectedClassFilter, setSelectedClassFilter] = useState('all');
     const [selectedDates, setSelectedDates] = useState(
         initialData ? [initialData.date] : []
     );
-    const [formData, setFormData] = useState(initialData || {
+
+    // Analyze current sessions for pre-filling recurring pattern
+    const detectedDays = useMemo(() => [...new Set(currentSessions.map(s => new Date(s.date).getDay()))], [currentSessions]);
+    const detectedFee = useMemo(() => currentSessions.length > 0 ? currentSessions[0].fee : (preSelectedStudent?.tuition?.feePerSession || students[0]?.tuition?.feePerSession || 200000), [currentSessions, preSelectedStudent, students]);
+
+    const [recurringPattern, setRecurringPattern] = useState(
+        detectedDays.length > 0 ? {
+            frequency: 'weekly',
+            daysOfWeek: detectedDays,
+            startDate: '',
+            endDate: ''
+        } : null
+    );
+
+    const [recurringPreviewDates, setRecurringPreviewDates] = useState([]);
+    const [formData, setFormData] = useState({
         studentId: preSelectedStudentId || students[0]?.id || '',
-        status: true,
-        isExcused: false,
-        fee: preSelectedStudent?.tuition?.feePerSession || students[0]?.tuition?.feePerSession || 200000,
-        notes: ''
+        fee: detectedFee,
+        notes: initialData?.notes || ''
     });
 
-    // Get unique classes from students
+    // Get unique classes from students and sort them
     const classes = [...new Set(students.map(s => ({ id: s.classId, name: s.className })))]
-        .filter((c, i, arr) => arr.findIndex(a => a.id === c.id) === i);
+        .filter((c, i, arr) => arr.findIndex(a => a.id === c.id) === i)
+        .sort((a, b) => {
+            // Extract grade number from class name (e.g., "Toán 10 (CQT 02)" -> 10)
+            const gradeA = a.name.match(/Toán (\d+)/);
+            const gradeB = b.name.match(/Toán (\d+)/);
+
+            // If both are math classes with grade numbers, sort by grade
+            if (gradeA && gradeB) {
+                const numA = parseInt(gradeA[1]);
+                const numB = parseInt(gradeB[1]);
+                if (numA !== numB) return numA - numB;
+                // If same grade, sort by class code (CQT 01, CQT 02, etc.)
+                return a.name.localeCompare(b.name, 'vi');
+            }
+
+            // If only one is a math class, math classes come first
+            if (gradeA) return -1;
+            if (gradeB) return 1;
+
+            // Otherwise, sort alphabetically
+            return a.name.localeCompare(b.name, 'vi');
+        });
 
     // Filter students based on search and class
     const filteredStudents = students.filter(s => {
@@ -129,6 +165,11 @@ const AddAttendanceModal = ({ students, onAdd, onBulkAdd, onUpdate, onClose, ini
         });
     };
 
+    const handleRecurringPatternChange = (pattern, previewDates) => {
+        setRecurringPattern(pattern);
+        setRecurringPreviewDates(previewDates);
+    };
+
     const removeDate = (date) => {
         setSelectedDates(selectedDates.filter(d => d !== date));
     };
@@ -137,7 +178,12 @@ const AddAttendanceModal = ({ students, onAdd, onBulkAdd, onUpdate, onClose, ini
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (selectedDates.length === 0) {
+
+        const datesToCreate = mode === 'recurring'
+            ? recurringPreviewDates.map(d => d.toISOString().split('T')[0])
+            : selectedDates;
+
+        if (datesToCreate.length === 0) {
             alert('Vui lòng chọn ít nhất một ngày học.');
             return;
         }
@@ -150,11 +196,11 @@ const AddAttendanceModal = ({ students, onAdd, onBulkAdd, onUpdate, onClose, ini
             };
 
             if (initialData) {
-                await onUpdate(initialData.id, { ...commonData, date: selectedDates[0] });
-            } else if (selectedDates.length === 1) {
-                await onAdd({ ...commonData, date: selectedDates[0] });
+                await onUpdate(initialData.id, { ...commonData, date: datesToCreate[0] });
+            } else if (datesToCreate.length === 1) {
+                await onAdd({ ...commonData, date: datesToCreate[0] });
             } else {
-                const records = selectedDates.map(date => ({
+                const records = datesToCreate.map(date => ({
                     ...commonData,
                     date
                 }));
@@ -175,7 +221,7 @@ const AddAttendanceModal = ({ students, onAdd, onBulkAdd, onUpdate, onClose, ini
                     <X size={24} />
                 </button>
                 <h2 style={{ marginBottom: '1.5rem' }}>
-                    {initialData ? 'Chỉnh sửa buổi học' : preSelectedStudentId ? `Ghi nhận học bổ sung: ${preSelectedStudent?.name}` : 'Ghi nhận nhiều buổi học'}
+                    {initialData ? 'Chỉnh sửa buổi học' : preSelectedStudentId ? `Thêm lịch học: ${preSelectedStudent?.name}` : 'Thêm Lịch Học Bổ Sung'}
                 </h2>
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                     <div>
@@ -245,57 +291,98 @@ const AddAttendanceModal = ({ students, onAdd, onBulkAdd, onUpdate, onClose, ini
                         </select>
                     </div>
 
-                    <div>
-                        <label className="form-label">Chọn các ngày học</label>
-                        <CalendarPicker
-                            selectedDates={selectedDates}
-                            onToggleDate={(date) => {
-                                if (selectedDates.includes(date)) {
-                                    setSelectedDates(selectedDates.filter(d => d !== date).sort());
-                                } else {
-                                    setSelectedDates([...selectedDates, date].sort());
-                                }
-                            }}
-                        />
-
-                        {selectedDates.length > 0 && (
-                            <div style={{
-                                marginTop: '1rem',
-                                display: 'flex',
-                                flexWrap: 'wrap',
-                                gap: '0.4rem',
-                                padding: '0.6rem',
-                                background: 'rgba(255, 255, 255, 0.5)',
-                                borderRadius: '12px',
-                                border: '1px solid var(--glass-border)',
-                                maxHeight: '100px',
-                                overflowY: 'auto'
-                            }}>
-                                {selectedDates.map(date => (
-                                    <div key={date} style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '0.3rem',
-                                        background: 'white',
-                                        padding: '0.2rem 0.5rem',
-                                        borderRadius: '6px',
-                                        border: '1px solid #cbd5e1',
-                                        fontSize: '0.75rem'
-                                    }}>
-                                        <CalendarIcon size={12} color="var(--primary)" />
-                                        {new Date(date).toLocaleDateString('vi-VN')}
-                                        <button
-                                            type="button"
-                                            onClick={() => removeDate(date)}
-                                            style={{ border: 'none', background: 'transparent', padding: '2px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-                                        >
-                                            <X size={12} color="var(--danger)" />
-                                        </button>
-                                    </div>
-                                ))}
+                    {/* Mode Selection Tabs (only for new records) */}
+                    {!initialData && (
+                        <div>
+                            <label className="form-label">Chế độ lên lịch</label>
+                            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+                                <button
+                                    type="button"
+                                    onClick={() => setMode('manual')}
+                                    className={`btn ${mode === 'manual' ? 'btn-primary' : 'btn-glass'}`}
+                                    style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                                >
+                                    <CalendarIcon size={16} />
+                                    Chọn thủ công
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setMode('recurring')}
+                                    className={`btn ${mode === 'recurring' ? 'btn-primary' : 'btn-glass'}`}
+                                    style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                                >
+                                    <Repeat size={16} />
+                                    Lặp lại tự động
+                                </button>
                             </div>
-                        )}
-                    </div>
+                        </div>
+                    )}
+
+                    {/* Manual Mode: Calendar Picker */}
+                    {mode === 'manual' && (
+                        <div>
+                            <label className="form-label">Chọn các ngày học</label>
+                            <CalendarPicker
+                                selectedDates={selectedDates}
+                                onToggleDate={(date) => {
+                                    if (selectedDates.includes(date)) {
+                                        setSelectedDates(selectedDates.filter(d => d !== date).sort());
+                                    } else {
+                                        setSelectedDates([...selectedDates, date].sort());
+                                    }
+                                }}
+                            />
+
+                            {selectedDates.length > 0 && (
+                                <div style={{
+                                    marginTop: '1rem',
+                                    display: 'flex',
+                                    flexWrap: 'wrap',
+                                    gap: '0.4rem',
+                                    padding: '0.6rem',
+                                    background: 'rgba(255, 255, 255, 0.5)',
+                                    borderRadius: '12px',
+                                    border: '1px solid var(--glass-border)',
+                                    maxHeight: '100px',
+                                    overflowY: 'auto'
+                                }}>
+                                    {selectedDates.map(date => (
+                                        <div key={date} style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '0.3rem',
+                                            background: 'white',
+                                            padding: '0.2rem 0.5rem',
+                                            borderRadius: '6px',
+                                            border: '1px solid #cbd5e1',
+                                            fontSize: '0.75rem'
+                                        }}>
+                                            <CalendarIcon size={12} color="var(--primary)" />
+                                            {new Date(date).toLocaleDateString('vi-VN')}
+                                            <button
+                                                type="button"
+                                                onClick={() => removeDate(date)}
+                                                style={{ border: 'none', background: 'transparent', padding: '2px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                                            >
+                                                <X size={12} color="var(--danger)" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Recurring Mode: Recurring Form */}
+                    {mode === 'recurring' && !initialData && (
+                        <div>
+                            <label className="form-label">Thiết lập lịch lặp lại</label>
+                            <RecurringScheduleForm
+                                onPatternChange={handleRecurringPatternChange}
+                                initialPattern={recurringPattern}
+                            />
+                        </div>
+                    )}
 
                     <div>
                         <label className="form-label">Học phí mỗi buổi (đ)</label>
@@ -306,55 +393,32 @@ const AddAttendanceModal = ({ students, onAdd, onBulkAdd, onUpdate, onClose, ini
                         />
                     </div>
 
-                    <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '0.5rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <input
-                                type="checkbox" id="att-status"
-                                checked={formData.status}
-                                onChange={e => {
-                                    const checked = e.target.checked;
-                                    setFormData({
-                                        ...formData,
-                                        status: checked,
-                                        isExcused: checked ? false : formData.isExcused
-                                    });
-                                }}
-                                style={{ width: '1.25rem', height: '1.25rem' }}
-                            />
-                            <label htmlFor="att-status" className="form-label" style={{ marginBottom: 0 }}>Có mặt</label>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <input
-                                type="checkbox" id="att-excused"
-                                checked={formData.isExcused}
-                                onChange={e => {
-                                    const checked = e.target.checked;
-                                    setFormData({
-                                        ...formData,
-                                        isExcused: checked,
-                                        status: checked ? false : formData.status
-                                    });
-                                }}
-                                style={{ width: '1.25rem', height: '1.25rem' }}
-                            />
-                            <label htmlFor="att-excused" className="form-label" style={{ marginBottom: 0 }}>Xin nghỉ</label>
-                        </div>
-                    </div>
 
                     <div>
-                        <label className="form-label">Ghi chú (áp dụng cho tất cả buổi chọn)</label>
+                        <label className="form-label">Ghi chú</label>
                         <textarea
                             className="glass" rows="2"
                             style={{ width: '100%', padding: '0.75rem', resize: 'none', boxSizing: 'border-box' }}
                             value={formData.notes} onChange={e => setFormData({ ...formData, notes: e.target.value })}
-                            placeholder="Ví dụ: Học bù buổi T2..."
+                            placeholder="Ví dụ: Học bù buổi nghỉ lễ, Học riêng 1-1..."
                         />
                     </div>
 
                     <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
                         <button type="button" onClick={onClose} className="btn btn-glass" style={{ flex: 1 }}>Hủy</button>
-                        <button type="submit" disabled={isSubmitting || selectedDates.length === 0} className="btn btn-primary" style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                            <Save size={18} /> {isSubmitting ? 'Đang lưu...' : `Lưu ${selectedDates.length} buổi học`}
+                        <button
+                            type="submit"
+                            disabled={isSubmitting || (mode === 'manual' ? selectedDates.length === 0 : recurringPreviewDates.length === 0)}
+                            className="btn btn-primary"
+                            style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                        >
+                            <Save size={18} />
+                            {isSubmitting
+                                ? 'Đang lưu...'
+                                : mode === 'recurring'
+                                    ? `Lưu ${recurringPreviewDates.length} buổi học`
+                                    : `Lưu ${selectedDates.length} buổi học`
+                            }
                         </button>
                     </div>
                 </form>

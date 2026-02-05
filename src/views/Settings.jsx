@@ -71,7 +71,9 @@ const Settings = ({ db }) => {
                     const backup = JSON.parse(e.target.result);
                     await backupService.importData(backup);
                     await actions.refreshData();
-                    setMessage({ type: 'success', text: 'Khôi phục dữ liệu thành công! Ứng dụng đã được cập nhật.' });
+                    setMessage({ type: 'success', text: '✅ Khôi phục dữ liệu thành công! Toàn bộ dữ liệu đã được cập nhật.' });
+                    // Tự động ẩn thông báo sau 5 giây
+                    setTimeout(() => setMessage(null), 5000);
                 } catch (error) {
                     console.error(error);
                     setMessage({ type: 'error', text: 'Lỗi khi khôi phục dữ liệu: ' + error.message });

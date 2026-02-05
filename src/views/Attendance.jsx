@@ -1,32 +1,147 @@
-import { useState } from 'react';
-import { Plus, BadgeCheck, Calendar, User, Edit2, Trash2 } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Plus, BadgeCheck, Calendar, Edit2, Search, Filter, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 import AddAttendanceModal from '../components/AddAttendanceModal';
 
 const Attendance = ({ db }) => {
-    const { extraAttendance, students, actions } = db;
+    const { extraAttendance, students, classes, actions } = db;
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingAttendance, setEditingAttendance] = useState(null);
-    const [expandedNameId, setExpandedNameId] = useState(null);
+    const [preSelectedStudentId, setPreSelectedStudentId] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedClass, setSelectedClass] = useState('all');
+    const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
 
-    const toggleExpandName = (id) => {
-        setExpandedNameId(expandedNameId === id ? null : id);
+    // Get week start and end dates (Monday to Sunday)
+    const getWeekDates = (offset = 0) => {
+        const today = new Date();
+        today.setDate(today.getDate() + (offset * 7));
+
+        const dayOfWeek = today.getDay(); // 0 (Sun) to 6 (Sat)
+        // Adjust to Monday start
+        const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+        const monday = new Date(today);
+        monday.setDate(diff);
+        monday.setHours(0, 0, 0, 0);
+
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+        sunday.setHours(23, 59, 59, 999);
+
+        return { monday, sunday };
     };
 
-    const handleEdit = (record) => {
-        setEditingAttendance(record);
+    const { monday, sunday } = getWeekDates(currentWeekOffset);
+
+    const [currentSessions, setCurrentSessions] = useState([]);
+
+    const handleEdit = (studentId) => {
+        // Find all sessions for this student in the current visible week
+        const studentSessions = extraAttendance.filter(record => {
+            const sessionDate = new Date(record.date);
+            return record.studentId === studentId && sessionDate >= monday && sessionDate <= sunday;
+        });
+
+        setCurrentSessions(studentSessions);
+        setPreSelectedStudentId(studentId);
         setIsModalOpen(true);
     };
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setEditingAttendance(null);
+        setPreSelectedStudentId(null);
+        setCurrentSessions([]);
     };
+
+    // Filter students and group their sessions for the selected week
+    const studentSchedules = useMemo(() => {
+        // Filter sessions in the selected week
+        const weekSessions = extraAttendance.filter(record => {
+            const sessionDate = new Date(record.date);
+            return sessionDate >= monday && sessionDate <= sunday;
+        });
+
+        // Group by student
+        const byStudent = {};
+
+        weekSessions.forEach(record => {
+            if (!byStudent[record.studentId]) {
+                byStudent[record.studentId] = [];
+            }
+            byStudent[record.studentId].push(record);
+        });
+
+        // Create student schedule objects
+        const rawSchedules = Object.entries(byStudent).map(([studentId, sessions]) => {
+            const student = students.find(s => s.id === studentId);
+            if (!student) return null;
+
+            // Sort sessions by normalized day (1=Mon, ..., 7=Sun)
+            const daysOfWeek = sessions.map(s => {
+                const date = new Date(s.date);
+                const day = date.getDay();
+                return {
+                    day: day === 0 ? 7 : day, // 1 to 7
+                    date: s.date,
+                    fee: s.fee,
+                    notes: s.notes,
+                    id: s.id
+                };
+            }).sort((a, b) => a.day - b.day);
+
+            return {
+                studentId,
+                studentName: student.name,
+                className: student.className,
+                classId: student.classId,
+                sessions: daysOfWeek
+            };
+        }).filter(Boolean);
+
+        // Apply filters
+        let filtered = rawSchedules;
+
+        if (searchQuery) {
+            const query = searchQuery.toLowerCase();
+            filtered = filtered.filter(s =>
+                s.studentName.toLowerCase().includes(query)
+            );
+        }
+
+        if (selectedClass !== 'all') {
+            filtered = filtered.filter(s => s.classId === selectedClass);
+        }
+
+        // Sort by student name
+        filtered.sort((a, b) => a.studentName.localeCompare(b.studentName));
+
+        return filtered;
+    }, [extraAttendance, students, searchQuery, selectedClass, monday, sunday]);
+
+    // Get unique classes for filter
+    const uniqueClasses = useMemo(() => {
+        const classSet = new Set();
+        students.forEach(s => {
+            if (s.classId) classSet.add(s.classId);
+        });
+        return Array.from(classSet).map(classId => {
+            const cls = classes.find(c => c.id === classId);
+            return { id: classId, name: cls?.name || classId };
+        }).sort((a, b) => a.name.localeCompare(b.name));
+    }, [students, classes]);
+
+    const dayLabelsMap = {
+        1: 'T2', 2: 'T3', 3: 'T4', 4: 'T5', 5: 'T6', 6: 'T7', 7: 'CN'
+    };
+    const dayNumbers = [1, 2, 3, 4, 5, 6, 7];
 
     return (
         <div className="view-container">
             <div className="view-header">
-                <h1>Điểm danh Học bổ sung</h1>
-                <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}><Plus size={18} /> Ghi nhận buổi học</button>
+                <h1>Lịch Học Bổ Sung</h1>
+                <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>
+                    <Plus size={18} /> Thêm lịch học
+                </button>
             </div>
 
             <div className="info-box glass" style={{ marginBottom: '2rem', padding: '1.25rem', borderLeft: '4px solid var(--primary)' }}>
@@ -37,10 +152,81 @@ const Attendance = ({ db }) => {
                     <div>
                         <h3 style={{ fontSize: '1rem', marginBottom: '0.25rem', color: 'var(--text-primary)' }}>Hướng dẫn</h3>
                         <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
-                            Phần này dùng để Điểm danh cho Học sinh học riêng có tính phí hoặc học bổ sung có tính phí, nhớ nhập học phí tương ứng của buổi học.
-                            <br />
-                            Đối với học sinh học bổ sung không tính phí có thể không điểm danh hoặc điểm danh để theo dõi nhớ ghi số học phí là 0 đồng.
+                            Quản lý lịch học bổ sung lặp lại hoặc riêng lẻ.
+                            Bảng hiển thị lịch học của từng học viên trong tuần hiện tại.
                         </p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Navigation & Filters */}
+            <div className="glass" style={{ padding: '1.25rem', marginBottom: '1.5rem', borderRadius: '12px' }}>
+                {/* Week Selector */}
+                <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem' }}>
+                    <button
+                        className="btn btn-glass"
+                        onClick={() => setCurrentWeekOffset(currentWeekOffset - 1)}
+                        style={{ padding: '0.5rem' }}
+                    >
+                        <ChevronLeft size={20} />
+                    </button>
+                    <div style={{ textAlign: 'center', minWidth: '250px' }}>
+                        <div style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                            {currentWeekOffset === 0 ? 'Tuần này' : currentWeekOffset === -1 ? 'Tuần trước' : currentWeekOffset === 1 ? 'Tuần sau' : `Cách đây ${Math.abs(currentWeekOffset)} tuần`}
+                        </div>
+                        <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
+                            {monday.toLocaleDateString('vi-VN')} - {sunday.toLocaleDateString('vi-VN')}
+                        </div>
+                    </div>
+                    <button
+                        className="btn btn-glass"
+                        onClick={() => setCurrentWeekOffset(currentWeekOffset + 1)}
+                        style={{ padding: '0.5rem' }}
+                    >
+                        <ChevronRight size={20} />
+                    </button>
+                    {currentWeekOffset !== 0 && (
+                        <button
+                            className="btn btn-glass"
+                            onClick={() => setCurrentWeekOffset(0)}
+                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}
+                        >
+                            <Clock size={16} style={{ marginRight: '0.4rem' }} /> Hiện tại
+                        </button>
+                    )}
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    {/* Search */}
+                    <div>
+                        <label className="form-label" style={{ marginBottom: '0.5rem', display: 'block' }}>Tìm kiếm học viên</label>
+                        <div style={{ position: 'relative' }}>
+                            <Search size={16} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+                            <input
+                                type="text"
+                                className="glass"
+                                placeholder="Tên học viên..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                style={{ width: '100%', padding: '0.75rem 0.75rem 0.75rem 2.5rem' }}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Class Filter */}
+                    <div>
+                        <label className="form-label" style={{ marginBottom: '0.5rem', display: 'block' }}>Lọc học viên theo lớp</label>
+                        <select
+                            className="glass"
+                            value={selectedClass}
+                            onChange={(e) => setSelectedClass(e.target.value)}
+                            style={{ width: '100%', padding: '0.75rem' }}
+                        >
+                            <option value="all">Tất cả lớp</option>
+                            {uniqueClasses.map(cls => (
+                                <option key={cls.id} value={cls.id}>{cls.name}</option>
+                            ))}
+                        </select>
                     </div>
                 </div>
             </div>
@@ -53,78 +239,88 @@ const Attendance = ({ db }) => {
                     onUpdate={actions.updateExtraAttendance}
                     onClose={handleCloseModal}
                     initialData={editingAttendance}
+                    preSelectedStudentId={preSelectedStudentId}
+                    currentSessions={currentSessions}
                 />
             )}
 
-            <div className="table-container glass" onScroll={() => setExpandedNameId(null)}>
+            <div className="table-container glass">
                 <table>
                     <thead>
                         <tr>
-                            <th className="sticky-date">Ngày</th>
-                            <th>Thứ</th>
-                            <th className="sticky-name-2">Học viên</th>
-                            <th style={{ textAlign: 'right' }}>Học phí</th>
-                            <th style={{ textAlign: 'center' }}>Trạng thái</th>
-                            <th>Ghi chú</th>
-                            <th style={{ textAlign: 'right' }}>Thao tác</th>
+                            <th style={{ width: '50px' }}>STT</th>
+                            <th>Học viên</th>
+                            <th style={{ textAlign: 'right', width: '160px' }}>Học phí từng buổi</th>
+                            <th>Lịch học trong tuần</th>
+                            <th style={{ textAlign: 'right', width: '100px' }}>Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {extraAttendance.map((record) => {
-                            const student = students.find(s => s.id === record.studentId);
-                            return (
-                                <tr key={record.id}>
-                                    <td className="sticky-date">{new Date(record.date).toLocaleDateString('vi-VN')}</td>
-                                    <td style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>
-                                        {(() => {
-                                            const days = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
-                                            return days[new Date(record.date).getDay()];
-                                        })()}
+                        {studentSchedules.length === 0 ? (
+                            <tr>
+                                <td colSpan="5" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
+                                    <Calendar size={48} style={{ margin: '0 auto 1rem', display: 'block', opacity: 0.3 }} />
+                                    Không có lịch học nào trong tuần này
+                                </td>
+                            </tr>
+                        ) : (
+                            studentSchedules.map((schedule, idx) => (
+                                <tr key={schedule.studentId}>
+                                    <td style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>{idx + 1}</td>
+                                    <td>
+                                        <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{schedule.studentName}</div>
+                                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{schedule.className}</div>
                                     </td>
-                                    <td
-                                        className={`sticky-name-2 ${expandedNameId === record.id ? 'expanded' : ''}`}
-                                        style={{ color: 'var(--text-primary)', fontWeight: 500 }}
-                                        title={student?.name}
-                                        onClick={() => toggleExpandName(record.id)}
-                                    >
-                                        {student?.name || 'N/A'}
+                                    <td style={{ textAlign: 'right' }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                            {schedule.sessions.map((session, sidx) => (
+                                                <div key={sidx} style={{ fontSize: '0.9rem', color: 'var(--primary)', fontWeight: 500 }}>
+                                                    {dayLabelsMap[session.day]}: {new Intl.NumberFormat('vi-VN').format(session.fee)} đ
+                                                </div>
+                                            ))}
+                                        </div>
                                     </td>
-                                    <td style={{ color: 'var(--text-primary)', textAlign: 'right' }}>
-                                        {new Intl.NumberFormat('vi-VN').format(record.fee || 0)} đ
+                                    <td>
+                                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                            {dayNumbers.map(dayNum => {
+                                                const session = schedule.sessions.find(s => s.day === dayNum);
+                                                return (
+                                                    <div
+                                                        key={dayNum}
+                                                        title={session ? `Ngày ${new Date(session.date).toLocaleDateString('vi-VN')}${session.notes ? ': ' + session.notes : ''}` : ''}
+                                                        style={{
+                                                            padding: '0.4rem 0.6rem',
+                                                            borderRadius: '8px',
+                                                            fontSize: '0.8rem',
+                                                            fontWeight: 600,
+                                                            background: session ? 'var(--primary)' : 'rgba(0,0,0,0.05)',
+                                                            color: session ? 'white' : 'var(--text-secondary)',
+                                                            minWidth: '40px',
+                                                            textAlign: 'center',
+                                                            cursor: session ? 'help' : 'default',
+                                                            border: session ? 'none' : '1px solid rgba(0,0,0,0.05)'
+                                                        }}
+                                                    >
+                                                        {dayLabelsMap[dayNum]}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
                                     </td>
-                                    <td style={{ textAlign: 'center' }}>
-                                        {record.status ? (
-                                            <span className="label label-success" style={{ display: 'flex', alignItems: 'center', gap: '4px', width: 'fit-content', margin: '0 auto' }}>
-                                                <BadgeCheck size={14} /> Hiện diện
-                                            </span>
-                                        ) : record.isExcused ? (
-                                            <span className="label label-warning" style={{ display: 'inline-block', background: '#fff7ed', color: '#c2410c', border: '1px solid #ffedd5' }}>
-                                                Xin nghỉ
-                                            </span>
-                                        ) : (
-                                            <span className="label label-danger" style={{ display: 'inline-block' }}>Vắng mặt</span>
-                                        )}
-                                    </td>
-                                    <td style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>{record.notes || '-'}</td>
                                     <td style={{ textAlign: 'right' }}>
                                         <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
                                             <button
-                                                onClick={() => handleEdit(record)}
-                                                className="btn btn-glass" style={{ padding: '0.4rem', borderRadius: '8px', border: 'none' }}
+                                                onClick={() => handleEdit(schedule.studentId)}
+                                                className="btn btn-glass" style={{ padding: '0.5rem', borderRadius: '8px' }}
+                                                title="Thêm/Sửa lịch học"
                                             >
                                                 <Edit2 size={16} color="var(--primary)" />
-                                            </button>
-                                            <button
-                                                onClick={() => actions.deleteExtraAttendance(record.id)}
-                                                className="btn btn-glass" style={{ padding: '0.4rem', borderRadius: '8px', border: 'none' }}
-                                            >
-                                                <Trash2 size={16} color="var(--danger)" />
                                             </button>
                                         </div>
                                     </td>
                                 </tr>
-                            );
-                        })}
+                            ))
+                        )}
                     </tbody>
                 </table>
             </div>
