@@ -218,6 +218,7 @@ const Students = ({ db }) => {
                         <table>
                             <thead>
                                 <tr>
+                                    <th style={{ width: '50px', textAlign: 'center' }}>STT</th>
                                     <th className="sticky-col">Họ tên</th>
                                     <th>Lớp / Năm sinh</th>
                                     <th>Số điện thoại</th>
@@ -228,8 +229,11 @@ const Students = ({ db }) => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {displayStudents().map((s) => (
+                                {displayStudents().map((s, index) => (
                                     <tr key={s.id}>
+                                        <td style={{ textAlign: 'center', color: 'var(--text-secondary)', fontWeight: 500 }}>
+                                            {index + 1}
+                                        </td>
                                         <td
                                             className={`sticky-col ${expandedNameId === s.id ? 'expanded' : ''}`}
                                             style={{ color: 'var(--text-primary)', fontWeight: 500 }}
@@ -289,6 +293,7 @@ const Students = ({ db }) => {
                     <table>
                         <thead>
                             <tr>
+                                <th style={{ width: '50px', textAlign: 'center' }}>STT</th>
                                 <th className="sticky-date">Ngày nhập học</th>
                                 <th className="sticky-name-2">Họ tên</th>
                                 <th>Lớp / Năm sinh</th>
@@ -296,8 +301,11 @@ const Students = ({ db }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {enrollmentHistory.map((s) => (
+                            {enrollmentHistory.map((s, index) => (
                                 <tr key={s.id}>
+                                    <td style={{ textAlign: 'center', color: 'var(--text-secondary)', fontWeight: 500 }}>
+                                        {index + 1}
+                                    </td>
                                     <td className="sticky-date" style={{ color: 'var(--primary)', fontWeight: 600 }}>
                                         {new Date(s.enrollDate).toLocaleDateString('vi-VN')}
                                     </td>

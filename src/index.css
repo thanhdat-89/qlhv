@@ -341,14 +341,19 @@ tr:hover td {
     min-width: 800px;
 }
 
+.sticky-col,
+.sticky-name-2 {
+    min-width: 170px;
+}
+
 /* Sticky Column for Mobile */
 @media (max-width: 768px) {
     .sticky-col {
         position: sticky !important;
         left: 0 !important;
         z-index: 25 !important;
-        width: 130px !important;
-        max-width: 130px !important;
+        width: 140px !important;
+        max-width: 140px !important;
         box-shadow: 4px 0 8px rgba(0, 0, 0, 0.05);
         white-space: nowrap !important;
         overflow: hidden !important;
@@ -389,8 +394,8 @@ tr:hover td {
         position: sticky !important;
         left: 90px !important;
         z-index: 25 !important;
-        width: 130px !important;
-        max-width: 130px !important;
+        width: 140px !important;
+        max-width: 140px !important;
         background-color: #ffffff !important;
         box-shadow: 4px 0 8px rgba(0, 0, 0, 0.05);
         white-space: nowrap !important;

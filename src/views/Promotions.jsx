@@ -1,12 +1,28 @@
 import { useState } from 'react';
-import { Plus, Edit2, Trash2, Gift, Calendar, Filter } from 'lucide-react';
+import { Plus, Edit2, Trash2, Gift, Calendar, Filter, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 import AddPromotionModal from '../components/AddPromotionModal';
 
 const Promotions = ({ db }) => {
     const { promotions, classes, actions } = db;
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingPromotion, setEditingPromotion] = useState(null);
-    const [selectedMonth, setSelectedMonth] = useState('');
+    const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().substring(0, 7));
+
+    const handlePrevMonth = () => {
+        const date = new Date(selectedMonth + '-01');
+        date.setMonth(date.getMonth() - 1);
+        setSelectedMonth(date.toISOString().substring(0, 7));
+    };
+
+    const handleNextMonth = () => {
+        const date = new Date(selectedMonth + '-01');
+        date.setMonth(date.getMonth() + 1);
+        setSelectedMonth(date.toISOString().substring(0, 7));
+    };
+
+    const handleCurrentMonth = () => {
+        setSelectedMonth(new Date().toISOString().substring(0, 7));
+    };
 
     const handleEdit = (promotion) => {
         setEditingPromotion(promotion);
@@ -44,24 +60,46 @@ const Promotions = ({ db }) => {
                 </button>
             </div>
 
-            <div className="filter-container glass card" style={{ padding: '1.5rem', marginBottom: '2rem' }}>
-                <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <Filter size={18} color="var(--primary)" />
-                        <span style={{ fontWeight: 500 }}>Lọc theo tháng:</span>
+            <div className="filter-container glass card" style={{ padding: '1.25rem 1.5rem', marginBottom: '2rem' }}>
+                <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <Filter size={20} color="var(--primary)" />
+                        <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>Lọc theo tháng:</span>
                     </div>
-                    <input
-                        type="month"
-                        className="glass"
-                        style={{ width: '200px' }}
-                        value={selectedMonth}
-                        onChange={(e) => setSelectedMonth(e.target.value)}
-                    />
-                    {selectedMonth && (
-                        <button className="btn btn-glass btn-sm" onClick={() => setSelectedMonth('')}>
-                            Xóa bộ lọc
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <button className="btn btn-glass" onClick={handlePrevMonth} style={{ padding: '0.5rem' }}>
+                            <ChevronLeft size={20} />
                         </button>
-                    )}
+
+                        <input
+                            type="month"
+                            className="glass"
+                            style={{
+                                width: '220px',
+                                padding: '0.6rem 1rem',
+                                textAlign: 'center',
+                                fontWeight: 500
+                            }}
+                            value={selectedMonth}
+                            onChange={(e) => setSelectedMonth(e.target.value)}
+                        />
+
+                        <button className="btn btn-glass" onClick={handleNextMonth} style={{ padding: '0.5rem' }}>
+                            <ChevronRight size={20} />
+                        </button>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button className="btn btn-glass btn-sm" onClick={handleCurrentMonth} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                            <Clock size={16} /> Hiện tại
+                        </button>
+                        {selectedMonth && (
+                            <button className="btn btn-glass btn-sm" onClick={() => setSelectedMonth('')}>
+                                Tất cả
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -82,7 +120,7 @@ const Promotions = ({ db }) => {
                                 <td>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                         <Calendar size={16} color="var(--secondary)" />
-                                        <span style={{ fontWeight: 600 }}>{p.month}</span>
+                                        <span style={{ fontWeight: 600 }}>{p.month.split('-').reverse().join('-')}</span>
                                     </div>
                                 </td>
                                 <td>
@@ -133,6 +171,7 @@ const Promotions = ({ db }) => {
                 <AddPromotionModal
                     classes={classes}
                     onAdd={actions.addPromotion}
+                    onBulkAdd={actions.bulkAddPromotions}
                     onUpdate={actions.updatePromotion}
                     onClose={handleCloseModal}
                     initialData={editingPromotion}

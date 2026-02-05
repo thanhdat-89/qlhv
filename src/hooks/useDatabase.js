@@ -624,6 +624,20 @@ export const useDatabase = () => {
         }
     };
 
+    const bulkAddPromotions = async (promotionRecords) => {
+        try {
+            const savedPromotions = await Promise.all(
+                promotionRecords.map(record => promotionService.create(record))
+            );
+            setPromotions(prev => [...prev, ...savedPromotions]);
+            return savedPromotions;
+        } catch (error) {
+            console.error('Failed to bulk add promotions:', error);
+            alert('Lỗi khi thêm nhiều khuyến mãi: ' + (error.message || 'Vui lòng thử lại sau.'));
+            throw error;
+        }
+    };
+
     const updatePromotion = async (id, updatedData) => {
         try {
             await promotionService.update(id, updatedData);
@@ -671,6 +685,7 @@ export const useDatabase = () => {
             addFee,
             addHoliday,
             addPromotion,
+            bulkAddPromotions,
             updateStudent,
             updateClass,
             updateExtraAttendance,

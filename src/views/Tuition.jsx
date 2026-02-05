@@ -66,7 +66,6 @@ const Tuition = ({ db, initialParams }) => {
             'Học phí theo TKB': s.tuition.scheduledTuition,
             'Số buổi học bổ sung': s.tuition.extraCount,
             'Học phí học bổ sung': s.tuition.totalExtraFee,
-            'Đã đóng': s.tuition.totalPaid,
             'Giảm giá học viên': `${s.discountRate * 100}%`,
             'Khuyến mãi lớp': `${(s.tuition.promotionDiscount || 0) * 100}%`,
             [`Học phí tháng ${selectedMonth + 1}`]: s.tuition.tuitionDue,
@@ -280,13 +279,13 @@ const Tuition = ({ db, initialParams }) => {
                     <table>
                         <thead>
                             <tr>
+                                <th style={{ width: '50px', textAlign: 'center' }}>STT</th>
                                 <th className="sticky-col">Học viên</th>
                                 <th>Lớp</th>
                                 <th className="hide-mobile" style={{ textAlign: 'center' }}>Số buổi TKB</th>
                                 <th className="hide-mobile" style={{ textAlign: 'right' }}>Học phí TKB</th>
                                 <th className="hide-mobile" style={{ textAlign: 'center' }}>Số buổi bổ sung</th>
                                 <th className="hide-mobile" style={{ textAlign: 'right' }}>Học phí bổ sung</th>
-                                <th className="hide-mobile" style={{ textAlign: 'right' }}>Đã đóng</th>
                                 <th className="hide-mobile" style={{ textAlign: 'center' }}>Giảm giá (HV)</th>
                                 <th className="hide-mobile" style={{ textAlign: 'center' }}>Khuyến mãi (Lớp)</th>
                                 <th style={{ textAlign: 'right' }}>Học phí tháng {selectedMonth + 1}</th>
@@ -296,8 +295,11 @@ const Tuition = ({ db, initialParams }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredStudents.map((s) => (
+                            {filteredStudents.map((s, index) => (
                                 <tr key={s.id}>
+                                    <td style={{ textAlign: 'center', color: 'var(--text-secondary)', fontWeight: 500 }}>
+                                        {index + 1}
+                                    </td>
                                     <td
                                         className={`sticky-col ${expandedNameId === s.id ? 'expanded' : ''}`}
                                         style={{ color: 'var(--text-primary)', fontWeight: 500 }}
@@ -316,9 +318,6 @@ const Tuition = ({ db, initialParams }) => {
                                     </td>
                                     <td className="hide-mobile" style={{ color: 'var(--secondary)', textAlign: 'right' }}>
                                         {new Intl.NumberFormat('vi-VN').format(s.tuition.totalExtraFee)} đ
-                                    </td>
-                                    <td className="hide-mobile" style={{ color: 'var(--success)', textAlign: 'right' }}>
-                                        {new Intl.NumberFormat('vi-VN').format(s.tuition.totalPaid)} đ
                                     </td>
                                     <td className="hide-mobile" style={{ textAlign: 'center' }}>{s.discountRate * 100}%</td>
                                     <td className="hide-mobile" style={{ textAlign: 'center' }}>
@@ -363,6 +362,7 @@ const Tuition = ({ db, initialParams }) => {
                     <table>
                         <thead>
                             <tr>
+                                <th style={{ width: '50px', textAlign: 'center' }}>STT</th>
                                 <th className="sticky-date">Ngày đóng</th>
                                 <th className="sticky-name-2">Học viên</th>
                                 <th>Số tiền</th>
@@ -370,10 +370,13 @@ const Tuition = ({ db, initialParams }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {fees.map((f) => {
+                            {fees.map((f, index) => {
                                 const student = students.find(s => s.id === f.studentId);
                                 return (
                                     <tr key={f.id}>
+                                        <td style={{ textAlign: 'center', color: 'var(--text-secondary)', fontWeight: 500 }}>
+                                            {index + 1}
+                                        </td>
                                         <td className="sticky-date">{new Date(f.date).toLocaleDateString('vi-VN')}</td>
                                         <td
                                             className={`sticky-name-2 ${expandedNameId === f.id ? 'expanded' : ''}`}
