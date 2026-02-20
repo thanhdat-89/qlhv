@@ -68,9 +68,7 @@ const Tuition = ({ db, initialParams }) => {
             'Học phí học bổ sung': s.tuition.totalExtraFee,
             'Giảm giá học viên': `${s.discountRate * 100}%`,
             'Khuyến mãi lớp': `${(s.tuition.promotionDiscount || 0) * 100}%`,
-            [`Học phí tháng ${selectedMonth + 1}`]: s.tuition.tuitionDue,
-            'Còn nợ': s.tuition.balance,
-            'Trạng thái': s.tuition.status
+            [`Học phí tháng ${selectedMonth + 1}`]: s.tuition.tuitionDue
         }));
 
         const worksheet = XLSX.utils.json_to_sheet(dataToExport);
@@ -90,20 +88,24 @@ const Tuition = ({ db, initialParams }) => {
         <div className="view-container">
             <div className="view-header">
                 <h1>Quản Lý Thu Học Phí</h1>
-                <div style={{ display: 'flex', gap: '1rem' }}>
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                    <div className="tab-group" style={{ margin: 0 }}>
+                        <button
+                            className={`tab-item ${viewMode === 'status' ? 'active' : ''}`}
+                            onClick={() => setViewMode('status')}
+                        >
+                            Tình trạng thu phí
+                        </button>
+                        <button
+                            className={`tab-item ${viewMode === 'history' ? 'active' : ''}`}
+                            onClick={() => setViewMode('history')}
+                        >
+                            Lịch sử giao dịch
+                        </button>
+                    </div>
                     <button className="btn btn-glass" onClick={handleExport}><Download size={18} /> Xuất file</button>
                     <button className="btn btn-primary" onClick={() => handleOpenModal()}><Plus size={18} /> Thu học phí</button>
                 </div>
-            </div>
-
-            <div className="search-container">
-                <input
-                    type="text"
-                    placeholder="Tìm kiếm theo tên học viên..."
-                    className="glass"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                />
             </div>
 
             {isModalOpen && (
@@ -115,62 +117,63 @@ const Tuition = ({ db, initialParams }) => {
                 />
             )}
 
-            <div className="tab-group">
-                <button
-                    onClick={() => setViewMode('status')}
-                    className={`tab-item ${viewMode === 'status' ? 'active' : ''}`}
-                >
-                    Tình trạng thu phí
-                </button>
-                <button
-                    onClick={() => setViewMode('history')}
-                    className={`tab-item ${viewMode === 'history' ? 'active' : ''}`}
-                >
-                    Lịch sử giao dịch
-                </button>
-            </div>
-
-            <div style={{ marginBottom: '1.5rem', display: 'flex', gap: '1.5rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-                <div>
-                    <label className="form-label">Chọn tháng thống kê</label>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        <select
-                            className="glass"
-                            style={{ padding: '0.6rem 1rem', borderRadius: '12px', minWidth: '120px' }}
-                            value={selectedMonth}
-                            onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-                        >
-                            {Array.from({ length: 12 }, (_, i) => (
-                                <option key={i} value={i}>Tháng {i + 1}</option>
-                            ))}
-                        </select>
-                        <select
-                            className="glass"
-                            style={{ padding: '0.6rem 1rem', borderRadius: '12px', minWidth: '100px' }}
-                            value={selectedYear}
-                            onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                        >
-                            {Array.from({ length: 5 }, (_, i) => {
-                                const y = new Date().getFullYear() - 2 + i;
-                                return <option key={y} value={y}>{y}</option>;
-                            })}
-                        </select>
-                        <button
-                            className="btn btn-glass"
-                            style={{ fontSize: '0.85rem', padding: '0.6rem 1rem' }}
-                            onClick={goToCurrentMonth}
-                        >
-                            Hiện tại
-                        </button>
-                    </div>
-                </div>
-            </div>
-
             {viewMode === 'status' && (
-                <div style={{ marginBottom: '1.5rem', display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
-                    <div style={{ flex: 1, minWidth: '300px' }}>
+                <div className="glass card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                        gap: '1.5rem',
+                        alignItems: 'end',
+                        marginBottom: '1.5rem'
+                    }}>
+                        <div className="search-container" style={{ margin: 0, maxWidth: 'none' }}>
+                            <label className="form-label">Tìm kiếm học viên</label>
+                            <input
+                                type="text"
+                                className="glass"
+                                placeholder="Tìm kiếm theo tên học viên..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                        </div>
+
+                        <div>
+                            <label className="form-label">Chọn tháng thống kê</label>
+                            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                <select
+                                    className="glass"
+                                    value={selectedMonth}
+                                    onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+                                    style={{ flex: 1 }}
+                                >
+                                    {Array.from({ length: 12 }, (_, i) => (
+                                        <option key={i} value={i}>Tháng {i + 1}</option>
+                                    ))}
+                                </select>
+                                <select
+                                    className="glass"
+                                    value={selectedYear}
+                                    onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                                    style={{ flex: 1 }}
+                                >
+                                    {[2024, 2025, 2026, 2027].map(year => (
+                                        <option key={year} value={year}>{year}</option>
+                                    ))}
+                                </select>
+                                <button
+                                    className="btn btn-glass"
+                                    onClick={goToCurrentMonth}
+                                    style={{ whiteSpace: 'nowrap', padding: '0.75rem 1rem' }}
+                                >
+                                    Hiện tại
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
                         <label className="form-label">Lọc theo lớp</label>
-                        <div className="filter-group hide-mobile">
+                        <div className="filter-group" style={{ marginBottom: 0 }}>
                             <button
                                 onClick={() => setSelectedClassId('all')}
                                 className={`btn btn-glass filter-item ${selectedClassId === 'all' ? 'active' : ''}`}
@@ -178,30 +181,22 @@ const Tuition = ({ db, initialParams }) => {
                                 Tất cả lớp
                             </button>
                             {[...classes].sort((a, b) => {
-                                // Extract grade number from class name (e.g., "Toán 10 (CQT 02)" -> 10)
                                 const gradeA = a.name.match(/Toán (\d+)/);
                                 const gradeB = b.name.match(/Toán (\d+)/);
-
-                                // If both are math classes with grade numbers, sort by grade
                                 if (gradeA && gradeB) {
                                     const numA = parseInt(gradeA[1]);
                                     const numB = parseInt(gradeB[1]);
                                     if (numA !== numB) return numA - numB;
-                                    // If same grade, sort by class code (CQT 01, CQT 02, etc.)
                                     return a.name.localeCompare(b.name, 'vi');
                                 }
-
-                                // If only one is a math class, math classes come first
                                 if (gradeA) return -1;
                                 if (gradeB) return 1;
-
-                                // Otherwise, sort alphabetically
                                 return a.name.localeCompare(b.name, 'vi');
                             }).map(c => (
                                 <button
                                     key={c.id}
                                     onClick={() => setSelectedClassId(c.id)}
-                                    className={`btn btn-glass filter-item ${selectedClassId === c.id ? 'active' : ''}`}
+                                    className={`btn btn-glass filter-item ${String(selectedClassId) === String(c.id) ? 'active' : ''}`}
                                 >
                                     {c.name}
                                 </button>
@@ -241,30 +236,6 @@ const Tuition = ({ db, initialParams }) => {
                             </select>
                         </div>
                     </div>
-
-                    <div>
-                        <label className="form-label">Lọc theo trạng thái</label>
-                        <div className="filter-group">
-                            <button
-                                onClick={() => setSelectedStatus('all')}
-                                className={`btn btn-glass filter-item ${selectedStatus === 'all' ? 'active' : ''}`}
-                            >
-                                Tất cả
-                            </button>
-                            <button
-                                onClick={() => setSelectedStatus('Còn nợ')}
-                                className={`btn btn-glass filter-item ${selectedStatus === 'Còn nợ' ? 'active' : ''}`}
-                            >
-                                Còn nợ
-                            </button>
-                            <button
-                                onClick={() => setSelectedStatus('Đã hoàn thành')}
-                                className={`btn btn-glass filter-item ${selectedStatus === 'Đã hoàn thành' ? 'active' : ''}`}
-                            >
-                                Đã hoàn thành
-                            </button>
-                        </div>
-                    </div>
                 </div>
             )}
 
@@ -289,9 +260,6 @@ const Tuition = ({ db, initialParams }) => {
                                 <th className="hide-mobile" style={{ textAlign: 'center' }}>Giảm giá (HV)</th>
                                 <th className="hide-mobile" style={{ textAlign: 'center' }}>Khuyến mãi (Lớp)</th>
                                 <th style={{ textAlign: 'right' }}>Học phí tháng {selectedMonth + 1}</th>
-                                <th style={{ textAlign: 'right' }}>Còn nợ</th>
-                                <th className="hide-mobile" style={{ textAlign: 'center' }}>Trạng thái</th>
-                                <th style={{ textAlign: 'right' }}>Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -329,30 +297,6 @@ const Tuition = ({ db, initialParams }) => {
                                     </td>
                                     <td style={{ color: 'var(--text-primary)', textAlign: 'right' }}>
                                         {new Intl.NumberFormat('vi-VN').format(s.tuition.tuitionDue)} đ
-                                    </td>
-                                    <td style={{ color: s.tuition.balance > 0 ? 'var(--warning)' : 'var(--text-secondary)', textAlign: 'right' }}>
-                                        {new Intl.NumberFormat('vi-VN').format(s.tuition.balance)} đ
-                                    </td>
-                                    <td className="hide-mobile" style={{ textAlign: 'center' }}>{getTuitionLabel(s.tuition.status)}</td>
-                                    <td style={{ textAlign: 'right' }}>
-                                        <button
-                                            className="btn btn-primary"
-                                            style={{
-                                                padding: '0.45rem 1rem',
-                                                background: 'var(--primary)',
-                                                border: 'none',
-                                                boxShadow: '0 4px 12px rgba(99, 102, 241, 0.2)',
-                                                display: 'inline-flex',
-                                                alignItems: 'center',
-                                                gap: '0.5rem',
-                                                fontSize: '0.85rem'
-                                            }}
-                                            onClick={() => handleOpenModal(s.id)}
-                                            title="Thu học phí"
-                                        >
-                                            <Banknote size={18} />
-                                            <span>Thu phí</span>
-                                        </button>
                                     </td>
                                 </tr>
                             ))}

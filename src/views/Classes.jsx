@@ -75,7 +75,7 @@ const Classes = ({ db }) => {
                             <th>Tên lớp</th>
                             <th>Hệ lớp</th>
                             <th style={{ textAlign: 'right' }}>Học phí/buổi</th>
-                            <th style={{ textAlign: 'center' }}>Hệ số nợ (HV nợ)</th>
+                            {/* <th style={{ textAlign: 'center' }}>Hệ số nợ (HV nợ)</th> */}
                             <th>Thời khóa biểu dự kiến</th>
                             <th style={{ textAlign: 'right' }}>Thao tác</th>
                         </tr>
@@ -93,7 +93,7 @@ const Classes = ({ db }) => {
                                 <td style={{ color: 'var(--text-primary)', textAlign: 'right' }}>
                                     {new Intl.NumberFormat('vi-VN').format(c.feePerSession)} đ
                                 </td>
-                                <td style={{ textAlign: 'center' }}>
+                                {/* <td style={{ textAlign: 'center' }}>
                                     {(() => {
                                         const debtCount = students.filter(s => s.classId === c.id && (s.tuition.balance || 0) > 0).length;
                                         return debtCount > 0 ? (
@@ -104,7 +104,7 @@ const Classes = ({ db }) => {
                                             </div>
                                         );
                                     })()}
-                                </td>
+                                </td> */}
                                 <td style={{ padding: '0.75rem 1rem' }}>{renderSchedule(c.schedule)}</td>
                                 <td style={{ textAlign: 'right' }}>
                                     <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>

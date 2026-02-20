@@ -56,7 +56,7 @@ const Dashboard = ({ db, onNavigate }) => {
                         <h2 style={{ fontSize: '1.75rem', marginTop: '0.25rem' }}>{newStudents}</h2>
                     </div>
                 </div>
-                <div className="glass card" style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+                {/* <div className="glass card" style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
                     <div className="icon-box icon-box-secondary">
                         <DollarSign size={32} />
                     </div>
@@ -64,7 +64,7 @@ const Dashboard = ({ db, onNavigate }) => {
                         <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', fontWeight: 500 }}>Doanh thu</p>
                         <h2 style={{ fontSize: '1.75rem', marginTop: '0.25rem' }}>{new Intl.NumberFormat('vi-VN').format(totalRevenue)} đ</h2>
                     </div>
-                </div>
+                </div> */}
             </div>
 
             <div className="glass card">
@@ -100,7 +100,7 @@ const Dashboard = ({ db, onNavigate }) => {
                                             {classStudents.length} học viên
                                         </span>
                                     </div>
-                                    {debtCount > 0 ? (
+                                    {/* {debtCount > 0 ? (
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                             <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: 'var(--danger)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: 'white' }}>!</div>
                                             <span style={{ fontSize: '0.875rem', color: 'var(--danger)', fontWeight: 600 }}>
@@ -114,7 +114,7 @@ const Dashboard = ({ db, onNavigate }) => {
                                                 Đã hoàn thành
                                             </span>
                                         </div>
-                                    )}
+                                    )} */}
                                 </div>
                             </div>
                         );

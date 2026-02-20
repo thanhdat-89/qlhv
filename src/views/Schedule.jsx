@@ -11,6 +11,7 @@ const Schedule = ({ db }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [classFilter, setClassFilter] = useState('all');
 
+
     const goToPrevMonth = () => {
         const d = new Date(currentMonth);
         d.setMonth(d.getMonth() - 1);

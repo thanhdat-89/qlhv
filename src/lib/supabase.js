@@ -9,5 +9,9 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 // Only create client if URL is present to prevent crashing the entire app
 export const supabase = supabaseUrl
-    ? createClient(supabaseUrl, supabaseAnonKey)
+    ? createClient(supabaseUrl, supabaseAnonKey, {
+        global: {
+            headers: { 'x-app-secret': 'cqt263' }
+        }
+    })
     : null;
