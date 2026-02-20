@@ -321,14 +321,17 @@ export const useDatabase = () => {
         return enhancedStudents.filter(s => s.status === 'Đã nghỉ');
     }, [enhancedStudents]);
 
+    // === Helper: Generate Unique ID ===
+    const generateUniqueId = (prefix) => {
+        const timestamp = Date.now().toString(36).toUpperCase();
+        const random = Math.random().toString(36).substring(2, 5).toUpperCase();
+        return `${prefix}${timestamp}${random}`;
+    };
+
     // Actions
     const addStudent = async (newStudent) => {
         try {
-            const maxId = students.reduce((max, s) => {
-                const idNum = parseInt(s.id.substring(1));
-                return isNaN(idNum) ? max : Math.max(max, idNum);
-            }, 0);
-            const id = `S${String(maxId + 1).padStart(2, '0')} `;
+            const id = generateUniqueId('ST');
             const studentWithId = { ...newStudent, id };
             const savedStudent = await studentService.create(studentWithId);
             setStudents(prev => [...prev, savedStudent]);
@@ -342,14 +345,10 @@ export const useDatabase = () => {
 
     const bulkAddStudents = async (newStudentsData) => {
         try {
-            const maxId = students.reduce((max, s) => {
-                const idNum = parseInt(s.id.substring(1));
-                return isNaN(idNum) ? max : Math.max(max, idNum);
-            }, 0);
-
+            const now = Date.now();
             const studentsWithIds = newStudentsData.map((s, index) => ({
                 ...s,
-                id: `S${String(maxId + 1 + index).padStart(2, '0')} `
+                id: `ST${(now + index).toString(36).toUpperCase()}`
             }));
 
             const savedStudents = await studentService.bulkCreate(studentsWithIds);
@@ -364,11 +363,7 @@ export const useDatabase = () => {
 
     const addClass = async (newClass) => {
         try {
-            const maxId = classes.reduce((max, c) => {
-                const idNum = parseInt(c.id.substring(1));
-                return isNaN(idNum) ? max : Math.max(max, idNum);
-            }, 0);
-            const id = `C${String(maxId + 1).padStart(2, '0')} `;
+            const id = generateUniqueId('CL');
             const classWithId = { ...newClass, id };
             const savedClass = await classService.create(classWithId);
             setClasses(prev => {
@@ -387,11 +382,7 @@ export const useDatabase = () => {
 
     const addExtraAttendance = async (record) => {
         try {
-            const maxId = extraAttendance.reduce((max, a) => {
-                const idNum = parseInt(a.id.replace('EA', ''));
-                return isNaN(idNum) ? max : Math.max(max, idNum);
-            }, 0);
-            const id = `EA${String(maxId + 1).padStart(2, '0')} `;
+            const id = generateUniqueId('EA');
             const recordWithId = { ...record, id };
             const savedRecord = await financeService.addAttendance(recordWithId);
             setExtraAttendance(prev => [...prev, savedRecord]);
@@ -405,14 +396,10 @@ export const useDatabase = () => {
 
     const bulkAddExtraAttendance = async (records) => {
         try {
-            const maxId = extraAttendance.reduce((max, a) => {
-                const idNum = parseInt(a.id.replace('EA', ''));
-                return isNaN(idNum) ? max : Math.max(max, idNum);
-            }, 0);
-
+            const now = Date.now();
             const recordsWithIds = records.map((r, i) => ({
                 ...r,
-                id: `EA${String(maxId + 1 + i).padStart(2, '0')} `
+                id: `EA${(now + i).toString(36).toUpperCase()}`
             }));
             const savedRecords = await financeService.bulkAddAttendance(recordsWithIds);
             setExtraAttendance(prev => [...prev, ...savedRecords]);
@@ -426,11 +413,7 @@ export const useDatabase = () => {
 
     const addFee = async (fee) => {
         try {
-            const maxId = fees.reduce((max, f) => {
-                const idNum = parseInt(f.id.substring(1));
-                return isNaN(idNum) ? max : Math.max(max, idNum);
-            }, 0);
-            const id = `F${String(maxId + 1).padStart(2, '0')} `;
+            const id = generateUniqueId('FE');
             const feeWithId = { ...fee, id };
             const savedFee = await financeService.addFee(feeWithId);
             setFees(prev => [...prev, savedFee]);
@@ -562,11 +545,7 @@ export const useDatabase = () => {
 
     const addHoliday = async (holiday) => {
         try {
-            const maxId = holidays.reduce((max, h) => {
-                const idNum = parseInt(h.id.substring(1));
-                return isNaN(idNum) ? max : Math.max(max, idNum);
-            }, 0);
-            const id = `H${String(maxId + 1).padStart(2, '0')} `;
+            const id = generateUniqueId('HL');
             const savedHoliday = await holidayService.create({ ...holiday, id });
             setHolidays(prev => [...prev, savedHoliday]);
             return savedHoliday;
