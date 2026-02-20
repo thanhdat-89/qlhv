@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Plus, BadgeCheck, Calendar, Edit2, Search, Filter, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
+import { Plus, BadgeCheck, Calendar, Edit2, Search, Filter, ChevronLeft, ChevronRight, Clock, Trash2 } from 'lucide-react';
 import AddAttendanceModal from '../components/AddAttendanceModal';
 
 const Attendance = ({ db }) => {
@@ -312,7 +312,24 @@ const Attendance = ({ db }) => {
                                                                 boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
                                                             }}
                                                         >
-                                                            <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.95rem' }}>{a.studentName}</div>
+                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                                                <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.95rem' }}>{a.studentName}</div>
+                                                                <button
+                                                                    onClick={() => actions.deleteExtraAttendance(a.id)}
+                                                                    style={{
+                                                                        border: 'none',
+                                                                        background: 'transparent',
+                                                                        padding: '2px',
+                                                                        cursor: 'pointer',
+                                                                        opacity: 0.5,
+                                                                        transition: 'opacity 0.2s'
+                                                                    }}
+                                                                    className="card-hover-action"
+                                                                    title="Xóa buổi học này"
+                                                                >
+                                                                    <Trash2 size={14} color="var(--danger)" />
+                                                                </button>
+                                                            </div>
                                                             <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.3rem', opacity: 0.8 }}>
                                                                 {a.className}
                                                             </div>
@@ -424,6 +441,18 @@ const Attendance = ({ db }) => {
                                                     title="Thêm/Sửa lịch học"
                                                 >
                                                     <Edit2 size={16} color="var(--primary)" />
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        const ids = schedule.sessions.map(s => s.id);
+                                                        if (window.confirm(`Bạn có chắc muốn xóa tất cả ${ids.length} buổi học của ${schedule.studentName} trong tuần này?`)) {
+                                                            actions.bulkDeleteExtraAttendance(ids);
+                                                        }
+                                                    }}
+                                                    className="btn btn-glass" style={{ padding: '0.5rem', borderRadius: '8px' }}
+                                                    title="Xóa tất cả buổi học trong tuần"
+                                                >
+                                                    <Trash2 size={16} color="var(--danger)" />
                                                 </button>
                                             </div>
                                         </td>

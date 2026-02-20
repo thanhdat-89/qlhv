@@ -537,3 +537,9 @@ tr:hover td {
         gap: 0.75rem;
     }
 }
+
+/* Attendance View Enhancements */
+.card-hover-action:hover {
+    opacity: 1 !important;
+    transform: scale(1.1);
+}
