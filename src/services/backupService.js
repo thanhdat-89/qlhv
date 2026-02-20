@@ -40,7 +40,7 @@ export const backupService = {
             const { error } = await supabase
                 .from(table)
                 .delete()
-                .gte('id', 0); // Delete all records where id >= 0 (effectively all records)
+                .neq('id', '0'); // Works for both text IDs and numerical IDs to delete all records
 
             if (error) {
                 console.error(`Error clearing table ${table}:`, error);

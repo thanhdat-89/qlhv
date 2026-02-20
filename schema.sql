@@ -41,6 +41,12 @@ create table extra_attendance (
   status boolean default true,
   fee integer,
   notes text,
+  is_recurring boolean default false,
+  recurring_pattern jsonb,
+  created_by text,
+  updated_by text,
+  updated_at timestamp with time zone,
+  change_history jsonb default '[]'::jsonb,
   created_at timestamp with time zone default timezone('utc'::text, now())
 );
 
@@ -48,8 +54,10 @@ create table extra_attendance (
 create table if not exists holidays (
   id text primary key,
   date date not null,
+  end_date date,
   description text,
   type text default 'Nghỉ Lễ', -- 'Nghỉ Lễ' or 'Nghỉ đột xuất'
+  class_id text references classes(id),
   created_at timestamp with time zone default timezone('utc'::text, now())
 );
 
