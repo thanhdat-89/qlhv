@@ -57,7 +57,7 @@
     z-index: 90;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
     .app-container {
         grid-template-columns: 1fr;
     }
@@ -67,7 +67,7 @@
     display: none !important;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
     .app-container {
         display: block;
     }

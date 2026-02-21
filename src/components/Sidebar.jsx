@@ -55,7 +55,7 @@ const Sidebar = ({ activeView, onNavigate, isMobileOpen, setIsMobileOpen, onLogo
         borderRadius: 0,
     };
 
-    const isMobile = innerWidth <= 1024;
+    const isMobile = innerWidth <= 1200;
 
     return (
         <aside
@@ -102,7 +102,16 @@ const Sidebar = ({ activeView, onNavigate, isMobileOpen, setIsMobileOpen, onLogo
                 <h2 style={{ fontSize: '1.25rem', color: 'var(--text-primary)', marginTop: '0.5rem' }}>Quản Lý Học Viên</h2>
             </div>
 
-            <nav style={{ flex: 1, padding: '1rem' }}>
+            <nav style={{
+                flex: 1,
+                padding: '1rem',
+                overflowY: 'auto',
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none'
+            }}>
+                <style>{`
+                    nav::-webkit-scrollbar { display: none; }
+                `}</style>
                 {menuItems.map((item) => {
                     const Icon = item.icon;
                     const isActive = activeView === item.id;
