@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import {
     LayoutDashboard,
     Users,
@@ -13,6 +14,14 @@ import {
 import logo from '../assets/logo.png';
 
 const Sidebar = ({ activeView, onNavigate, isMobileOpen, setIsMobileOpen, onLogout }) => {
+    const [innerWidth, setInnerWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
+
+    useEffect(() => {
+        const handleResize = () => setInnerWidth(window.innerWidth);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     const menuItems = [
         { id: 'dashboard', label: 'Tổng quan', icon: LayoutDashboard },
         { id: 'students', label: 'Học viên', icon: Users },
@@ -46,7 +55,7 @@ const Sidebar = ({ activeView, onNavigate, isMobileOpen, setIsMobileOpen, onLogo
         borderRadius: 0,
     };
 
-    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+    const isMobile = innerWidth <= 1024;
 
     return (
         <aside
