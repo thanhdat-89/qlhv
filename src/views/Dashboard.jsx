@@ -1,8 +1,10 @@
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { Filter, TrendingUp, Users, DollarSign, BadgeCheck } from 'lucide-react';
 
-const Dashboard = ({ db, onNavigate }) => {
+const Dashboard = ({ db }) => {
+    const navigate = useNavigate();
     const { students, fees, classes } = db;
     const [categoryFilter, setCategoryFilter] = useState('All');
 
@@ -82,7 +84,7 @@ const Dashboard = ({ db, onNavigate }) => {
                                     borderRadius: '8px',
                                     cursor: 'pointer'
                                 }}
-                                onClick={() => onNavigate('tuition', { classId: c.id })}
+                                onClick={() => navigate('/tuition', { state: { classId: c.id } })}
                             >
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '0.5rem' }}>
                                     <h4 style={{ fontSize: '1rem', color: 'var(--text-primary)' }}>{c.name}</h4>

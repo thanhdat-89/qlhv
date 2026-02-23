@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import { useDatabase } from './hooks/useDatabase';
 import Dashboard from './views/Dashboard';
 import Students from './views/Students';
@@ -14,8 +15,7 @@ import Login from './components/Login';
 import './App.css';
 
 function App() {
-    const [activeView, setActiveView] = useState('dashboard');
-    const [viewParams, setViewParams] = useState({});
+    const navigate = useNavigate();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(() => {
         return localStorage.getItem('hv_manager_auth') === 'true';
@@ -31,12 +31,7 @@ function App() {
     const handleLogout = () => {
         setIsAuthenticated(false);
         localStorage.removeItem('hv_manager_auth');
-        navigateToView('dashboard');
-    };
-
-    const navigateToView = (view, params = {}) => {
-        setActiveView(view);
-        setViewParams(params);
+        navigate('/');
     };
 
     // Idle Timeout Logic (10 minutes)
@@ -67,25 +62,10 @@ function App() {
         };
     }, [isAuthenticated]);
 
-    // Close mobile menu when switching views
+    // Close mobile menu on route changes
     useEffect(() => {
         setIsMobileMenuOpen(false);
-    }, [activeView]);
-
-    const renderView = () => {
-        switch (activeView) {
-            case 'dashboard': return <Dashboard db={db} onNavigate={navigateToView} />;
-            case 'students': return <Students db={db} />;
-            case 'classes': return <Classes db={db} />;
-            case 'schedule': return <Schedule db={db} />;
-            case 'attendance': return <Attendance db={db} />;
-            case 'tuition': return <Tuition db={db} initialParams={viewParams} />;
-            case 'promotions': return <Promotions db={db} />;
-            case 'messages': return <Messages db={db} />;
-            case 'settings': return <SettingsView db={db} />;
-            default: return <Dashboard db={db} onNavigate={navigateToView} />;
-        }
-    };
+    }, [navigate]);
 
     if (!isAuthenticated) {
         return <Login onLogin={handleLogin} />;
@@ -136,14 +116,24 @@ function App() {
             />
 
             <Sidebar
-                activeView={activeView}
-                onNavigate={navigateToView}
                 isMobileOpen={isMobileMenuOpen}
                 setIsMobileOpen={setIsMobileMenuOpen}
                 onLogout={handleLogout}
             />
             <main className="main-content">
-                {renderView()}
+                <Routes>
+                    <Route path="/" element={<Dashboard db={db} />} />
+                    <Route path="/dashboard" element={<Navigate to="/" replace />} />
+                    <Route path="/students" element={<Students db={db} />} />
+                    <Route path="/classes" element={<Classes db={db} />} />
+                    <Route path="/schedule" element={<Schedule db={db} />} />
+                    <Route path="/attendance" element={<Attendance db={db} />} />
+                    <Route path="/tuition" element={<Tuition db={db} />} />
+                    <Route path="/promotions" element={<Promotions db={db} />} />
+                    <Route path="/messages" element={<Messages db={db} />} />
+                    <Route path="/settings" element={<SettingsView db={db} />} />
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
             </main>
         </div>
     );

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard,
     Users,
@@ -13,7 +14,9 @@ import {
 } from 'lucide-react';
 import logo from '../assets/logo.png';
 
-const Sidebar = ({ activeView, onNavigate, isMobileOpen, setIsMobileOpen, onLogout }) => {
+const Sidebar = ({ isMobileOpen, setIsMobileOpen, onLogout }) => {
+    const navigate = useNavigate();
+    const location = useLocation();
     const [innerWidth, setInnerWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
 
     useEffect(() => {
@@ -114,12 +117,13 @@ const Sidebar = ({ activeView, onNavigate, isMobileOpen, setIsMobileOpen, onLogo
                 `}</style>
                 {menuItems.map((item) => {
                     const Icon = item.icon;
-                    const isActive = activeView === item.id;
+                    // Determine if path matches roughly
+                    const isActive = location.pathname === `/${item.id}` || (location.pathname === '/' && item.id === 'dashboard');
                     return (
                         <button
                             key={item.id}
                             onClick={() => {
-                                onNavigate(item.id);
+                                navigate(`/${item.id === 'dashboard' ? '' : item.id}`);
                                 if (isMobile) setIsMobileOpen(false);
                             }}
                             className={`btn nav-link ${isActive ? 'active' : ''}`}
@@ -134,10 +138,10 @@ const Sidebar = ({ activeView, onNavigate, isMobileOpen, setIsMobileOpen, onLogo
             <div style={{ padding: '1rem', borderTop: '1px solid var(--glass-border)' }}>
                 <button
                     onClick={() => {
-                        onNavigate('settings');
+                        navigate('/settings');
                         if (isMobile) setIsMobileOpen(false);
                     }}
-                    className={`btn nav-link ${activeView === 'settings' ? 'active' : ''}`}
+                    className={`btn nav-link ${location.pathname === '/settings' ? 'active' : ''}`}
                 >
                     <Settings size={20} />
                     <span>Cài đặt</span>
