@@ -10,7 +10,6 @@ const Attendance = ({ db }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedClass, setSelectedClass] = useState('all');
     const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
-    const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'table'
 
     // Get week start and end dates (Monday to Sunday)
     const getWeekDates = (offset = 0) => {
@@ -141,19 +140,7 @@ const Attendance = ({ db }) => {
             <div className="view-header">
                 <h1>Lịch Học Bổ Sung</h1>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button
-                        className={`btn ${viewMode === 'grid' ? 'btn-primary' : 'btn-glass'}`}
-                        onClick={() => setViewMode('grid')}
-                    >
-                        Xem lịch (Grid)
-                    </button>
-                    <button
-                        className={`btn ${viewMode === 'table' ? 'btn-primary' : 'btn-glass'}`}
-                        onClick={() => setViewMode('table')}
-                    >
-                        Quản lý (Bảng)
-                    </button>
-                    <button className="btn btn-primary" onClick={() => setIsModalOpen(true)} style={{ marginLeft: '0.5rem' }}>
+                    <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>
                         <Plus size={18} /> Thêm lịch học
                     </button>
                 </div>
@@ -260,210 +247,114 @@ const Attendance = ({ db }) => {
                     currentSessions={currentSessions}
                 />
             )}
-
-            {viewMode === 'grid' ? (
-                <div className="extra-schedule-view" style={{ animation: 'fadeIn 0.3s ease' }}>
-                    <div className="table-container glass" style={{ overflowX: 'auto' }}>
-                        <table style={{ borderCollapse: 'separate', borderSpacing: '0.5rem', width: '100%' }}>
-                            <thead>
-                                <tr>
-                                    {dayNumbers.map((dayNum) => {
-                                        const date = new Date(monday);
-                                        date.setDate(monday.getDate() + (dayNum - 1));
-                                        return (
-                                            <th key={dayNum} style={{ textAlign: 'center', minWidth: '150px', padding: '1rem' }}>
-                                                <div style={{ fontSize: '0.8rem', opacity: 0.7, color: 'var(--text-secondary)' }}>
-                                                    {dayLabelsMap[dayNum]}
-                                                </div>
-                                                <div style={{ fontSize: '1.2rem', color: 'var(--text-primary)', fontWeight: 700 }}>
-                                                    {date.getDate()}/{date.getMonth() + 1}
-                                                </div>
-                                            </th>
-                                        );
-                                    })}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    {dayNumbers.map((dayNum) => {
-                                        const date = new Date(monday);
-                                        date.setDate(monday.getDate() + (dayNum - 1));
-                                        const dateStr = date.toISOString().split('T')[0];
-
-                                        const attendees = (extraAttendance || [])
-                                            .filter(a => a.date === dateStr)
-                                            .map(a => {
-                                                const student = students.find(s => s.id === a.studentId);
-                                                return { ...a, studentName: student?.name || 'N/A', className: student?.className || '' };
-                                            });
-
-                                        return (
-                                            <td key={dayNum} style={{ verticalAlign: 'top', minHeight: '400px', padding: '0.25rem' }}>
-                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                                                    {attendees.map((a) => (
-                                                        <div
-                                                            key={a.id}
-                                                            className="glass card"
-                                                            style={{
-                                                                padding: '1rem',
-                                                                fontSize: '0.85rem',
-                                                                borderLeft: '4px solid var(--secondary)',
-                                                                animation: 'fadeIn 0.3s ease',
-                                                                background: 'rgba(255, 255, 255, 0.05)',
-                                                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                                                            }}
-                                                        >
-                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                                                <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.95rem' }}>{a.studentName}</div>
-                                                                <button
-                                                                    onClick={() => actions.deleteExtraAttendance(a.id)}
-                                                                    style={{
-                                                                        border: 'none',
-                                                                        background: 'transparent',
-                                                                        padding: '2px',
-                                                                        cursor: 'pointer',
-                                                                        opacity: 0.5,
-                                                                        transition: 'opacity 0.2s'
-                                                                    }}
-                                                                    className="card-hover-action"
-                                                                    title="Xóa buổi học này"
-                                                                >
-                                                                    <Trash2 size={14} color="var(--danger)" />
-                                                                </button>
-                                                            </div>
-                                                            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.3rem', opacity: 0.8 }}>
-                                                                {a.className}
-                                                            </div>
-                                                            {a.notes && (
-                                                                <div style={{
-                                                                    fontSize: '0.75rem',
-                                                                    color: 'var(--text-secondary)',
-                                                                    marginTop: '0.6rem',
-                                                                    paddingTop: '0.6rem',
-                                                                    borderTop: '1px solid var(--glass-border)',
-                                                                    fontStyle: 'italic',
-                                                                    lineHeight: '1.4'
-                                                                }}>
-                                                                    {a.notes}
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    ))}
-                                                    {attendees.length === 0 && (
-                                                        <div style={{
-                                                            marginTop: '3rem',
-                                                            textAlign: 'center',
-                                                            color: 'var(--text-secondary)',
-                                                            opacity: 0.3,
-                                                            fontSize: '0.85rem',
-                                                            fontStyle: 'italic'
-                                                        }}>
-                                                            Trống
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </td>
-                                        );
-                                    })}
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            ) : (
-                <div className="table-container glass" style={{ animation: 'fadeIn 0.3s ease' }}>
-                    <table>
+            <div className="extra-schedule-view" style={{ animation: 'fadeIn 0.3s ease' }}>
+                <div className="table-container glass" style={{ overflowX: 'auto' }}>
+                    <table style={{ borderCollapse: 'separate', borderSpacing: '0.5rem', width: '100%' }}>
                         <thead>
                             <tr>
-                                <th style={{ width: '50px' }}>STT</th>
-                                <th>Học viên</th>
-                                <th style={{ textAlign: 'right', width: '160px' }}>Học phí từng buổi</th>
-                                <th>Lịch học trong tuần</th>
-                                <th style={{ textAlign: 'right', width: '100px' }}>Thao tác</th>
+                                {dayNumbers.map((dayNum) => {
+                                    const date = new Date(monday);
+                                    date.setDate(monday.getDate() + (dayNum - 1));
+                                    return (
+                                        <th key={dayNum} style={{ textAlign: 'center', minWidth: '150px', padding: '1rem' }}>
+                                            <div style={{ fontSize: '0.8rem', opacity: 0.7, color: 'var(--text-secondary)' }}>
+                                                {dayLabelsMap[dayNum]}
+                                            </div>
+                                            <div style={{ fontSize: '1.2rem', color: 'var(--text-primary)', fontWeight: 700 }}>
+                                                {date.getDate()}/{date.getMonth() + 1}
+                                            </div>
+                                        </th>
+                                    );
+                                })}
                             </tr>
                         </thead>
                         <tbody>
-                            {studentSchedules.length === 0 ? (
-                                <tr>
-                                    <td colSpan="5" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
-                                        <Calendar size={48} style={{ margin: '0 auto 1rem', display: 'block', opacity: 0.3 }} />
-                                        Không có lịch học nào trong tuần này
-                                    </td>
-                                </tr>
-                            ) : (
-                                studentSchedules.map((schedule, idx) => (
-                                    <tr key={schedule.studentId}>
-                                        <td style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>{idx + 1}</td>
-                                        <td>
-                                            <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{schedule.studentName}</div>
-                                            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{schedule.className}</div>
-                                        </td>
-                                        <td style={{ textAlign: 'right' }}>
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                                {schedule.sessions.map((session, sidx) => (
-                                                    <div key={sidx} style={{ fontSize: '0.9rem', color: 'var(--primary)', fontWeight: 500 }}>
-                                                        {dayLabelsMap[session.day]}: {new Intl.NumberFormat('vi-VN').format(session.fee)} đ
+                            <tr>
+                                {dayNumbers.map((dayNum) => {
+                                    const date = new Date(monday);
+                                    date.setDate(monday.getDate() + (dayNum - 1));
+                                    const dateStr = date.toISOString().split('T')[0];
+
+                                    const attendees = (extraAttendance || [])
+                                        .filter(a => a.date === dateStr)
+                                        .map(a => {
+                                            const student = students.find(s => s.id === a.studentId);
+                                            return { ...a, studentName: student?.name || 'N/A', className: student?.className || '' };
+                                        });
+
+                                    return (
+                                        <td key={dayNum} style={{ verticalAlign: 'top', minHeight: '400px', padding: '0.25rem' }}>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                                {attendees.map((a) => (
+                                                    <div
+                                                        key={a.id}
+                                                        className="glass card"
+                                                        style={{
+                                                            padding: '1rem',
+                                                            fontSize: '0.85rem',
+                                                            borderLeft: '4px solid var(--secondary)',
+                                                            animation: 'fadeIn 0.3s ease',
+                                                            background: 'rgba(255, 255, 255, 0.05)',
+                                                            boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                                                        }}
+                                                    >
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                                            <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.95rem' }}>{a.studentName}</div>
+                                                            <button
+                                                                onClick={() => actions.deleteExtraAttendance(a.id)}
+                                                                style={{
+                                                                    border: 'none',
+                                                                    background: 'transparent',
+                                                                    padding: '2px',
+                                                                    cursor: 'pointer',
+                                                                    opacity: 0.5,
+                                                                    transition: 'opacity 0.2s'
+                                                                }}
+                                                                className="card-hover-action"
+                                                                title="Xóa buổi học này"
+                                                            >
+                                                                <Trash2 size={14} color="var(--danger)" />
+                                                            </button>
+                                                        </div>
+                                                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.3rem', opacity: 0.8 }}>
+                                                            {a.className}
+                                                        </div>
+                                                        {a.notes && (
+                                                            <div style={{
+                                                                fontSize: '0.75rem',
+                                                                color: 'var(--text-secondary)',
+                                                                marginTop: '0.6rem',
+                                                                paddingTop: '0.6rem',
+                                                                borderTop: '1px solid var(--glass-border)',
+                                                                fontStyle: 'italic',
+                                                                lineHeight: '1.4'
+                                                            }}>
+                                                                {a.notes}
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 ))}
+                                                {attendees.length === 0 && (
+                                                    <div style={{
+                                                        marginTop: '3rem',
+                                                        textAlign: 'center',
+                                                        color: 'var(--text-secondary)',
+                                                        opacity: 0.3,
+                                                        fontSize: '0.85rem',
+                                                        fontStyle: 'italic'
+                                                    }}>
+                                                        Trống
+                                                    </div>
+                                                )}
                                             </div>
                                         </td>
-                                        <td>
-                                            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                                                {dayNumbers.map(dayNum => {
-                                                    const session = schedule.sessions.find(s => s.day === dayNum);
-                                                    return (
-                                                        <div
-                                                            key={dayNum}
-                                                            title={session ? `Ngày ${new Date(session.date).toLocaleDateString('vi-VN')}${session.notes ? ': ' + session.notes : ''}` : ''}
-                                                            style={{
-                                                                padding: '0.4rem 0.6rem',
-                                                                borderRadius: '8px',
-                                                                fontSize: '0.8rem',
-                                                                fontWeight: 600,
-                                                                background: session ? 'var(--primary)' : 'rgba(0,0,0,0.05)',
-                                                                color: session ? 'white' : 'var(--text-secondary)',
-                                                                minWidth: '40px',
-                                                                textAlign: 'center',
-                                                                cursor: session ? 'help' : 'default',
-                                                                border: session ? 'none' : '1px solid rgba(0,0,0,0.05)'
-                                                            }}
-                                                        >
-                                                            {dayLabelsMap[dayNum]}
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        </td>
-                                        <td style={{ textAlign: 'right' }}>
-                                            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                                                <button
-                                                    onClick={() => handleEdit(schedule.studentId)}
-                                                    className="btn btn-glass" style={{ padding: '0.5rem', borderRadius: '8px' }}
-                                                    title="Thêm/Sửa lịch học"
-                                                >
-                                                    <Edit2 size={16} color="var(--primary)" />
-                                                </button>
-                                                <button
-                                                    onClick={() => {
-                                                        const ids = schedule.sessions.map(s => s.id);
-                                                        if (window.confirm(`Bạn có chắc muốn xóa tất cả ${ids.length} buổi học của ${schedule.studentName} trong tuần này?`)) {
-                                                            actions.bulkDeleteExtraAttendance(ids);
-                                                        }
-                                                    }}
-                                                    className="btn btn-glass" style={{ padding: '0.5rem', borderRadius: '8px' }}
-                                                    title="Xóa tất cả buổi học trong tuần"
-                                                >
-                                                    <Trash2 size={16} color="var(--danger)" />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
+                                    );
+                                })}
+                            </tr>
                         </tbody>
                     </table>
                 </div>
-            )}
+            </div>
         </div>
     );
 };
