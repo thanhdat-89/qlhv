@@ -81,7 +81,12 @@ const Students = ({ db }) => {
             );
         }
 
-        return filtered;
+        // Sort students: "Đã nghỉ" at the bottom, then alphabetically by name
+        return [...filtered].sort((a, b) => {
+            if (a.status === 'Đã nghỉ' && b.status !== 'Đã nghỉ') return 1;
+            if (a.status !== 'Đã nghỉ' && b.status === 'Đã nghỉ') return -1;
+            return a.name.localeCompare(b.name, 'vi', { sensitivity: 'base' });
+        });
     };
 
     // Generate change history list
