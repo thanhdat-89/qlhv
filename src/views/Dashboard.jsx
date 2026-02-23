@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Filter, TrendingUp, Users, DollarSign, BadgeCheck } from 'lucide-react';
+import { Filter, TrendingUp, Users, DollarSign, BadgeCheck, UserMinus } from 'lucide-react';
 
 const Dashboard = ({ db }) => {
     const navigate = useNavigate();
@@ -17,6 +17,14 @@ const Dashboard = ({ db }) => {
     const studyingStudents = filteredStudents.filter(s => s.status === 'Đang học' || s.status === 'Mới nhập học').length;
     const totalRevenue = fees.reduce((sum, f) => sum + f.amount, 0);
     const newStudents = filteredStudents.filter(s => s.status === 'Mới nhập học').length;
+
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    const leftThisMonth = filteredStudents.filter(s => {
+        if (s.status !== 'Đã nghỉ' || !s.leaveDate) return false;
+        const leaveDate = new Date(s.leaveDate);
+        return leaveDate.getMonth() === currentMonth && leaveDate.getFullYear() === currentYear;
+    }).length;
 
     return (
         <div className="view-container">
@@ -56,6 +64,15 @@ const Dashboard = ({ db }) => {
                     <div>
                         <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', fontWeight: 500 }}>Học viên mới</p>
                         <h2 style={{ fontSize: '1.75rem', marginTop: '0.25rem' }}>{newStudents}</h2>
+                    </div>
+                </div>
+                <div className="glass card" style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+                    <div className="icon-box icon-box-danger">
+                        <UserMinus size={32} />
+                    </div>
+                    <div>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', fontWeight: 500 }}>Nghỉ học tháng này</p>
+                        <h2 style={{ fontSize: '1.75rem', marginTop: '0.25rem' }}>{leftThisMonth}</h2>
                     </div>
                 </div>
                 {/* <div className="glass card" style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
