@@ -90,7 +90,7 @@ const Dashboard = ({ db }) => {
                 <h3 style={{ marginBottom: '1.5rem' }}>Danh sách lớp học</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1rem' }}>
                     {classes.map(c => {
-                        const classStudents = filteredStudents.filter(s => s.classId === c.id);
+                        const classStudents = filteredStudents.filter(s => s.classId === c.id && s.status !== 'Đã nghỉ');
                         const debtCount = classStudents.filter(s => (s.tuition.balance || 0) > 0).length;
                         return (
                             <div
