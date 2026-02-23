@@ -207,138 +207,168 @@ const Students = ({ db }) => {
                 </button>
             </div>
 
-            {viewMode === 'list' && (
-                <>
-                    <div className="tab-group" style={{ marginBottom: '2rem' }}>
-                        <button
-                            onClick={() => setFilterMode('all')}
-                            className={`tab-item ${filterMode === 'all' ? 'active' : ''}`}
-                        >
-                            Tất cả
-                        </button>
-                        <button
-                            onClick={() => setFilterMode('new')}
-                            className={`tab-item ${filterMode === 'new' ? 'active' : ''}`}
-                            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-                        >
-                            <UserCheck size={16} /> Học sinh mới
-                        </button>
-                        <button
-                            onClick={() => setFilterMode('left')}
-                            className={`tab-item ${filterMode === 'left' ? 'active' : ''}`}
-                            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-                        >
-                            <UserMinus size={16} /> Học sinh nghỉ
-                        </button>
-                    </div>
+            {viewMode === 'list' && (() => {
+                const filteredList = displayStudents();
+                const activeCount = filteredList.filter(s => s.status === 'Đang học' || s.status === 'Mới nhập học').length;
 
-                    <div style={{ marginBottom: '2rem' }}>
-                        <label className="form-label">Lọc theo lớp</label>
-                        <div className="filter-group hide-mobile">
+                return (
+                    <>
+                        <div className="tab-group" style={{ marginBottom: '2rem' }}>
                             <button
-                                onClick={() => setSelectedClassId('all')}
-                                className={`btn btn-glass filter-item ${selectedClassId === 'all' ? 'active' : ''}`}
+                                onClick={() => setFilterMode('all')}
+                                className={`tab-item ${filterMode === 'all' ? 'active' : ''}`}
                             >
-                                Tất cả lớp
+                                Tất cả
                             </button>
-                            {classes.map(c => (
-                                <button
-                                    key={c.id}
-                                    onClick={() => setSelectedClassId(c.id)}
-                                    className={`btn btn-glass filter-item ${selectedClassId === c.id ? 'active' : ''}`}
-                                >
-                                    {c.name}
-                                </button>
-                            ))}
-                        </div>
-                        <div className="show-mobile">
-                            <select
-                                className="glass"
-                                style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '12px', color: 'var(--text-primary)', border: '1px solid var(--glass-border)' }}
-                                value={selectedClassId}
-                                onChange={(e) => setSelectedClassId(e.target.value)}
+                            <button
+                                onClick={() => setFilterMode('new')}
+                                className={`tab-item ${filterMode === 'new' ? 'active' : ''}`}
+                                style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
                             >
-                                <option value="all">Tất cả lớp</option>
-                                {classes.map(c => (
-                                    <option key={c.id} value={c.id}>{c.name}</option>
-                                ))}
-                            </select>
+                                <UserCheck size={16} /> Học sinh mới
+                            </button>
+                            <button
+                                onClick={() => setFilterMode('left')}
+                                className={`tab-item ${filterMode === 'left' ? 'active' : ''}`}
+                                style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                            >
+                                <UserMinus size={16} /> Học sinh nghỉ
+                            </button>
                         </div>
-                    </div>
 
-                    <div className="table-container glass" onScroll={() => setExpandedNameId(null)}>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th style={{ width: '50px', textAlign: 'center' }}>STT</th>
-                                    <th className="sticky-col">Họ tên</th>
-                                    <th>Lớp / Năm sinh</th>
-                                    <th>Số điện thoại</th>
-                                    <th>Ngày nhập học</th>
-                                    <th style={{ textAlign: 'center' }}>Trạng thái</th>
-                                    <th style={{ textAlign: 'center' }}>Ưu đãi, giảm giá</th>
-                                    <th style={{ textAlign: 'right' }}>Thao tác</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {displayStudents().map((s, index) => (
-                                    <tr key={s.id}>
-                                        <td style={{ textAlign: 'center', color: 'var(--text-secondary)', fontWeight: 500 }}>
-                                            {index + 1}
-                                        </td>
-                                        <td
-                                            className={`sticky-col ${expandedNameId === s.id ? 'expanded' : ''}`}
-                                            style={{ color: 'var(--text-primary)', fontWeight: 500 }}
-                                            title={s.name}
-                                            onClick={() => toggleExpandName(s.id)}
-                                        >
-                                            {s.name}
-                                        </td>
-                                        <td>
-                                            <div style={{ fontWeight: 500 }}>{s.className}</div>
-                                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>NS: {s.birthYear}</div>
-                                        </td>
-                                        <td style={{ color: 'var(--text-primary)' }}>{s.phone || '-'}</td>
-                                        <td>{new Date(s.enrollDate).toLocaleDateString('vi-VN')}</td>
-                                        <td style={{ textAlign: 'center' }}>{getStatusLabel(s)}</td>
-                                        <td style={{ textAlign: 'center', color: 'var(--secondary)', fontWeight: 500 }}>
-                                            {s.discountRate > 0 ? `${s.discountRate * 100}%` : '-'}
-                                        </td>
-                                        <td style={{ textAlign: 'right' }}>
-                                            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                                                <button
-                                                    onClick={() => handleOpenAttendanceModal(s.id)}
-                                                    className="btn btn-glass" style={{ padding: '0.4rem', borderRadius: '8px', border: 'none' }}
-                                                    title="Thêm lịch học bổ sung"
-                                                >
-                                                    <Calendar size={16} color="var(--secondary)" />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleEdit(s)}
-                                                    className="btn btn-glass" style={{ padding: '0.4rem', borderRadius: '8px', border: 'none' }}
-                                                >
-                                                    <Edit2 size={16} color="var(--primary)" />
-                                                </button>
-                                                <button
-                                                    onClick={() => actions.deleteStudent(s.id)}
-                                                    className="btn btn-glass" style={{ padding: '0.4rem', borderRadius: '8px', border: 'none' }}
-                                                >
-                                                    <Trash2 size={16} color="var(--danger)" />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
+                        <div style={{ marginBottom: '1.5rem' }}>
+                            <label className="form-label">Lọc theo lớp</label>
+                            <div className="filter-group hide-mobile">
+                                <button
+                                    onClick={() => setSelectedClassId('all')}
+                                    className={`btn btn-glass filter-item ${selectedClassId === 'all' ? 'active' : ''}`}
+                                >
+                                    Tất cả lớp
+                                </button>
+                                {classes.map(c => (
+                                    <button
+                                        key={c.id}
+                                        onClick={() => setSelectedClassId(c.id)}
+                                        className={`btn btn-glass filter-item ${selectedClassId === c.id ? 'active' : ''}`}
+                                    >
+                                        {c.name}
+                                    </button>
                                 ))}
-                            </tbody>
-                        </table>
-                        {displayStudents().length === 0 && (
-                            <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
-                                Không có dữ liệu phù hợp.
                             </div>
-                        )}
-                    </div>
-                </>
-            )}
+                            <div className="show-mobile">
+                                <select
+                                    className="glass"
+                                    style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '12px', color: 'var(--text-primary)', border: '1px solid var(--glass-border)' }}
+                                    value={selectedClassId}
+                                    onChange={(e) => setSelectedClassId(e.target.value)}
+                                >
+                                    <option value="all">Tất cả lớp</option>
+                                    {classes.map(c => (
+                                        <option key={c.id} value={c.id}>{c.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* Student Count Indicator */}
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            marginBottom: '1rem',
+                            marginTop: '0.5rem'
+                        }}>
+                            <div style={{
+                                background: 'white',
+                                color: 'var(--primary)',
+                                padding: '0.6rem 1.2rem',
+                                borderRadius: '12px',
+                                fontSize: '0.95rem',
+                                fontWeight: '600',
+                                border: '1px solid var(--primary)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                            }}>
+                                <UserCheck size={20} />
+                                Số học sinh đang học: <span style={{ fontSize: '1.2rem', color: 'var(--primary)' }}>{activeCount}</span>
+                            </div>
+                        </div>
+
+                        <div className="table-container glass" onScroll={() => setExpandedNameId(null)}>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th style={{ width: '50px', textAlign: 'center' }}>STT</th>
+                                        <th className="sticky-col">Họ tên</th>
+                                        <th>Lớp / Năm sinh</th>
+                                        <th>Số điện thoại</th>
+                                        <th>Ngày nhập học</th>
+                                        <th style={{ textAlign: 'center' }}>Trạng thái</th>
+                                        <th style={{ textAlign: 'center' }}>Ưu đãi, giảm giá</th>
+                                        <th style={{ textAlign: 'right' }}>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredList.map((s, index) => (
+                                        <tr key={s.id}>
+                                            <td style={{ textAlign: 'center', color: 'var(--text-secondary)', fontWeight: 500 }}>
+                                                {index + 1}
+                                            </td>
+                                            <td
+                                                className={`sticky-col ${expandedNameId === s.id ? 'expanded' : ''}`}
+                                                style={{ color: 'var(--text-primary)', fontWeight: 500 }}
+                                                title={s.name}
+                                                onClick={() => toggleExpandName(s.id)}
+                                            >
+                                                {s.name}
+                                            </td>
+                                            <td>
+                                                <div style={{ fontWeight: 500 }}>{s.className}</div>
+                                                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>NS: {s.birthYear}</div>
+                                            </td>
+                                            <td style={{ color: 'var(--text-primary)' }}>{s.phone || '-'}</td>
+                                            <td>{new Date(s.enrollDate).toLocaleDateString('vi-VN')}</td>
+                                            <td style={{ textAlign: 'center' }}>{getStatusLabel(s)}</td>
+                                            <td style={{ textAlign: 'center', color: 'var(--secondary)', fontWeight: 500 }}>
+                                                {s.discountRate > 0 ? `${s.discountRate * 100}%` : '-'}
+                                            </td>
+                                            <td style={{ textAlign: 'right' }}>
+                                                <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                                                    <button
+                                                        onClick={() => handleOpenAttendanceModal(s.id)}
+                                                        className="btn btn-glass" style={{ padding: '0.4rem', borderRadius: '8px', border: 'none' }}
+                                                        title="Thêm lịch học bổ sung"
+                                                    >
+                                                        <Calendar size={16} color="var(--secondary)" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleEdit(s)}
+                                                        className="btn btn-glass" style={{ padding: '0.4rem', borderRadius: '8px', border: 'none' }}
+                                                    >
+                                                        <Edit2 size={16} color="var(--primary)" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => actions.deleteStudent(s.id)}
+                                                        className="btn btn-glass" style={{ padding: '0.4rem', borderRadius: '8px', border: 'none' }}
+                                                    >
+                                                        <Trash2 size={16} color="var(--danger)" />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                            {filteredList.length === 0 && (
+                                <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                                    Không có dữ liệu phù hợp.
+                                </div>
+                            )}
+                        </div>
+                    </>
+                );
+            })()}
 
             {viewMode === 'history' && (
                 <div className="table-container glass" onScroll={() => setExpandedNameId(null)}>
