@@ -275,12 +275,23 @@ const Attendance = ({ db }) => {
                                     date.setDate(monday.getDate() + (dayNum - 1));
                                     const dateStr = date.toISOString().split('T')[0];
 
-                                    const attendees = (extraAttendance || [])
+                                    let attendees = (extraAttendance || [])
                                         .filter(a => a.date === dateStr)
                                         .map(a => {
                                             const student = students.find(s => s.id === a.studentId);
-                                            return { ...a, studentName: student?.name || 'N/A', className: student?.className || '' };
+                                            return { ...a, studentName: student?.name || 'N/A', className: student?.className || '', classId: student?.classId };
                                         });
+
+                                    if (searchQuery) {
+                                        const query = searchQuery.toLowerCase();
+                                        attendees = attendees.filter(a =>
+                                            a.studentName.toLowerCase().includes(query)
+                                        );
+                                    }
+
+                                    if (selectedClass !== 'all') {
+                                        attendees = attendees.filter(a => String(a.classId) === String(selectedClass));
+                                    }
 
                                     return (
                                         <td key={dayNum} style={{ verticalAlign: 'top', minHeight: '400px', padding: '0.25rem' }}>
