@@ -18,6 +18,7 @@ export const studentService = {
             leaveDate: s.leave_date,
             classId: s.class_id,
             status: s.status,
+            statusHistory: s.status_history || [],
             discountRate: parseFloat(s.discount_rate)
         }));
     },
@@ -33,6 +34,7 @@ export const studentService = {
             leave_date: student.leaveDate,
             class_id: student.classId,
             status: student.status,
+            status_history: student.statusHistory || [],
             discount_rate: student.discountRate
         };
         const { data, error } = await supabase
@@ -53,6 +55,7 @@ export const studentService = {
         if (data.leaveDate !== undefined) dbData.leave_date = data.leaveDate;
         if (data.classId !== undefined) dbData.class_id = data.classId;
         if (data.status !== undefined) dbData.status = data.status;
+        if (data.statusHistory !== undefined) dbData.status_history = data.statusHistory;
         if (data.discountRate !== undefined) dbData.discount_rate = data.discountRate;
 
         const { error } = await supabase
@@ -82,6 +85,7 @@ export const studentService = {
             leave_date: s.leaveDate,
             class_id: s.classId,
             status: s.status,
+            status_history: s.statusHistory || [],
             discount_rate: s.discountRate
         }));
         const { data, error } = await supabase

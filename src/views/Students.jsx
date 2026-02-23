@@ -84,18 +84,64 @@ const Students = ({ db }) => {
         return filtered;
     };
 
-    // Sort students by enrollment date for history view
-    const enrollmentHistory = [...students].sort((a, b) =>
-        new Date(b.enrollDate) - new Date(a.enrollDate)
-    );
-
-    const getStatusLabel = (status) => {
-        switch (status) {
-            case 'Đang học': return <span className="label label-success">{status}</span>;
-            case 'Mới nhập học': return <span className="label label-primary">{status}</span>;
-            case 'Đã nghỉ': return <span className="label label-danger">{status}</span>;
-            default: return <span className="label glass">{status}</span>;
+    // Generate change history list
+    const statusChangeHistory = [];
+    const sourceStudents = db.allStudents || students;
+    sourceStudents.forEach(s => {
+        if (s.statusHistory && s.statusHistory.length > 0) {
+            s.statusHistory.forEach((historyItem, index) => {
+                let content = historyItem.content || `Cập nhật trạng thái thành: ${historyItem.status}`;
+                if (index === 0 && !historyItem.content) content = `Thêm mới học viên, trạng thái: ${historyItem.status}`;
+                statusChangeHistory.push({
+                    id: s.id + '-' + historyItem.date,
+                    studentId: s.id,
+                    name: s.name,
+                    className: s.className,
+                    birthYear: s.birthYear,
+                    status: historyItem.status,
+                    changeDate: historyItem.date,
+                    content: content
+                });
+            });
+        } else {
+            // Fallback for students without history
+            statusChangeHistory.push({
+                id: s.id + '-fallback',
+                studentId: s.id,
+                name: s.name,
+                className: s.className,
+                birthYear: s.birthYear,
+                status: s.status,
+                changeDate: s.enrollDate,
+                content: `Thêm mới học viên, trạng thái: ${s.status}`
+            });
         }
+    });
+
+    statusChangeHistory.sort((a, b) => new Date(b.changeDate) - new Date(a.changeDate));
+
+    const getStatusLabel = (student) => {
+        const badge = (() => {
+            switch (student.status) {
+                case 'Đang học': return <span className="label label-success">{student.status}</span>;
+                case 'Mới nhập học': return <span className="label label-primary">{student.status}</span>;
+                case 'Đã nghỉ': return <span className="label label-danger">{student.status}</span>;
+                default: return <span className="label glass">{student.status}</span>;
+            }
+        })();
+
+        if (student.status === 'Đã nghỉ' && student.leaveDate) {
+            return (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                    {badge}
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
+                        Nghỉ: {new Date(student.leaveDate).toLocaleDateString('vi-VN')}
+                    </span>
+                </div>
+            );
+        }
+
+        return badge;
     };
 
     return (
@@ -132,6 +178,7 @@ const Students = ({ db }) => {
             {isAttendanceModalOpen && (
                 <AddAttendanceModal
                     students={students}
+                    allAttendanceRecords={db.extraAttendance}
                     onAdd={actions.addExtraAttendance}
                     onBulkAdd={actions.bulkAddExtraAttendance}
                     onUpdate={actions.updateExtraAttendance}
@@ -151,7 +198,7 @@ const Students = ({ db }) => {
                     onClick={() => setViewMode('history')}
                     className={`tab-item ${viewMode === 'history' ? 'active' : ''}`}
                 >
-                    Lịch sử nhập học
+                    Lịch sử thay đổi
                 </button>
             </div>
 
@@ -248,7 +295,7 @@ const Students = ({ db }) => {
                                         </td>
                                         <td style={{ color: 'var(--text-primary)' }}>{s.phone || '-'}</td>
                                         <td>{new Date(s.enrollDate).toLocaleDateString('vi-VN')}</td>
-                                        <td style={{ textAlign: 'center' }}>{getStatusLabel(s.status)}</td>
+                                        <td style={{ textAlign: 'center' }}>{getStatusLabel(s)}</td>
                                         <td style={{ textAlign: 'center', color: 'var(--secondary)', fontWeight: 500 }}>
                                             {s.discountRate > 0 ? `${s.discountRate * 100}%` : '-'}
                                         </td>
@@ -293,27 +340,24 @@ const Students = ({ db }) => {
                     <table>
                         <thead>
                             <tr>
-                                <th style={{ width: '50px', textAlign: 'center' }}>STT</th>
-                                <th className="sticky-date">Ngày nhập học</th>
+                                <th className="sticky-date">Thời điểm thay đổi</th>
                                 <th className="sticky-name-2">Họ tên</th>
                                 <th>Lớp / Năm sinh</th>
+                                <th>Nội dung thay đổi</th>
                                 <th style={{ textAlign: 'center' }}>Trạng thái</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {enrollmentHistory.map((s, index) => (
+                            {statusChangeHistory.map((s, index) => (
                                 <tr key={s.id}>
-                                    <td style={{ textAlign: 'center', color: 'var(--text-secondary)', fontWeight: 500 }}>
-                                        {index + 1}
-                                    </td>
                                     <td className="sticky-date" style={{ color: 'var(--primary)', fontWeight: 600 }}>
-                                        {new Date(s.enrollDate).toLocaleDateString('vi-VN')}
+                                        {new Date(s.changeDate).toLocaleString('vi-VN')}
                                     </td>
                                     <td
-                                        className={`sticky-name-2 ${expandedNameId === s.id ? 'expanded' : ''}`}
+                                        className={`sticky-name-2 ${expandedNameId === s.studentId ? 'expanded' : ''}`}
                                         style={{ color: 'var(--text-primary)', fontWeight: 500 }}
                                         title={s.name}
-                                        onClick={() => toggleExpandName(s.id)}
+                                        onClick={() => toggleExpandName(s.studentId)}
                                     >
                                         {s.name}
                                     </td>
@@ -321,7 +365,8 @@ const Students = ({ db }) => {
                                         <div style={{ fontWeight: 500 }}>{s.className}</div>
                                         <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>NS: {s.birthYear}</div>
                                     </td>
-                                    <td style={{ textAlign: 'center' }}>{getStatusLabel(s.status)}</td>
+                                    <td style={{ color: 'var(--text-primary)' }}>{s.content}</td>
+                                    <td style={{ textAlign: 'center' }}>{getStatusLabel(s)}</td>
                                 </tr>
                             ))}
                         </tbody>

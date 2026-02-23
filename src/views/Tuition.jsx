@@ -52,6 +52,20 @@ const Tuition = ({ db, initialParams }) => {
     }, [students, actions, selectedMonth, selectedYear]);
 
     const filteredStudents = studentsWithMonthlyTuition
+        .filter(s => {
+            // Check if the student left before the selected month
+            let effectiveLeaveDate = s.leaveDate ? new Date(s.leaveDate) : null;
+            if (s.status === 'Đã nghỉ' && !effectiveLeaveDate && s.statusHistory) {
+                const leaveEvent = [...s.statusHistory].reverse().find(h => h.status === 'Đã nghỉ');
+                if (leaveEvent) effectiveLeaveDate = new Date(leaveEvent.date);
+            }
+            if (effectiveLeaveDate) {
+                const monthStart = new Date(selectedYear, selectedMonth, 1);
+                monthStart.setHours(0, 0, 0, 0);
+                if (effectiveLeaveDate < monthStart) return false;
+            }
+            return true;
+        })
         .filter(s => selectedClassId === 'all' || String(s.classId) === String(selectedClassId))
         .filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()))
         .filter(s => selectedStatus === 'all' || s.tuition.status === selectedStatus)

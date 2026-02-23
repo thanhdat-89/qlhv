@@ -12,7 +12,8 @@ const AddStudentModal = ({ classes, onAdd, onUpdate, onClose, initialData }) => 
         classId: classes[0]?.id || '',
         status: 'Mới nhập học',
         discountRate: 0,
-        enrollDate: new Date().toISOString().split('T')[0]
+        enrollDate: new Date().toISOString().split('T')[0],
+        leaveDate: ''
     });
 
 
@@ -24,7 +25,8 @@ const AddStudentModal = ({ classes, onAdd, onUpdate, onClose, initialData }) => 
             const data = {
                 ...formData,
                 birthYear: parseInt(formData.birthYear),
-                discountRate: parseFloat(formData.discountRate) / 100
+                discountRate: parseFloat(formData.discountRate) / 100,
+                leaveDate: formData.status === 'Đã nghỉ' ? formData.leaveDate : null
             };
             if (initialData) {
                 await onUpdate(initialData.id, data);
@@ -101,16 +103,35 @@ const AddStudentModal = ({ classes, onAdd, onUpdate, onClose, initialData }) => 
                             />
                         </div>
                     </div>
-                    <div>
-                        <label className="form-label">Trạng thái</label>
-                        <select
-                            className="glass" style={{ width: '100%', padding: '0.75rem', boxSizing: 'border-box' }}
-                            value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value })}
-                        >
-                            <option value="Mới nhập học">Mới nhập học</option>
-                            <option value="Đang học">Đang học</option>
-                            <option value="Đã nghỉ">Đã nghỉ</option>
-                        </select>
+                    <div className="form-grid">
+                        <div>
+                            <label className="form-label">Trạng thái</label>
+                            <select
+                                className="glass" style={{ width: '100%', padding: '0.75rem', boxSizing: 'border-box' }}
+                                value={formData.status} onChange={e => {
+                                    const newStatus = e.target.value;
+                                    setFormData({
+                                        ...formData,
+                                        status: newStatus,
+                                        leaveDate: newStatus === 'Đã nghỉ' && !formData.leaveDate ? new Date().toISOString().split('T')[0] : formData.leaveDate
+                                    });
+                                }}
+                            >
+                                <option value="Mới nhập học">Mới nhập học</option>
+                                <option value="Đang học">Đang học</option>
+                                <option value="Đã nghỉ">Đã nghỉ</option>
+                            </select>
+                        </div>
+                        {formData.status === 'Đã nghỉ' && (
+                            <div>
+                                <label className="form-label">Ngày nghỉ học</label>
+                                <input
+                                    className="glass" type="date" required
+                                    style={{ width: '100%', padding: '0.75rem', boxSizing: 'border-box' }}
+                                    value={formData.leaveDate || ''} onChange={e => setFormData({ ...formData, leaveDate: e.target.value })}
+                                />
+                            </div>
+                        )}
                     </div>
                     <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
                         <button type="button" onClick={onClose} className="btn btn-glass" style={{ flex: 1 }}>Hủy</button>

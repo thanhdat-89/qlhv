@@ -4,7 +4,6 @@ import { Calendar, AlertCircle, Repeat } from 'lucide-react';
 const RecurringScheduleForm = ({ onPatternChange, initialPattern = null }) => {
     const [frequency, setFrequency] = useState(initialPattern?.frequency || 'weekly');
     const [daysOfWeek, setDaysOfWeek] = useState(initialPattern?.daysOfWeek || []);
-    const [dayOfMonth, setDayOfMonth] = useState(initialPattern?.dayOfMonth || 1);
     const [startDate, setStartDate] = useState(initialPattern?.startDate || '');
     const [endDate, setEndDate] = useState(initialPattern?.endDate || '');
     const [previewDates, setPreviewDates] = useState([]);
@@ -38,19 +37,10 @@ const RecurringScheduleForm = ({ onPatternChange, initialPattern = null }) => {
                 }
                 current.setDate(current.getDate() + 1);
             }
-        } else if (frequency === 'monthly' && dayOfMonth) {
-            let current = new Date(start.getFullYear(), start.getMonth(), dayOfMonth);
-            if (current < start) {
-                current.setMonth(current.getMonth() + 1);
-            }
-            while (current <= end && dates.length < 100) {
-                dates.push(new Date(current));
-                current.setMonth(current.getMonth() + 1);
-            }
         }
 
         setPreviewDates(dates);
-    }, [frequency, daysOfWeek, dayOfMonth, startDate, endDate]);
+    }, [frequency, daysOfWeek, startDate, endDate]);
 
     // Notify parent of pattern changes
     useEffect(() => {
@@ -60,11 +50,11 @@ const RecurringScheduleForm = ({ onPatternChange, initialPattern = null }) => {
             frequency,
             startDate,
             endDate,
-            ...(frequency === 'weekly' ? { daysOfWeek } : { dayOfMonth })
+            daysOfWeek
         };
 
         onPatternChange(pattern, previewDates);
-    }, [frequency, daysOfWeek, dayOfMonth, startDate, endDate, previewDates, onPatternChange]);
+    }, [frequency, daysOfWeek, startDate, endDate, previewDates, onPatternChange]);
 
     const toggleDayOfWeek = (day) => {
         if (daysOfWeek.includes(day)) {
@@ -77,27 +67,7 @@ const RecurringScheduleForm = ({ onPatternChange, initialPattern = null }) => {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             {/* Frequency Selection */}
-            <div>
-                <label className="form-label">Tần suất lặp lại</label>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button
-                        type="button"
-                        onClick={() => setFrequency('weekly')}
-                        className={`btn ${frequency === 'weekly' ? 'btn-primary' : 'btn-glass'}`}
-                        style={{ flex: 1 }}
-                    >
-                        Hàng tuần
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setFrequency('monthly')}
-                        className={`btn ${frequency === 'monthly' ? 'btn-primary' : 'btn-glass'}`}
-                        style={{ flex: 1 }}
-                    >
-                        Hàng tháng
-                    </button>
-                </div>
-            </div>
+            {/* The Monthly option was removed based on user request */}
 
             {/* Weekly Pattern */}
             {frequency === 'weekly' && (
@@ -116,23 +86,6 @@ const RecurringScheduleForm = ({ onPatternChange, initialPattern = null }) => {
                             </button>
                         ))}
                     </div>
-                </div>
-            )}
-
-            {/* Monthly Pattern */}
-            {frequency === 'monthly' && (
-                <div>
-                    <label className="form-label">Ngày trong tháng</label>
-                    <select
-                        className="glass"
-                        style={{ width: '100%', padding: '0.75rem' }}
-                        value={dayOfMonth}
-                        onChange={(e) => setDayOfMonth(parseInt(e.target.value))}
-                    >
-                        {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
-                            <option key={day} value={day}>Ngày {day}</option>
-                        ))}
-                    </select>
                 </div>
             )}
 

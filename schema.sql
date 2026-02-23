@@ -18,6 +18,7 @@ create table students (
   leave_date date,
   class_id text references classes(id),
   status text not null, -- 'Mới nhập học', 'Đang học', 'Đã nghỉ'
+  status_history jsonb default '[]'::jsonb,
   discount_rate numeric default 0,
   created_at timestamp with time zone default timezone('utc'::text, now())
 );

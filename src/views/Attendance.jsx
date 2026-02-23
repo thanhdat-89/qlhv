@@ -249,6 +249,7 @@ const Attendance = ({ db }) => {
             {isModalOpen && (
                 <AddAttendanceModal
                     students={students}
+                    allAttendanceRecords={extraAttendance}
                     onAdd={actions.addExtraAttendance}
                     onBulkAdd={actions.bulkAddExtraAttendance}
                     onUpdate={actions.updateExtraAttendance}

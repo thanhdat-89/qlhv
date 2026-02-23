@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { X, Save, Plus, Calendar as CalendarIcon, Trash2, ChevronLeft, ChevronRight, Repeat } from 'lucide-react';
 import RecurringScheduleForm from './RecurringScheduleForm';
 
-const CalendarPicker = ({ selectedDates, onToggleDate }) => {
+const CalendarPicker = ({ selectedDates, onToggleDate, scheduledDates = [] }) => {
     const [viewDate, setViewDate] = useState(new Date());
 
     const daysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
@@ -52,28 +52,43 @@ const CalendarPicker = ({ selectedDates, onToggleDate }) => {
                     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                     const isSelected = selectedDates.includes(dateStr);
                     const isToday = new Date().toISOString().split('T')[0] === dateStr;
+                    const isScheduled = scheduledDates?.includes(dateStr);
 
                     return (
-                        <button
-                            key={day}
-                            type="button"
-                            onClick={() => onToggleDate(dateStr)}
-                            style={{
-                                padding: '0.5rem 0',
-                                borderRadius: '8px',
-                                border: 'none',
-                                background: isSelected ? 'var(--primary)' : 'transparent',
-                                color: isSelected ? 'white' : 'var(--text-primary)',
-                                fontSize: '0.85rem',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s',
-                                fontWeight: isSelected || isToday ? 600 : 400,
-                                outline: isToday && !isSelected ? '1px solid var(--primary)' : 'none'
-                            }}
-                            className={!isSelected ? 'card-hover' : ''}
-                        >
-                            {day}
-                        </button>
+                        <div key={day} style={{ position: 'relative' }}>
+                            <button
+                                type="button"
+                                onClick={() => onToggleDate(dateStr)}
+                                style={{
+                                    width: '100%',
+                                    padding: '0.4rem 0',
+                                    borderRadius: '8px',
+                                    border: 'none',
+                                    background: isSelected ? 'var(--primary)' : 'transparent',
+                                    color: isSelected ? 'white' : (isScheduled ? 'var(--primary)' : 'var(--text-primary)'),
+                                    fontSize: '0.85rem',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s',
+                                    fontWeight: isSelected || isToday || isScheduled ? 600 : 400,
+                                    outline: isToday && !isSelected ? '1px solid var(--primary)' : 'none'
+                                }}
+                                className={!isSelected ? 'card-hover' : ''}
+                            >
+                                {day}
+                            </button>
+                            {isScheduled && (
+                                <div style={{
+                                    position: 'absolute',
+                                    bottom: '2px',
+                                    left: '50%',
+                                    transform: 'translateX(-50%)',
+                                    width: '4px',
+                                    height: '4px',
+                                    borderRadius: '50%',
+                                    background: isSelected ? 'rgba(255,255,255,0.8)' : 'var(--primary)'
+                                }} />
+                            )}
+                        </div>
                     );
                 })}
             </div>
@@ -81,7 +96,7 @@ const CalendarPicker = ({ selectedDates, onToggleDate }) => {
     );
 };
 
-const AddAttendanceModal = ({ students, onAdd, onBulkAdd, onUpdate, onBulkDelete, onClose, initialData, preSelectedStudentId, currentSessions = [] }) => {
+const AddAttendanceModal = ({ students, allAttendanceRecords = [], onAdd, onBulkAdd, onUpdate, onBulkDelete, onClose, initialData, preSelectedStudentId, currentSessions = [] }) => {
     const preSelectedStudent = preSelectedStudentId ? students.find(s => s.id === preSelectedStudentId) : null;
     const [mode, setMode] = useState('manual'); // 'manual' or 'recurring'
     const [searchQuery, setSearchQuery] = useState(preSelectedStudent ? preSelectedStudent.name : '');
@@ -99,8 +114,19 @@ const AddAttendanceModal = ({ students, onAdd, onBulkAdd, onUpdate, onBulkDelete
     const detectedFee = useMemo(() => {
         if (initialData) return initialData.fee;
         if (currentSessions.length > 0) return currentSessions[0].fee;
+
+        const targetStudentId = preSelectedStudentId || students[0]?.id;
+        if (targetStudentId) {
+            const studentPreviousRecords = allAttendanceRecords
+                .filter(a => a.studentId === targetStudentId)
+                .sort((a, b) => new Date(b.date) - new Date(a.date));
+            if (studentPreviousRecords.length > 0 && studentPreviousRecords[0].fee !== undefined) {
+                return studentPreviousRecords[0].fee;
+            }
+        }
+
         return (preSelectedStudent?.tuition?.feePerSession || students[0]?.tuition?.feePerSession || 200000);
-    }, [currentSessions, preSelectedStudent, students, initialData]);
+    }, [currentSessions, preSelectedStudentId, preSelectedStudent, students, initialData, allAttendanceRecords]);
 
     const [recurringPattern, setRecurringPattern] = useState(
         detectedDays.length > 0 ? {
@@ -165,11 +191,23 @@ const AddAttendanceModal = ({ students, onAdd, onBulkAdd, onUpdate, onBulkDelete
     }, [searchQuery, selectedClassFilter, preSelectedStudentId]);
 
     const handleStudentChange = (id) => {
-        const student = students.find(s => s.id === id);
+        let suggestedFee = formData.fee;
+
+        const studentPreviousRecords = allAttendanceRecords
+            .filter(a => a.studentId === id)
+            .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        if (studentPreviousRecords.length > 0 && studentPreviousRecords[0].fee !== undefined) {
+            suggestedFee = studentPreviousRecords[0].fee;
+        } else {
+            const student = students.find(s => s.id === id);
+            suggestedFee = student?.tuition?.feePerSession || formData.fee;
+        }
+
         setFormData({
             ...formData,
             studentId: id,
-            fee: student?.tuition?.feePerSession || formData.fee
+            fee: suggestedFee
         });
     };
 
@@ -352,9 +390,18 @@ const AddAttendanceModal = ({ students, onAdd, onBulkAdd, onUpdate, onBulkDelete
                     {/* Manual Mode: Calendar Picker */}
                     {mode === 'manual' && (
                         <div>
-                            <label className="form-label">Chọn các ngày học</label>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <label className="form-label mb-0">Chọn các ngày học</label>
+                                {mode === 'manual' && formData.studentId && (
+                                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--primary)' }} />
+                                        Đã có lịch bổ sung
+                                    </span>
+                                )}
+                            </div>
                             <CalendarPicker
                                 selectedDates={selectedDates}
+                                scheduledDates={allAttendanceRecords.filter(a => a.studentId === formData.studentId).map(a => a.date)}
                                 onToggleDate={(date) => {
                                     if (selectedDates.includes(date)) {
                                         setSelectedDates(selectedDates.filter(d => d !== date).sort());
@@ -425,15 +472,6 @@ const AddAttendanceModal = ({ students, onAdd, onBulkAdd, onUpdate, onBulkDelete
                     </div>
 
 
-                    <div>
-                        <label className="form-label">Ghi chú</label>
-                        <textarea
-                            className="glass" rows="2"
-                            style={{ width: '100%', padding: '0.75rem', resize: 'none', boxSizing: 'border-box' }}
-                            value={formData.notes} onChange={e => setFormData({ ...formData, notes: e.target.value })}
-                            placeholder="Ví dụ: Học bù buổi nghỉ lễ, Học riêng 1-1..."
-                        />
-                    </div>
 
                     <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
                         <button type="button" onClick={onClose} className="btn btn-glass" style={{ flex: 1 }}>Hủy</button>

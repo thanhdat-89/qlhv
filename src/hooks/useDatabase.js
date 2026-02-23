@@ -184,12 +184,18 @@ export const useDatabase = () => {
 
         const enrollDate = parseDate(student.enrollDate);
         enrollDate.setHours(0, 0, 0, 0);
-        const leaveDate = student.leaveDate ? parseDate(student.leaveDate) : null;
-        if (leaveDate) leaveDate.setHours(23, 59, 59, 999);
+
+        let effectiveLeaveDate = student.leaveDate ? parseDate(student.leaveDate) : null;
+        if (student.status === 'Đã nghỉ' && !effectiveLeaveDate && student.statusHistory) {
+            const leaveEvent = [...student.statusHistory].reverse().find(h => h.status === 'Đã nghỉ');
+            if (leaveEvent) effectiveLeaveDate = parseDate(leaveEvent.date);
+        }
+
+        if (effectiveLeaveDate) effectiveLeaveDate.setHours(23, 59, 59, 999);
 
         // --- Monthly Calculation (for display) ---
         const monthlyStart = enrollDate > startOfMonth ? enrollDate : startOfMonth;
-        const monthlyEnd = (leaveDate && leaveDate < endOfMonth) ? leaveDate : endOfMonth;
+        const monthlyEnd = (effectiveLeaveDate && effectiveLeaveDate < endOfMonth) ? effectiveLeaveDate : endOfMonth;
 
         let scheduledCount = 0;
         if (monthlyStart <= monthlyEnd) {
@@ -200,6 +206,7 @@ export const useDatabase = () => {
         const extraSessionsSelected = extraAttendance.filter(a => {
             if (a.studentId !== studentId) return false;
             const d = parseDate(a.date);
+            if (effectiveLeaveDate && d > effectiveLeaveDate) return false;
             return d >= startOfMonth && d <= endOfMonth;
         });
         const extraCount = extraSessionsSelected.length;
@@ -221,7 +228,7 @@ export const useDatabase = () => {
         // Debt = (Scheduled + Extra up to Target Month) - Total Payments
         const targetMonthEnd = new Date(calculationYear, calculationMonth + 1, 0);
         targetMonthEnd.setHours(23, 59, 59, 999);
-        const balanceLimit = (leaveDate && leaveDate < targetMonthEnd) ? leaveDate : targetMonthEnd;
+        const balanceLimit = (effectiveLeaveDate && effectiveLeaveDate < targetMonthEnd) ? effectiveLeaveDate : targetMonthEnd;
 
         let tuitionIncurred = 0;
         let iterDate = new Date(enrollDate.getFullYear(), enrollDate.getMonth(), 1);
@@ -249,6 +256,7 @@ export const useDatabase = () => {
         const extraSessionsUpToTarget = extraAttendance.filter(a => {
             if (a.studentId !== studentId) return false;
             const d = parseDate(a.date);
+            if (effectiveLeaveDate && d > effectiveLeaveDate) return false;
             return d <= balanceLimit;
         });
 
@@ -332,7 +340,11 @@ export const useDatabase = () => {
     const addStudent = async (newStudent) => {
         try {
             const id = generateUniqueId('ST');
-            const studentWithId = { ...newStudent, id };
+            const studentWithId = {
+                ...newStudent,
+                id,
+                statusHistory: [{ status: newStudent.status, date: new Date().toISOString() }]
+            };
             const savedStudent = await studentService.create(studentWithId);
             setStudents(prev => [...prev, savedStudent]);
             return savedStudent;
@@ -348,7 +360,8 @@ export const useDatabase = () => {
             const now = Date.now();
             const studentsWithIds = newStudentsData.map((s, index) => ({
                 ...s,
-                id: `ST${(now + index).toString(36).toUpperCase()}`
+                id: `ST${(now + index).toString(36).toUpperCase()}`,
+                statusHistory: [{ status: s.status, date: new Date().toISOString() }]
             }));
 
             const savedStudents = await studentService.bulkCreate(studentsWithIds);
@@ -386,6 +399,22 @@ export const useDatabase = () => {
             const recordWithId = { ...record, id };
             const savedRecord = await financeService.addAttendance(recordWithId);
             setExtraAttendance(prev => [...prev, savedRecord]);
+
+            // Log to student history
+            const currentStudent = students.find(s => s.id === record.studentId);
+            if (currentStudent) {
+                const newHistoryEntry = {
+                    status: currentStudent.status,
+                    content: `📅 Đã xếp thêm 1 buổi học bổ sung vào ngày ${new Date(record.date).toLocaleDateString('vi-VN')}`,
+                    date: new Date().toISOString()
+                };
+                const finalUpdateData = {
+                    statusHistory: [...(currentStudent.statusHistory || []), newHistoryEntry]
+                };
+                await studentService.update(currentStudent.id, finalUpdateData);
+                setStudents(prev => prev.map(s => s.id === currentStudent.id ? { ...s, ...finalUpdateData } : s));
+            }
+
             return savedRecord;
         } catch (error) {
             console.error('Failed to add attendance:', error);
@@ -403,6 +432,40 @@ export const useDatabase = () => {
             }));
             const savedRecords = await financeService.bulkAddAttendance(recordsWithIds);
             setExtraAttendance(prev => [...prev, ...savedRecords]);
+
+            // Log to student history
+            const byStudent = {};
+            recordsWithIds.forEach(r => {
+                if (!byStudent[r.studentId]) byStudent[r.studentId] = [];
+                byStudent[r.studentId].push(r);
+            });
+
+            for (const studentId in byStudent) {
+                const currentStudent = students.find(s => s.id === studentId);
+                if (currentStudent) {
+                    const studentRecords = byStudent[studentId];
+                    studentRecords.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                    let contentMsg = `📅 Đã xếp thêm ${studentRecords.length} buổi học bổ sung`;
+                    if (studentRecords.length > 1) {
+                        contentMsg += ` (từ ${new Date(studentRecords[0].date).toLocaleDateString('vi-VN')} đến ${new Date(studentRecords[studentRecords.length - 1].date).toLocaleDateString('vi-VN')})`;
+                    } else if (studentRecords.length === 1) {
+                        contentMsg += ` vào ngày ${new Date(studentRecords[0].date).toLocaleDateString('vi-VN')}`;
+                    }
+
+                    const newHistoryEntry = {
+                        status: currentStudent.status,
+                        content: contentMsg,
+                        date: new Date().toISOString()
+                    };
+                    const finalUpdateData = {
+                        statusHistory: [...(currentStudent.statusHistory || []), newHistoryEntry]
+                    };
+                    await studentService.update(currentStudent.id, finalUpdateData);
+                    setStudents(prev => prev.map(s => s.id === currentStudent.id ? { ...s, ...finalUpdateData } : s));
+                }
+            }
+
             return savedRecords;
         } catch (error) {
             console.error('Failed to bulk add attendance:', error);
@@ -427,8 +490,64 @@ export const useDatabase = () => {
 
     const updateStudent = async (id, updatedData) => {
         try {
-            await studentService.update(id, updatedData);
-            setStudents(prev => prev.map(s => s.id === id ? { ...s, ...updatedData } : s));
+            const currentStudent = students.find(s => s.id === id);
+            let finalUpdateData = { ...updatedData };
+
+            if (currentStudent) {
+                const changes = [];
+                const fieldMap = {
+                    name: 'Họ tên',
+                    birthYear: 'Năm sinh',
+                    phone: 'Số điện thoại',
+                    classId: 'Lớp học',
+                    enrollDate: 'Ngày nhập học',
+                    leaveDate: 'Ngày nghỉ học',
+                    status: 'Trạng thái',
+                    discountRate: 'Ưu đãi/giảm giá'
+                };
+
+                for (const key in fieldMap) {
+                    if (updatedData[key] !== undefined && updatedData[key] !== currentStudent[key]) {
+                        let oldVal = currentStudent[key];
+                        let newVal = updatedData[key];
+
+                        if (oldVal === null || oldVal === undefined || oldVal === '') oldVal = 'Trống';
+                        if (newVal === null || newVal === undefined || newVal === '') newVal = 'Trống';
+
+                        if (key === 'classId') {
+                            oldVal = classes.find(c => c.id === currentStudent[key])?.name || oldVal;
+                            newVal = classes.find(c => c.id === updatedData[key])?.name || newVal;
+                        } else if (key === 'discountRate') {
+                            oldVal = oldVal === 'Trống' ? '0%' : `${currentStudent[key] * 100}%`;
+                            newVal = newVal === 'Trống' ? '0%' : `${updatedData[key] * 100}%`;
+                        } else if (key === 'enrollDate' || key === 'leaveDate') {
+                            if (oldVal !== 'Trống') {
+                                const od = new Date(currentStudent[key]);
+                                oldVal = isNaN(od) ? oldVal : od.toLocaleDateString('vi-VN');
+                            }
+                            if (newVal !== 'Trống') {
+                                const nd = new Date(updatedData[key]);
+                                newVal = isNaN(nd) ? newVal : nd.toLocaleDateString('vi-VN');
+                            }
+                        }
+
+                        changes.push(`${fieldMap[key]} từ "${oldVal}" thành "${newVal}"`);
+                    }
+                }
+
+                if (changes.length > 0) {
+                    const statusVal = updatedData.status !== undefined ? updatedData.status : currentStudent.status;
+                    const newHistoryEntry = {
+                        status: statusVal,
+                        content: `Cập nhật thông tin: ${changes.join(', ')}`,
+                        date: new Date().toISOString()
+                    };
+                    finalUpdateData.statusHistory = [...(currentStudent.statusHistory || []), newHistoryEntry];
+                }
+            }
+
+            await studentService.update(id, finalUpdateData);
+            setStudents(prev => prev.map(s => s.id === id ? { ...s, ...finalUpdateData } : s));
         } catch (error) {
             console.error('Failed to update student:', error);
             alert('Lỗi khi cập nhật học viên: ' + (error.message || 'Vui lòng thử lại sau.'));
@@ -464,7 +583,7 @@ export const useDatabase = () => {
     };
 
     const deleteStudent = async (id) => {
-        const password = window.prompt('Hành động này sẽ xóa vĩnh viễn dữ liệu học viên. Vui lòng nhập mật khẩu quản lý để tiếp tục:');
+        const password = window.prompt('Hành động này sẽ xóa học viên (ẩn khỏi danh sách). Vui lòng nhập mật khẩu quản lý để tiếp tục:');
 
         if (password === null) return; // User cancelled
 
@@ -473,20 +592,28 @@ export const useDatabase = () => {
             return;
         }
 
-        if (window.confirm('Bạn có chắc chắn muốn xóa học viên này? Toàn bộ lịch sử đóng tiền và điểm danh của học viên cũng sẽ bị xóa.')) {
+        if (window.confirm('Bạn có chắc chắn muốn xóa học viên này? Thao tác này sẽ chuyển học viên vào thùng rác nhưng vẫn giữ lại lịch sử thay đổi.')) {
             try {
-                // 1. Delete associated records in Supabase (satisfy foreign key constraints)
-                await financeService.deleteByStudent(id);
+                const currentStudent = students.find(s => s.id === id);
+                if (!currentStudent) return;
 
-                // 2. Delete the student themselves
-                await studentService.delete(id);
+                const newHistoryEntry = {
+                    status: 'Đã xóa',
+                    content: '🗑️ Xóa học viên khỏi hệ thống',
+                    date: new Date().toISOString()
+                };
 
-                // 3. Update local state
-                setStudents(prev => prev.filter(s => s.id !== id));
-                setFees(prev => prev.filter(f => f.studentId !== id));
-                setExtraAttendance(prev => prev.filter(a => a.studentId !== id));
+                const finalUpdateData = {
+                    status: 'Đã xóa',
+                    leaveDate: currentStudent.leaveDate || new Date().toISOString(),
+                    statusHistory: [...(currentStudent.statusHistory || []), newHistoryEntry]
+                };
 
-                alert('Đã xóa học viên thành công.');
+                // Update the student to soft delete
+                await studentService.update(id, finalUpdateData);
+                setStudents(prev => prev.map(s => s.id === id ? { ...s, ...finalUpdateData } : s));
+
+                alert('Đã đưa học viên vào thùng rác thành công.');
             } catch (error) {
                 console.error('Failed to delete student:', error);
                 alert('Lỗi khi xóa học viên: ' + (error.message || 'Vui lòng thử lại sau.'));
@@ -533,8 +660,28 @@ export const useDatabase = () => {
     const deleteExtraAttendance = async (id) => {
         if (window.confirm('Bạn có chắc chắn muốn xóa ghi nhận buổi học này?')) {
             try {
+                const recordToDelete = extraAttendance.find(a => a.id === id);
+
                 await financeService.deleteAttendance(id);
                 setExtraAttendance(prev => prev.filter(a => a.id !== id));
+
+                // Log to student history
+                if (recordToDelete) {
+                    const currentStudent = students.find(s => s.id === recordToDelete.studentId);
+                    if (currentStudent) {
+                        const newHistoryEntry = {
+                            status: currentStudent.status,
+                            content: `🗑️ Đã xóa 1 buổi học bổ sung (ngày ${new Date(recordToDelete.date).toLocaleDateString('vi-VN')})`,
+                            date: new Date().toISOString()
+                        };
+                        const finalUpdateData = {
+                            statusHistory: [...(currentStudent.statusHistory || []), newHistoryEntry]
+                        };
+                        await studentService.update(currentStudent.id, finalUpdateData);
+                        setStudents(prev => prev.map(s => s.id === currentStudent.id ? { ...s, ...finalUpdateData } : s));
+                    }
+                }
+
                 alert('Đã xóa ghi nhận thành công.');
             } catch (error) {
                 console.error('Failed to delete attendance:', error);
@@ -558,8 +705,43 @@ export const useDatabase = () => {
 
     const bulkDeleteExtraAttendance = async (ids) => {
         try {
+            const recordsToDelete = extraAttendance.filter(a => ids.includes(a.id));
+
             await financeService.bulkDeleteAttendance(ids);
             setExtraAttendance(prev => prev.filter(a => !ids.includes(a.id)));
+
+            // Log to student history
+            const byStudent = {};
+            recordsToDelete.forEach(r => {
+                if (!byStudent[r.studentId]) byStudent[r.studentId] = [];
+                byStudent[r.studentId].push(r);
+            });
+
+            for (const studentId in byStudent) {
+                const currentStudent = students.find(s => s.id === studentId);
+                if (currentStudent) {
+                    const studentRecords = byStudent[studentId];
+                    studentRecords.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                    let contentMsg = `🗑️ Đã xóa ${studentRecords.length} buổi học bổ sung`;
+                    if (studentRecords.length > 1) {
+                        contentMsg += ` (từ ${new Date(studentRecords[0].date).toLocaleDateString('vi-VN')} đến ${new Date(studentRecords[studentRecords.length - 1].date).toLocaleDateString('vi-VN')})`;
+                    } else if (studentRecords.length === 1) {
+                        contentMsg += ` (ngày ${new Date(studentRecords[0].date).toLocaleDateString('vi-VN')})`;
+                    }
+
+                    const newHistoryEntry = {
+                        status: currentStudent.status,
+                        content: contentMsg,
+                        date: new Date().toISOString()
+                    };
+                    const finalUpdateData = {
+                        statusHistory: [...(currentStudent.statusHistory || []), newHistoryEntry]
+                    };
+                    await studentService.update(currentStudent.id, finalUpdateData);
+                    setStudents(prev => prev.map(s => s.id === currentStudent.id ? { ...s, ...finalUpdateData } : s));
+                }
+            }
         } catch (error) {
             console.error('Failed to bulk delete attendance:', error);
             alert('Lỗi khi xóa nhiều ghi nhận: ' + (error.message || 'Vui lòng thử lại sau.'));
@@ -643,7 +825,8 @@ export const useDatabase = () => {
 
     return {
         isLoading,
-        students: enhancedStudents,
+        students: enhancedStudents.filter(s => s.status !== 'Đã xóa'),
+        allStudents: enhancedStudents,
         classes,
         extraAttendance,
         fees,
