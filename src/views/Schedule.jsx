@@ -119,14 +119,11 @@ const Schedule = ({ db }) => {
                                                             style={{
                                                                 padding: '0.5rem',
                                                                 fontSize: '0.8rem',
-                                                                borderLeft: `3px solid ${c.category === 'Cơ bản' ? 'var(--primary)' : 'var(--warning)'}`,
+                                                                borderLeft: '3px solid var(--primary)',
                                                                 animation: 'fadeIn 0.3s ease'
                                                             }}
                                                         >
                                                             <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{c.name}</div>
-                                                            <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
-                                                                {c.category}
-                                                            </div>
                                                         </div>
                                                     ))}
                                                     {slotClasses.length === 0 && (

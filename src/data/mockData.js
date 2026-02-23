@@ -2,7 +2,6 @@ export const CLASSES_SCHEMA = [
     {
         id: 'C01',
         name: 'Piano Cơ Bản A1',
-        category: 'Cơ bản',
         feePerSession: 200000,
         schedule: {
             morning: ['T2', 'T4', 'T6'],
@@ -13,7 +12,6 @@ export const CLASSES_SCHEMA = [
     {
         id: 'C02',
         name: 'Violin Nâng Cao B1',
-        category: 'Cánh diều',
         feePerSession: 350000,
         schedule: {
             morning: [],

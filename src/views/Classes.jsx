@@ -73,7 +73,6 @@ const Classes = ({ db }) => {
                         <tr>
                             <th>ID</th>
                             <th>Tên lớp</th>
-                            <th>Hệ lớp</th>
                             <th style={{ textAlign: 'right' }}>Học phí/buổi</th>
                             {/* <th style={{ textAlign: 'center' }}>Hệ số nợ (HV nợ)</th> */}
                             <th>Thời khóa biểu dự kiến</th>
@@ -85,11 +84,6 @@ const Classes = ({ db }) => {
                             <tr key={c.id}>
                                 <td>{c.id}</td>
                                 <td style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{c.name}</td>
-                                <td>
-                                    <span className={`label ${c.category === 'Cơ bản' ? 'label-primary' : 'label-warning'}`}>
-                                        {c.category}
-                                    </span>
-                                </td>
                                 <td style={{ color: 'var(--text-primary)', textAlign: 'right' }}>
                                     {new Intl.NumberFormat('vi-VN').format(c.feePerSession)} đ
                                 </td>

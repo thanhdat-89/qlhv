@@ -4,7 +4,6 @@ import { X, Save } from 'lucide-react';
 const AddClassModal = ({ onAdd, onUpdate, onClose, initialData }) => {
     const [formData, setFormData] = useState(initialData || {
         name: '',
-        category: 'Cơ bản',
         feePerSession: 250000,
         schedule: { morning: [], afternoon: [], evening: [] }
     });
@@ -53,18 +52,7 @@ const AddClassModal = ({ onAdd, onUpdate, onClose, initialData }) => {
                         />
                     </div>
                     <div className="form-grid">
-                        <div>
-                            <label className="form-label">Hệ lớp</label>
-                            <select
-                                className="glass"
-                                value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })}
-                                style={{ width: '100%', boxSizing: 'border-box' }}
-                            >
-                                <option value="Cơ bản">Cơ bản</option>
-                                <option value="Cánh diều">Cánh diều</option>
-                            </select>
-                        </div>
-                        <div>
+                        <div style={{ flex: 1 }}>
                             <label className="form-label">Học phí mỗi buổi (đ)</label>
                             <input
                                 className="glass" type="number" required

@@ -309,7 +309,6 @@ export const useDatabase = () => {
                 ...s,
                 status,
                 className: getClass(s.classId)?.name || 'N/A',
-                classCategory: getClass(s.classId)?.category || 'N/A',
                 tuition: getStudentTuitionDetails(s.id)
             };
         }).sort((a, b) => a.name.localeCompare(b.name, 'vi', { sensitivity: 'base' }));

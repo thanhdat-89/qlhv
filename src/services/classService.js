@@ -11,9 +11,8 @@ export const classService = {
         return (data || []).map(c => ({
             id: c.id,
             name: c.name,
-            category: c.category,
             schedule: c.schedule,
-            feePerSession: c.fee_per_session
+            fee_per_session: c.fee_per_session
         }));
     },
 
@@ -21,7 +20,6 @@ export const classService = {
         const dbClass = {
             id: newClass.id,
             name: newClass.name,
-            category: newClass.category,
             schedule: newClass.schedule,
             fee_per_session: newClass.feePerSession
         };
@@ -35,7 +33,6 @@ export const classService = {
     update: async (id, data) => {
         const dbData = {};
         if (data.name !== undefined) dbData.name = data.name;
-        if (data.category !== undefined) dbData.category = data.category;
         if (data.schedule !== undefined) dbData.schedule = data.schedule;
         if (data.feePerSession !== undefined) dbData.fee_per_session = data.feePerSession;
 
