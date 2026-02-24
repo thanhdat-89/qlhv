@@ -146,20 +146,6 @@ const Attendance = ({ db }) => {
                 </div>
             </div>
 
-            <div className="info-box glass" style={{ marginBottom: '2rem', padding: '1.25rem', borderLeft: '4px solid var(--primary)' }}>
-                <div style={{ display: 'flex', gap: '0.75rem' }}>
-                    <div className="icon-box icon-box-primary" style={{ padding: '0.5rem', borderRadius: '8px' }}>
-                        <BadgeCheck size={20} />
-                    </div>
-                    <div>
-                        <h3 style={{ fontSize: '1rem', marginBottom: '0.25rem', color: 'var(--text-primary)' }}>Hướng dẫn</h3>
-                        <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
-                            Quản lý lịch học bổ sung lặp lại hoặc riêng lẻ.
-                            Bảng hiển thị lịch học của từng học viên trong tuần hiện tại.
-                        </p>
-                    </div>
-                </div>
-            </div>
 
             {/* Navigation & Filters */}
             <div className="glass" style={{ padding: '1.25rem', marginBottom: '1.5rem', borderRadius: '12px' }}>
