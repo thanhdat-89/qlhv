@@ -312,9 +312,6 @@ const Attendance = ({ db }) => {
                                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                                             <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.95rem' }}>
                                                                 {a.studentName}
-                                                                <span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--primary)', marginLeft: '0.5rem', opacity: 0.8 }}>
-                                                                    ({new Intl.NumberFormat('vi-VN').format(a.fee)}đ)
-                                                                </span>
                                                             </div>
                                                             <button
                                                                 onClick={() => actions.deleteExtraAttendance(a.id)}
@@ -334,6 +331,9 @@ const Attendance = ({ db }) => {
                                                         </div>
                                                         <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.3rem', opacity: 0.8 }}>
                                                             {a.className}
+                                                        </div>
+                                                        <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--primary)', marginTop: '0.2rem' }}>
+                                                            {new Intl.NumberFormat('vi-VN').format(a.fee)}đ
                                                         </div>
                                                         {a.notes && (
                                                             <div style={{
