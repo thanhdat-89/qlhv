@@ -250,6 +250,7 @@ const Promotions = ({ db }) => {
                                     <th>Học viên</th>
                                     <th>Lớp</th>
                                     <th style={{ textAlign: 'center' }}>Mức giảm trực tiếp</th>
+                                    <th style={{ textAlign: 'center' }}>Thời gian kết thúc</th>
                                     <th style={{ textAlign: 'center' }}>Trạng thái</th>
                                     <th style={{ textAlign: 'right' }}>Thao tác</th>
                                 </tr>
@@ -265,6 +266,14 @@ const Promotions = ({ db }) => {
                                             <div className="label label-success" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
                                                 <Gift size={14} />
                                                 -{s.discountRate * 100}%
+                                            </div>
+                                        </td>
+                                        <td style={{ textAlign: 'center' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                                                <Calendar size={14} color="var(--secondary)" />
+                                                <span style={{ fontWeight: 500 }}>
+                                                    {(s.discountEndDate || '2026-07').split('-').reverse().join('/')}
+                                                </span>
                                             </div>
                                         </td>
                                         <td style={{ textAlign: 'center' }}>
