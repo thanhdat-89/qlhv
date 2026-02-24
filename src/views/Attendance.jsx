@@ -315,7 +315,7 @@ const Attendance = ({ db }) => {
                                                                 <Trash2 size={14} color="var(--danger)" />
                                                             </button>
                                                         </div>
-                                                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.3rem', opacity: 0.8 }}>
+                                                        <div className="uppercase-class" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.3rem', opacity: 0.8 }}>
                                                             {a.className}
                                                         </div>
                                                         <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--primary)', marginTop: '0.2rem' }}>

@@ -324,7 +324,7 @@ const Students = ({ db }) => {
                                                 {s.name}
                                             </td>
                                             <td>
-                                                <div style={{ fontWeight: 500 }}>{s.className}</div>
+                                                <div className="uppercase-class" style={{ fontWeight: 500 }}>{s.className}</div>
                                                 <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>NS: {s.birthYear}</div>
                                             </td>
                                             <td style={{ color: 'var(--text-primary)' }}>{s.phone || '-'}</td>

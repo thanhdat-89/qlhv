@@ -155,7 +155,7 @@ const Dashboard = ({ db }) => {
                                     onClick={() => navigate('/tuition', { state: { classId: c.id } })}
                                 >
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '0.5rem' }}>
-                                        <h4 style={{ fontSize: '1rem', color: 'var(--text-primary)' }}>{c.name}</h4>
+                                        <h4 className="uppercase-class" style={{ fontSize: '1rem', color: 'var(--text-primary)' }}>{c.name}</h4>
                                     </div>
                                     <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '0.4rem' }}>
                                         {new Intl.NumberFormat('vi-VN').format(c.feePerSession)} đ/buổi

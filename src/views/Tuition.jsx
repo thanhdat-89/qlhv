@@ -292,7 +292,7 @@ const Tuition = ({ db }) => {
                                     >
                                         {s.name}
                                     </td>
-                                    <td>{s.className}</td>
+                                    <td className="uppercase-class">{s.className}</td>
                                     <td className="hide-mobile" style={{ textAlign: 'center' }}>{s.tuition.scheduledCount}</td>
                                     <td className="hide-mobile" style={{ color: 'var(--text-primary)', textAlign: 'right' }}>
                                         {new Intl.NumberFormat('vi-VN').format(s.tuition.scheduledTuition)} đ

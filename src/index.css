@@ -282,6 +282,10 @@ h3 {
     text-transform: uppercase;
 }
 
+.uppercase-class {
+    text-transform: uppercase;
+}
+
 .label-success {
     background: #dcfce7;
     color: #15803d;

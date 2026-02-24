@@ -123,7 +123,7 @@ const Schedule = ({ db }) => {
                                                                 animation: 'fadeIn 0.3s ease'
                                                             }}
                                                         >
-                                                            <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{c.name}</div>
+                                                            <div className="uppercase-class" style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{c.name}</div>
                                                         </div>
                                                     ))}
                                                     {slotClasses.length === 0 && (
@@ -308,7 +308,7 @@ const Schedule = ({ db }) => {
                                                     {item.type}
                                                 </td>
                                                 <td style={{ fontSize: '0.9rem' }}>
-                                                    {item.isExtra ? (item.notes || '-') : item.name}
+                                                    {item.isExtra ? (item.notes || '-') : <span className="uppercase-class">{item.name}</span>}
                                                 </td>
                                                 <td>
                                                     {item.isExtra ? (
@@ -374,7 +374,7 @@ const Schedule = ({ db }) => {
                                                     )
                                                 ) : 'N/A'}
                                             </div>
-                                            <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                                            <div className="uppercase-class" style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
                                                 {h.type || 'Nghỉ Lễ'}
                                                 {h.classId && ` - ${classes.find(c => c.id === h.classId)?.name || 'Lớp đã xóa'}`}
                                             </div>
