@@ -112,7 +112,6 @@ const Dashboard = ({ db }) => {
                                                     {attendees.map(a => (
                                                         <div key={a.id} className="glass card" style={{ padding: '0.6rem', fontSize: '0.75rem', borderLeft: '3px solid var(--secondary)', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
                                                             <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{a.studentName}</div>
-                                                            <div style={{ color: 'var(--primary)', marginTop: '0.1rem', fontWeight: 600 }}>{new Intl.NumberFormat('vi-VN').format(a.fee)}đ</div>
                                                         </div>
                                                     ))}
                                                     {attendees.length === 0 && (
