@@ -39,7 +39,8 @@ const Dashboard = ({ db }) => {
     }).length;
 
     // Helper to format schedule
-    const formatSchedule = (schedule) => {
+    const formatSchedule = (className, schedule) => {
+        if (className === 'Lớp học riêng') return 'Xem ở Lịch học bổ sung';
         if (!schedule) return 'Chưa có lịch';
         const parts = [];
         if (schedule.morning?.length > 0) parts.push(`Sáng ${schedule.morning.join(', ')}`);
@@ -160,7 +161,7 @@ const Dashboard = ({ db }) => {
                                         {new Intl.NumberFormat('vi-VN').format(c.feePerSession)} đ/buổi
                                     </p>
                                     <p style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 600, marginBottom: '0.6rem' }}>
-                                        {formatSchedule(c.schedule)}
+                                        {formatSchedule(c.name, c.schedule)}
                                     </p>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                         <Users size={16} color="var(--primary)" />
