@@ -40,7 +40,7 @@ const Dashboard = ({ db }) => {
 
     // Helper to format schedule
     const formatSchedule = (className, schedule) => {
-        if (className === 'Lớp học riêng') return 'Xem ở Lịch học riêng';
+        if (className === 'Lớp học riêng') return 'Lịch học riêng';
         if (!schedule) return 'Chưa có lịch';
         const parts = [];
         if (schedule.morning?.length > 0) parts.push(`Sáng ${schedule.morning.join(', ')}`);
