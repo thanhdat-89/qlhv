@@ -1,13 +1,17 @@
 import { useState } from 'react';
-import { Plus, Edit2, Trash2, Gift, Calendar, Filter, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Plus, Edit2, Trash2, Gift, Calendar, Filter, ChevronLeft, ChevronRight, Clock, Users } from 'lucide-react';
 import AddPromotionModal from '../components/AddPromotionModal';
 
 const Promotions = ({ db }) => {
+    const navigate = useNavigate();
     const { promotions, classes, actions, students } = db;
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingPromotion, setEditingPromotion] = useState(null);
     const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().substring(0, 7));
     const [activeTab, setActiveTab] = useState('class'); // 'class' or 'student'
+    const [studentSearchQuery, setStudentSearchQuery] = useState('');
+    const [studentClassFilter, setStudentClassFilter] = useState('all');
 
     const handlePrevMonth = () => {
         const date = new Date(selectedMonth + '-01');
@@ -50,8 +54,12 @@ const Promotions = ({ db }) => {
     });
 
     // Students with discountRate > 0
-    const studentsWithDiscount = students.filter(s => s.discountRate > 0)
-        .sort((a, b) => a.name.localeCompare(b.name));
+    const studentsWithDiscount = students.filter(s => {
+        const hasDiscount = s.discountRate > 0;
+        const matchesSearch = s.name.toLowerCase().includes(studentSearchQuery.toLowerCase());
+        const matchesClass = studentClassFilter === 'all' || s.classId === studentClassFilter;
+        return hasDiscount && matchesSearch && matchesClass;
+    }).sort((a, b) => a.name.localeCompare(b.name));
 
     return (
         <div className="view-container animate-fade-in">
@@ -192,58 +200,104 @@ const Promotions = ({ db }) => {
                     </div>
                 </>
             ) : (
-                <div className="table-container glass">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Học viên</th>
-                                <th>Lớp</th>
-                                <th style={{ textAlign: 'center' }}>Mức giảm trực tiếp</th>
-                                <th style={{ textAlign: 'center' }}>Trạng thái</th>
-                                <th style={{ textAlign: 'right' }}>Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {studentsWithDiscount.map((s) => (
-                                <tr key={s.id}>
-                                    <td style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{s.name}</td>
-                                    <td>
-                                        <span className="label label-glass">{s.className}</span>
-                                    </td>
-                                    <td style={{ textAlign: 'center' }}>
-                                        <div className="label label-success" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-                                            <Gift size={14} />
-                                            -{s.discountRate * 100}%
-                                        </div>
-                                    </td>
-                                    <td style={{ textAlign: 'center' }}>
-                                        <span className={`label ${s.status === 'Đang học' ? 'label-success' : 'label-warning'}`} style={{ fontSize: '0.75rem' }}>
-                                            {s.status}
-                                        </span>
-                                    </td>
-                                    <td style={{ textAlign: 'right' }}>
-                                        <button
-                                            className="btn btn-glass btn-sm"
-                                            onClick={() => navigate('/students', { state: { editStudentId: s.id } })}
-                                        >
-                                            Chỉnh sửa
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                    {studentsWithDiscount.length === 0 && (
-                        <div style={{ padding: '4rem', textAlign: 'center' }}>
-                            <div className="glass shadow-lg" style={{ display: 'inline-block', padding: '1.5rem', borderRadius: '50%', marginBottom: '1rem' }}>
-                                <Users size={40} color="var(--text-secondary)" />
+                <>
+                    <div className="filter-container glass card" style={{ padding: '1.25rem 1.5rem', marginBottom: '2rem' }}>
+                        <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'end', flexWrap: 'wrap' }}>
+                            <div style={{ flex: 1, minWidth: '250px' }}>
+                                <label className="form-label" style={{ marginBottom: '0.5rem', display: 'block' }}>Tìm kiếm học viên</label>
+                                <input
+                                    type="text"
+                                    className="glass"
+                                    style={{ width: '100%', padding: '0.6rem 1rem' }}
+                                    placeholder="Nhập tên học viên..."
+                                    value={studentSearchQuery}
+                                    onChange={(e) => setStudentSearchQuery(e.target.value)}
+                                />
                             </div>
-                            <p style={{ color: 'var(--text-secondary)' }}>
-                                Hiện không có học viên nào được hưởng ưu đãi riêng.
-                            </p>
+                            <div style={{ flex: 1, minWidth: '200px' }}>
+                                <label className="form-label" style={{ marginBottom: '0.5rem', display: 'block' }}>Lọc theo lớp</label>
+                                <select
+                                    className="glass"
+                                    style={{ width: '100%', padding: '0.6rem 1rem' }}
+                                    value={studentClassFilter}
+                                    onChange={(e) => setStudentClassFilter(e.target.value)}
+                                >
+                                    <option value="all">Tất cả các lớp</option>
+                                    {classes.map(c => (
+                                        <option key={c.id} value={c.id}>{c.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <button
+                                    className="btn btn-glass"
+                                    onClick={() => {
+                                        setStudentSearchQuery('');
+                                        setStudentClassFilter('all');
+                                    }}
+                                    style={{ height: '42px' }}
+                                >
+                                    Đặt lại
+                                </button>
+                            </div>
                         </div>
-                    )}
-                </div>
+                    </div>
+
+                    <div className="table-container glass">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Học viên</th>
+                                    <th>Lớp</th>
+                                    <th style={{ textAlign: 'center' }}>Mức giảm trực tiếp</th>
+                                    <th style={{ textAlign: 'center' }}>Trạng thái</th>
+                                    <th style={{ textAlign: 'right' }}>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {studentsWithDiscount.map((s) => (
+                                    <tr key={s.id}>
+                                        <td style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{s.name}</td>
+                                        <td>
+                                            <span className="label label-glass">{s.className}</span>
+                                        </td>
+                                        <td style={{ textAlign: 'center' }}>
+                                            <div className="label label-success" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                                                <Gift size={14} />
+                                                -{s.discountRate * 100}%
+                                            </div>
+                                        </td>
+                                        <td style={{ textAlign: 'center' }}>
+                                            <span className={`label ${s.status === 'Đang học' ? 'label-success' : 'label-warning'}`} style={{ fontSize: '0.75rem' }}>
+                                                {s.status}
+                                            </span>
+                                        </td>
+                                        <td style={{ textAlign: 'right' }}>
+                                            <button
+                                                className="btn btn-glass btn-sm"
+                                                onClick={() => navigate('/students', { state: { editStudentId: s.id } })}
+                                            >
+                                                Chỉnh sửa
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                        {studentsWithDiscount.length === 0 && (
+                            <div style={{ padding: '4rem', textAlign: 'center' }}>
+                                <div className="glass shadow-lg" style={{ display: 'inline-block', padding: '1.5rem', borderRadius: '50%', marginBottom: '1rem' }}>
+                                    <Users size={40} color="var(--text-secondary)" />
+                                </div>
+                                <p style={{ color: 'var(--text-secondary)' }}>
+                                    {studentSearchQuery || studentClassFilter !== 'all'
+                                        ? 'Không tìm thấy học viên nào phù hợp với bộ lọc.'
+                                        : 'Hiện không có học viên nào được hưởng ưu đãi riêng.'}
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                </>
             )}
 
             {isModalOpen && (
