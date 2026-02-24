@@ -30,7 +30,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen, onLogout }) => {
         { id: 'students', label: 'Học viên', icon: Users },
         { id: 'classes', label: 'Lớp học', icon: BookOpen },
         { id: 'schedule', label: 'Lịch học', icon: Calendar },
-        { id: 'attendance', label: 'Lịch học bổ sung', icon: CalendarCheck },
+        { id: 'attendance', label: 'Lịch học riêng', icon: CalendarCheck },
         { id: 'tuition', label: 'Học phí', icon: Wallet },
         { id: 'promotions', label: 'Khuyến mãi', icon: Gift },
         { id: 'messages', label: 'Tin nhắn', icon: MessageSquare },

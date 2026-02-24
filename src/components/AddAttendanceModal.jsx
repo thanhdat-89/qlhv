@@ -290,7 +290,7 @@ const AddAttendanceModal = ({ students, allAttendanceRecords = [], onAdd, onBulk
                     <X size={24} />
                 </button>
                 <h2 style={{ marginBottom: '1.5rem' }}>
-                    {initialData ? 'Chỉnh sửa buổi học' : preSelectedStudentId ? `Thêm lịch học: ${preSelectedStudent?.name}` : 'Thêm Lịch Học Bổ Sung'}
+                    {initialData ? 'Chỉnh sửa buổi học' : preSelectedStudentId ? `Thêm lịch học: ${preSelectedStudent?.name}` : 'Thêm Lịch Học Riêng'}
                 </h2>
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                     <div>
@@ -395,7 +395,7 @@ const AddAttendanceModal = ({ students, allAttendanceRecords = [], onAdd, onBulk
                                 {mode === 'manual' && formData.studentId && (
                                     <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                                         <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--primary)' }} />
-                                        Đã có lịch bổ sung
+                                        Đã có lịch riêng
                                     </span>
                                 )}
                             </div>

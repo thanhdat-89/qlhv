@@ -40,7 +40,7 @@ const Dashboard = ({ db }) => {
 
     // Helper to format schedule
     const formatSchedule = (className, schedule) => {
-        if (className === 'Lớp học riêng') return 'Xem ở Lịch học bổ sung';
+        if (className === 'Lớp học riêng') return 'Xem ở Lịch học riêng';
         if (!schedule) return 'Chưa có lịch';
         const parts = [];
         if (schedule.morning?.length > 0) parts.push(`Sáng ${schedule.morning.join(', ')}`);
@@ -88,7 +88,7 @@ const Dashboard = ({ db }) => {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '2rem' }}>
                 <div className="glass card">
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                        <h3 style={{ margin: 0 }}>Lịch học bổ sung tuần này</h3>
+                        <h3 style={{ margin: 0 }}>Lịch học riêng tuần này</h3>
                         <div style={{ fontSize: 'var(--font-sm)', color: 'var(--text-secondary)' }}>
                             {monday.toLocaleDateString('vi-VN')} - {sunday.toLocaleDateString('vi-VN')}
                         </div>

@@ -138,7 +138,7 @@ const Attendance = ({ db }) => {
     return (
         <div className="view-container">
             <div className="view-header">
-                <h1>Lịch Học Bổ Sung</h1>
+                <h1>Lịch Học Riêng</h1>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                     <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>
                         <Plus size={18} /> Thêm lịch học
