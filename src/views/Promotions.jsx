@@ -8,7 +8,7 @@ const Promotions = ({ db }) => {
     const { promotions, classes, actions, students } = db;
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingPromotion, setEditingPromotion] = useState(null);
-    const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().substring(0, 7));
+    const [selectedMonth, setSelectedMonth] = useState('');
     const [activeTab, setActiveTab] = useState('class'); // 'class' or 'student'
     const [studentSearchQuery, setStudentSearchQuery] = useState('');
     const [studentClassFilter, setStudentClassFilter] = useState('all');
