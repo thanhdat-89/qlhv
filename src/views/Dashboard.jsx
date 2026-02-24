@@ -38,6 +38,16 @@ const Dashboard = ({ db }) => {
         return leaveDate.getMonth() === currentMonth && leaveDate.getFullYear() === currentYear;
     }).length;
 
+    // Helper to format schedule
+    const formatSchedule = (schedule) => {
+        if (!schedule) return 'Chưa có lịch';
+        const parts = [];
+        if (schedule.morning?.length > 0) parts.push(`Sáng ${schedule.morning.join(', ')}`);
+        if (schedule.afternoon?.length > 0) parts.push(`Chiều ${schedule.afternoon.join(', ')}`);
+        if (schedule.evening?.length > 0) parts.push(`Tối ${schedule.evening.join(', ')}`);
+        return parts.join('; ') || 'Chưa có lịch';
+    };
+
     return (
         <div className="view-container">
             <div className="view-header">
@@ -146,8 +156,11 @@ const Dashboard = ({ db }) => {
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '0.5rem' }}>
                                         <h4 style={{ fontSize: '1rem', color: 'var(--text-primary)' }}>{c.name}</h4>
                                     </div>
-                                    <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
+                                    <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '0.4rem' }}>
                                         {new Intl.NumberFormat('vi-VN').format(c.feePerSession)} đ/buổi
+                                    </p>
+                                    <p style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 600, marginBottom: '0.6rem' }}>
+                                        {formatSchedule(c.schedule)}
                                     </p>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                         <Users size={16} color="var(--primary)" />
