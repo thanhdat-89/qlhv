@@ -60,7 +60,7 @@ const Schedule = ({ db }) => {
     return (
         <div className="view-container">
             <div className="view-header" style={{ marginBottom: '1rem' }}>
-                <h1>Quản Lý Lịch Trình</h1>
+                <h1>Quản Lý Lịch Học Chung</h1>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                     <button
                         className={`btn ${activeTab === 'schedule' ? 'btn-primary' : 'btn-glass'}`}
