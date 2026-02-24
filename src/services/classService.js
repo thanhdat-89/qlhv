@@ -12,7 +12,7 @@ export const classService = {
             id: c.id,
             name: c.name,
             schedule: c.schedule,
-            fee_per_session: c.fee_per_session
+            feePerSession: c.fee_per_session
         }));
     },
 
