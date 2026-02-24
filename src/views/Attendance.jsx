@@ -310,7 +310,12 @@ const Attendance = ({ db }) => {
                                                         }}
                                                     >
                                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                                            <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.95rem' }}>{a.studentName}</div>
+                                                            <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.95rem' }}>
+                                                                {a.studentName}
+                                                                <span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--primary)', marginLeft: '0.5rem', opacity: 0.8 }}>
+                                                                    ({new Intl.NumberFormat('vi-VN').format(a.fee)}đ)
+                                                                </span>
+                                                            </div>
                                                             <button
                                                                 onClick={() => actions.deleteExtraAttendance(a.id)}
                                                                 style={{
