@@ -291,7 +291,7 @@ const Students = ({ db }) => {
                                 boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
                             }}>
                                 <UserCheck size={20} />
-                                Số học sinh đang học: <span style={{ fontSize: '1.2rem', color: 'var(--primary)' }}>{activeCount}</span>
+                                Số học sinh đang học theo Danh sách: <span style={{ fontSize: '1.2rem', color: 'var(--primary)' }}>{activeCount}</span>
                             </div>
                         </div>
 
