@@ -221,9 +221,9 @@ export const useDatabase = () => {
         const promotionDiscount = promotion ? promotion.discountRate : 0;
 
         // Final Tuition = Base * (1 - Student Discount) * (1 - Promotion Discount)
-        const isOldDiscountValid = (student.discountRate > 0 && !student.discountMonths) && (calculationYear < 2026 || (calculationYear === 2026 && calculationMonth <= 6));
-        const isMonthPromoValid = student.discountMonths?.includes(selectedMonthStr);
-        const effectiveStudentDiscount = (isOldDiscountValid || isMonthPromoValid) ? (student.discountRate || 0) : 0;
+        const effectiveEndDate = student.discountEndDate || (student.discountRate > 0 ? '2026-07' : null);
+        const isStudentDiscountValid = effectiveEndDate && selectedMonthStr <= effectiveEndDate;
+        const effectiveStudentDiscount = isStudentDiscountValid ? (student.discountRate || 0) : 0;
 
         const scheduledTuition = Math.round(scheduledCount * feePerSession * (1 - effectiveStudentDiscount) * (1 - promotionDiscount));
         const tuitionDue = Math.round((scheduledCount * feePerSession + totalExtraFee) * (1 - effectiveStudentDiscount) * (1 - promotionDiscount));
@@ -250,11 +250,8 @@ export const useDatabase = () => {
                 const monthStr = `${iterDate.getFullYear()}-${String(iterDate.getMonth() + 1).padStart(2, '0')}`;
 
                 // Effective discount for the iterated month
-                const iterYear = iterDate.getFullYear();
-                const iterMonth = iterDate.getMonth();
-                const isIterOldValid = (student.discountRate > 0 && !student.discountMonths) && (iterYear < 2026 || (iterYear === 2026 && iterMonth <= 6));
-                const isIterMonthValid = student.discountMonths?.includes(monthStr);
-                const iterStudentDiscount = (isIterOldValid || isIterMonthValid) ? (student.discountRate || 0) : 0;
+                const isIterDiscountValid = effectiveEndDate && monthStr <= effectiveEndDate;
+                const iterStudentDiscount = isIterDiscountValid ? (student.discountRate || 0) : 0;
 
                 const monthPromo = promotions.find(p => p.classId === student.classId && p.month === monthStr);
                 const monthPromoDiscount = monthPromo ? monthPromo.discountRate : 0;
@@ -276,11 +273,8 @@ export const useDatabase = () => {
             const d = parseDate(a.date);
             const monthStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 
-            const iterYear = d.getFullYear();
-            const iterMonth = d.getMonth();
-            const isIterOldValid = (student.discountRate > 0 && !student.discountMonths) && (iterYear < 2026 || (iterYear === 2026 && iterMonth <= 6));
-            const isIterMonthValid = student.discountMonths?.includes(monthStr);
-            const iterStudentDiscount = (isIterOldValid || isIterMonthValid) ? (student.discountRate || 0) : 0;
+            const isIterDiscountValid = effectiveEndDate && monthStr <= effectiveEndDate;
+            const iterStudentDiscount = isIterDiscountValid ? (student.discountRate || 0) : 0;
 
             const monthPromo = promotions.find(p => p.classId === student.classId && p.month === monthStr);
             const monthPromoDiscount = monthPromo ? monthPromo.discountRate : 0;
