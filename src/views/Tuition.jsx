@@ -78,10 +78,10 @@ const Tuition = ({ db }) => {
             'Họ và tên': s.name,
             'Lớp': s.className,
             'Số điện thoại': s.phone || '',
-            'Số buổi theo TKB': s.tuition.scheduledCount,
-            'Học phí theo TKB': s.tuition.scheduledTuition,
-            'Số buổi học bổ sung': s.tuition.extraCount,
-            'Học phí học bổ sung': s.tuition.totalExtraFee,
+            'Số buổi học chung': s.tuition.scheduledCount,
+            'Học phí học chung': s.tuition.scheduledTuition,
+            'Số buổi học riêng': s.tuition.extraCount,
+            'Học phí học riêng': s.tuition.totalExtraFee,
             'Giảm giá học viên': `${s.discountRate * 100}%`,
             'Khuyến mãi lớp': `${(s.tuition.promotionDiscount || 0) * 100}%`,
             [`Học phí tháng ${selectedMonth + 1}`]: s.tuition.tuitionDue
@@ -269,10 +269,10 @@ const Tuition = ({ db }) => {
                                 <th style={{ width: '50px', textAlign: 'center' }}>STT</th>
                                 <th className="sticky-col">Học viên</th>
                                 <th>Lớp</th>
-                                <th className="hide-mobile" style={{ textAlign: 'center' }}>Số buổi TKB</th>
-                                <th className="hide-mobile" style={{ textAlign: 'right' }}>Học phí TKB</th>
-                                <th className="hide-mobile" style={{ textAlign: 'center' }}>Số buổi bổ sung</th>
-                                <th className="hide-mobile" style={{ textAlign: 'right' }}>Học phí bổ sung</th>
+                                <th className="hide-mobile" style={{ textAlign: 'center' }}>Số buổi học chung</th>
+                                <th className="hide-mobile" style={{ textAlign: 'right' }}>Học phí học chung</th>
+                                <th className="hide-mobile" style={{ textAlign: 'center' }}>Số buổi học riêng</th>
+                                <th className="hide-mobile" style={{ textAlign: 'right' }}>Học phí học riêng</th>
                                 <th className="hide-mobile" style={{ textAlign: 'center' }}>Giảm giá (HV)</th>
                                 <th className="hide-mobile" style={{ textAlign: 'center' }}>Khuyến mãi (Lớp)</th>
                                 <th style={{ textAlign: 'right' }}>Học phí tháng {selectedMonth + 1}</th>
