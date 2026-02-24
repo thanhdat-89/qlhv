@@ -252,7 +252,6 @@ const Promotions = ({ db }) => {
                                     <th style={{ textAlign: 'center' }}>Mức giảm trực tiếp</th>
                                     <th style={{ textAlign: 'center' }}>Thời gian kết thúc</th>
                                     <th style={{ textAlign: 'center' }}>Trạng thái</th>
-                                    <th style={{ textAlign: 'right' }}>Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -280,14 +279,6 @@ const Promotions = ({ db }) => {
                                             <span className={`label ${s.status === 'Đang học' ? 'label-success' : 'label-warning'}`} style={{ fontSize: '0.75rem' }}>
                                                 {s.status}
                                             </span>
-                                        </td>
-                                        <td style={{ textAlign: 'right' }}>
-                                            <button
-                                                className="btn btn-glass btn-sm"
-                                                onClick={() => navigate('/students', { state: { editStudentId: s.id } })}
-                                            >
-                                                Chỉnh sửa
-                                            </button>
                                         </td>
                                     </tr>
                                 ))}
