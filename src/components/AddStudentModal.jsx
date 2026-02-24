@@ -86,7 +86,7 @@ const AddStudentModal = ({ classes, onAdd, onUpdate, onClose, initialData }) => 
                         </div>
                     </div>
                     <div className="form-grid">
-                        <div>
+                        <div style={{ position: 'relative' }}>
                             <label className="form-label">Ưu đãi, giảm giá (%)</label>
                             <input
                                 className="glass" type="number"
@@ -103,6 +103,82 @@ const AddStudentModal = ({ classes, onAdd, onUpdate, onClose, initialData }) => 
                             />
                         </div>
                     </div>
+
+                    {parseFloat(formData.discountRate) > 0 && (
+                        <div className="animate-fade-in">
+                            <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span>Tháng áp dụng ưu đãi</span>
+                                <span style={{ fontSize: '0.75rem', fontWeight: 400, color: 'var(--text-secondary)' }}>
+                                    Lưu ý: Ưu đãi cũ mặc định đến 07/2026
+                                </span>
+                            </label>
+                            <div className="glass" style={{
+                                padding: '1rem',
+                                maxHeight: '160px',
+                                overflowY: 'auto',
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
+                                gap: '0.5rem'
+                            }}>
+                                {(() => {
+                                    const months = [];
+                                    const current = new Date();
+                                    for (let i = -2; i <= 24; i++) {
+                                        const d = new Date(current.getFullYear(), current.getMonth() + i, 1);
+                                        const mStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                                        months.push(mStr);
+                                    }
+                                    return months.map(m => {
+                                        const isSelected = formData.discountMonths?.includes(m);
+                                        return (
+                                            <label key={m} style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '0.4rem',
+                                                fontSize: '0.85rem',
+                                                cursor: 'pointer',
+                                                padding: '0.4rem 0.6rem',
+                                                borderRadius: '8px',
+                                                background: isSelected ? 'var(--primary-light)' : 'rgba(255,255,255,0.3)',
+                                                border: isSelected ? '1px solid var(--primary)' : '1px solid transparent',
+                                                color: isSelected ? 'var(--primary)' : 'var(--text-primary)',
+                                                fontWeight: isSelected ? 600 : 400,
+                                                transition: 'all 0.2s'
+                                            }}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isSelected}
+                                                    onChange={(e) => {
+                                                        const currentMonths = formData.discountMonths || [];
+                                                        if (e.target.checked) {
+                                                            setFormData({ ...formData, discountMonths: [...currentMonths, m] });
+                                                        } else {
+                                                            setFormData({ ...formData, discountMonths: currentMonths.filter(x => x !== m) });
+                                                        }
+                                                    }}
+                                                    style={{ display: 'none' }}
+                                                />
+                                                {m.split('-').reverse().join('/')}
+                                            </label>
+                                        );
+                                    });
+                                })()}
+                            </div>
+                            <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem' }}>
+                                <button type="button" className="btn btn-glass btn-sm" onClick={() => {
+                                    const months = [];
+                                    const current = new Date();
+                                    for (let i = 0; i < 12; i++) {
+                                        const d = new Date(current.getFullYear(), current.getMonth() + i, 1);
+                                        months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+                                    }
+                                    setFormData({ ...formData, discountMonths: months });
+                                }}>Chọn 12 tháng tới</button>
+                                <button type="button" className="btn btn-glass btn-sm" onClick={() => setFormData({ ...formData, discountMonths: [] })}>Bỏ chọn tất cả</button>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="form-grid">
                         <div>
                             <label className="form-label">Trạng thái</label>
