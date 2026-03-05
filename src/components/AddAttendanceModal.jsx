@@ -1,3 +1,4 @@
+import { useState, useEffect, useMemo } from 'react';
 import { X, Save, Plus, Calendar as CalendarIcon, Trash2, ChevronLeft, ChevronRight, Repeat } from 'lucide-react';
 import { useNotification } from '../contexts/NotificationContext';
 import RecurringScheduleForm from './RecurringScheduleForm';

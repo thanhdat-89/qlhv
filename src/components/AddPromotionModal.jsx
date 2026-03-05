@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { X, Save } from 'lucide-react';
 import { useNotification } from '../contexts/NotificationContext';
 

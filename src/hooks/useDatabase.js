@@ -1,3 +1,10 @@
+import { useState, useMemo, useEffect } from 'react';
+import { studentService } from '../services/studentService';
+import { classService } from '../services/classService';
+import { financeService } from '../services/financeService';
+import { holidayService } from '../services/holidayService';
+import { promotionService } from '../services/promotionService';
+import { backupService } from '../services/backupService';
 import { messageService } from '../services/messageService';
 import { useNotification } from '../contexts/NotificationContext';
 
