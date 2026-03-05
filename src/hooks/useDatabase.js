@@ -597,17 +597,21 @@ export const useDatabase = () => {
         }
     };
 
-    const deleteStudent = async (id) => {
-        const password = window.prompt('Hành động này sẽ xóa học viên (ẩn khỏi danh sách). Vui lòng nhập mật khẩu quản lý để tiếp tục:');
+    const deleteStudent = async (id, passwordOverride = null) => {
+        let password = passwordOverride;
 
-        if (password === null) return; // User cancelled
+        if (!password) {
+            password = window.prompt('Hành động này sẽ xóa học viên (ẩn khỏi danh sách). Vui lòng nhập mật khẩu quản lý để tiếp tục:');
+            if (password === null) return; // User cancelled
+        }
 
         if (password !== 'cqt263') {
+            if (passwordOverride) throw new Error('Mật khẩu không chính xác.');
             alert('Mật khẩu không chính xác. Thao tác xóa bị hủy.');
             return;
         }
 
-        if (window.confirm('Bạn có chắc chắn muốn xóa học viên này? Thao tác này sẽ chuyển học viên vào thùng rác nhưng vẫn giữ lại lịch sử thay đổi.')) {
+        if (passwordOverride || window.confirm('Bạn có chắc chắn muốn xóa học viên này? Thao tác này sẽ chuyển học viên vào thùng rác nhưng vẫn giữ lại lịch sử thay đổi.')) {
             try {
                 const currentStudent = students.find(s => s.id === id);
                 if (!currentStudent) return;
@@ -628,9 +632,12 @@ export const useDatabase = () => {
                 await studentService.update(id, finalUpdateData);
                 setStudents(prev => prev.map(s => s.id === id ? { ...s, ...finalUpdateData } : s));
 
-                alert('Đã đưa học viên vào thùng rác thành công.');
+                if (!passwordOverride) {
+                    alert('Đã đưa học viên vào thùng rác thành công.');
+                }
             } catch (error) {
                 console.error('Failed to delete student:', error);
+                if (passwordOverride) throw new Error('Lỗi khi xóa học viên: ' + (error.message || 'Vui lòng thử lại sau.'));
                 alert('Lỗi khi xóa học viên: ' + (error.message || 'Vui lòng thử lại sau.'));
             }
         }

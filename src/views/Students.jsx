@@ -4,6 +4,7 @@ import * as XLSX from 'xlsx';
 import AddStudentModal from '../components/AddStudentModal';
 import ImportStudentsModal from '../components/ImportStudentsModal';
 import AddAttendanceModal from '../components/AddAttendanceModal';
+import DeleteStudentModal from '../components/DeleteStudentModal';
 
 const Students = ({ db }) => {
     const { students, views, classes, actions } = db;
@@ -17,6 +18,7 @@ const Students = ({ db }) => {
     const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false);
     const [preSelectedStudentId, setPreSelectedStudentId] = useState(null);
     const [expandedNameId, setExpandedNameId] = useState(null);
+    const [studentToDelete, setStudentToDelete] = useState(null);
 
     const toggleExpandName = (id) => {
         setExpandedNameId(expandedNameId === id ? null : id);
@@ -192,6 +194,14 @@ const Students = ({ db }) => {
                 />
             )}
 
+            {studentToDelete && (
+                <DeleteStudentModal
+                    student={studentToDelete}
+                    onDelete={(id, password) => actions.deleteStudent(id, password)}
+                    onClose={() => setStudentToDelete(null)}
+                />
+            )}
+
             <div className="tab-group">
                 <button
                     onClick={() => setViewMode('list')}
@@ -353,7 +363,7 @@ const Students = ({ db }) => {
                                                         <Edit2 size={16} color="var(--primary)" />
                                                     </button>
                                                     <button
-                                                        onClick={() => actions.deleteStudent(s.id)}
+                                                        onClick={() => setStudentToDelete(s)}
                                                         className="btn btn-glass" style={{ padding: '0.4rem', borderRadius: '8px', border: 'none' }}
                                                     >
                                                         <Trash2 size={16} color="var(--danger)" />

@@ -51,7 +51,8 @@ const CalendarPicker = ({ selectedDates, onToggleDate, scheduledDates = [] }) =>
 
                     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                     const isSelected = selectedDates.includes(dateStr);
-                    const isToday = new Date().toISOString().split('T')[0] === dateStr;
+                    const now = new Date();
+                    const isToday = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}` === dateStr;
                     const isScheduled = scheduledDates?.includes(dateStr);
 
                     return (
@@ -226,7 +227,7 @@ const AddAttendanceModal = ({ students, allAttendanceRecords = [], onAdd, onBulk
         e.preventDefault();
 
         const datesToCreate = mode === 'recurring'
-            ? recurringPreviewDates.map(d => d.toISOString().split('T')[0])
+            ? recurringPreviewDates.map(d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`)
             : selectedDates.filter(date => !currentSessions.some(s => s.date === date));
 
         const sessionsToDelete = mode === 'manual'
