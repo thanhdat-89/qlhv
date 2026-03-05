@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
 import { X, Save } from 'lucide-react';
+import { useNotification } from '../contexts/NotificationContext';
 
 const AddPromotionModal = ({ classes, onAdd, onBulkAdd, onUpdate, onClose, initialData }) => {
+    const { showToast } = useNotification();
     const [selectedClassIds, setSelectedClassIds] = useState([]);
     const [formData, setFormData] = useState({
         month: new Date().toISOString().substring(0, 7), // YYYY-MM
@@ -36,7 +37,7 @@ const AddPromotionModal = ({ classes, onAdd, onBulkAdd, onUpdate, onClose, initi
         e.preventDefault();
 
         if (selectedClassIds.length === 0) {
-            alert('Vui lòng chọn ít nhất một lớp học.');
+            showToast('Vui lòng chọn ít nhất một lớp học.', 'warning');
             return;
         }
 

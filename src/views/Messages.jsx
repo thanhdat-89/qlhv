@@ -1,7 +1,8 @@
-import { useState } from 'react';
 import { Send, Trash2, User, Clock, MessageSquare, CheckCircle, Eye } from 'lucide-react';
+import { useNotification } from '../contexts/NotificationContext';
 
 const Messages = ({ db }) => {
+    const { showToast, confirm } = useNotification();
     const { messages, actions } = db;
     const [newMsg, setNewMsg] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -14,8 +15,9 @@ const Messages = ({ db }) => {
         try {
             await actions.addMessage(newMsg.trim());
             setNewMsg('');
+            showToast('Đã gửi tin nhắn thành công', 'success');
         } catch (error) {
-            alert('Lỗi khi gửi tin nhắn: ' + error.message);
+            showToast('Lỗi khi gửi tin nhắn: ' + error.message, 'error');
         } finally {
             setIsSubmitting(false);
         }
@@ -38,24 +40,30 @@ const Messages = ({ db }) => {
             await actions.updateMessage(id, {
                 responses: [...responses, newResponse]
             });
+            showToast('Đã gửi phản hồi', 'success');
         } catch (error) {
-            alert('Lỗi khi gửi phản hồi: ' + error.message);
+            showToast('Lỗi khi gửi phản hồi: ' + error.message, 'error');
         }
     };
 
     const handleDelete = async (id) => {
-        if (!window.confirm('Bạn có chắc chắn muốn xóa tin nhắn này?')) return;
+        if (!(await confirm({
+            title: 'Xóa tin nhắn',
+            message: 'Bạn có chắc chắn muốn xóa tin nhắn này?',
+            type: 'danger'
+        }))) return;
 
         const password = window.prompt('Nhập mật khẩu quản lý để xóa:');
         if (password !== 'cqt263') {
-            alert('Mật khẩu không chính xác!');
+            showToast('Mật khẩu không chính xác!', 'error');
             return;
         }
 
         try {
             await actions.deleteMessage(id);
+            showToast('Đã xóa tin nhắn', 'success');
         } catch (error) {
-            alert('Lỗi khi xóa tin nhắn: ' + error.message);
+            showToast('Lỗi khi xóa tin nhắn: ' + error.message, 'error');
         }
     };
 

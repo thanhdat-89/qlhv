@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
 import { X, Save, Plus, Calendar as CalendarIcon, Trash2, ChevronLeft, ChevronRight, Repeat } from 'lucide-react';
+import { useNotification } from '../contexts/NotificationContext';
 import RecurringScheduleForm from './RecurringScheduleForm';
 
 const CalendarPicker = ({ selectedDates, onToggleDate, scheduledDates = [] }) => {
@@ -98,6 +98,7 @@ const CalendarPicker = ({ selectedDates, onToggleDate, scheduledDates = [] }) =>
 };
 
 const AddAttendanceModal = ({ students, allAttendanceRecords = [], onAdd, onBulkAdd, onUpdate, onBulkDelete, onClose, initialData, preSelectedStudentId, currentSessions = [] }) => {
+    const { showToast } = useNotification();
     const preSelectedStudent = preSelectedStudentId ? students.find(s => s.id === preSelectedStudentId) : null;
     const [mode, setMode] = useState('manual'); // 'manual' or 'recurring'
     const [searchQuery, setSearchQuery] = useState(preSelectedStudent ? preSelectedStudent.name : '');
@@ -239,7 +240,7 @@ const AddAttendanceModal = ({ students, allAttendanceRecords = [], onAdd, onBulk
             : [];
 
         if (datesToCreate.length === 0 && sessionsToDelete.length === 0 && sessionsToUpdate.length === 0 && !initialData) {
-            alert('Không có thay đổi nào để lưu.');
+            showToast('Không có thay đổi nào để lưu.', 'info');
             return;
         }
 

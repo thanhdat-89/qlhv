@@ -1,13 +1,8 @@
-import { useState, useMemo, useEffect } from 'react';
-import { studentService } from '../services/studentService';
-import { classService } from '../services/classService';
-import { financeService } from '../services/financeService';
-import { holidayService } from '../services/holidayService';
-import { promotionService } from '../services/promotionService';
-import { backupService } from '../services/backupService';
-import { messageService } from '../services/messageService'; // Added promotionService import
+import { messageService } from '../services/messageService';
+import { useNotification } from '../contexts/NotificationContext';
 
 export const useDatabase = () => {
+    const { showToast, confirm } = useNotification();
     const [students, setStudents] = useState([]);
     const [classes, setClasses] = useState([]);
     const [extraAttendance, setExtraAttendance] = useState([]);
@@ -365,7 +360,7 @@ export const useDatabase = () => {
             return savedStudent;
         } catch (error) {
             console.error('Failed to add student:', error);
-            alert('Lỗi khi thêm học viên: ' + (error.message || 'Vui lòng thử lại sau.'));
+            showToast('Lỗi khi thêm học viên: ' + (error.message || 'Vui lòng thử lại sau.'), 'error');
             throw error;
         }
     };
@@ -384,7 +379,7 @@ export const useDatabase = () => {
             return savedStudents;
         } catch (error) {
             console.error('Failed to bulk add students:', error);
-            alert('Lỗi khi nhập danh sách học viên: ' + (error.message || 'Vui lòng thử lại sau.'));
+            showToast('Lỗi khi nhập danh sách học viên: ' + (error.message || 'Vui lòng thử lại sau.'), 'error');
             throw error;
         }
     };
@@ -403,7 +398,7 @@ export const useDatabase = () => {
             return savedClass;
         } catch (error) {
             console.error('Failed to add class:', error);
-            alert('Lỗi khi tạo lớp học: ' + (error.message || 'Vui lòng thử lại sau.'));
+            showToast('Lỗi khi tạo lớp học: ' + (error.message || 'Vui lòng thử lại sau.'), 'error');
             throw error;
         }
     };
@@ -433,7 +428,7 @@ export const useDatabase = () => {
             return savedRecord;
         } catch (error) {
             console.error('Failed to add attendance:', error);
-            alert('Lỗi khi thêm điểm danh: ' + (error.message || JSON.stringify(error)));
+            showToast('Lỗi khi thêm điểm danh: ' + (error.message || JSON.stringify(error)), 'error');
             throw error;
         }
     };
@@ -484,7 +479,7 @@ export const useDatabase = () => {
             return savedRecords;
         } catch (error) {
             console.error('Failed to bulk add attendance:', error);
-            alert('Lỗi khi lưu nhiều ghi nhận: ' + (error.message || JSON.stringify(error)));
+            showToast('Lỗi khi lưu nhiều ghi nhận: ' + (error.message || JSON.stringify(error)), 'error');
             throw error;
         }
     };
@@ -498,7 +493,7 @@ export const useDatabase = () => {
             return savedFee;
         } catch (error) {
             console.error('Failed to add fee:', error);
-            alert('Lỗi khi thêm học phí: ' + (error.message || 'Vui lòng thử lại sau.'));
+            showToast('Lỗi khi thêm học phí: ' + (error.message || 'Vui lòng thử lại sau.'), 'error');
             throw error;
         }
     };
@@ -565,7 +560,7 @@ export const useDatabase = () => {
             setStudents(prev => prev.map(s => s.id === id ? { ...s, ...finalUpdateData } : s));
         } catch (error) {
             console.error('Failed to update student:', error);
-            alert('Lỗi khi cập nhật học viên: ' + (error.message || 'Vui lòng thử lại sau.'));
+            showToast('Lỗi khi cập nhật học viên: ' + (error.message || 'Vui lòng thử lại sau.'), 'error');
             throw error;
         }
     };
@@ -581,7 +576,7 @@ export const useDatabase = () => {
             });
         } catch (error) {
             console.error('Failed to update class:', error);
-            alert('Lỗi khi cập nhật lớp học: ' + (error.message || 'Vui lòng thử lại sau.'));
+            showToast('Lỗi khi cập nhật lớp học: ' + (error.message || 'Vui lòng thử lại sau.'), 'error');
             throw error;
         }
     };
@@ -592,7 +587,7 @@ export const useDatabase = () => {
             setExtraAttendance(prev => prev.map(a => a.id === id ? { ...a, ...updatedData } : a));
         } catch (error) {
             console.error('Failed to update attendance:', error);
-            alert('Lỗi khi cập nhật điểm danh: ' + (error.message || 'Vui lòng thử lại sau.'));
+            showToast('Lỗi khi cập nhật điểm danh: ' + (error.message || 'Vui lòng thử lại sau.'), 'error');
             throw error;
         }
     };
@@ -607,11 +602,15 @@ export const useDatabase = () => {
 
         if (password !== 'cqt263') {
             if (passwordOverride) throw new Error('Mật khẩu không chính xác.');
-            alert('Mật khẩu không chính xác. Thao tác xóa bị hủy.');
+            showToast('Mật khẩu không chính xác. Thao tác xóa bị hủy.', 'error');
             return;
         }
 
-        if (passwordOverride || window.confirm('Bạn có chắc chắn muốn xóa học viên này? Thao tác này sẽ chuyển học viên vào thùng rác nhưng vẫn giữ lại lịch sử thay đổi.')) {
+        if (passwordOverride || await confirm({
+            title: 'Xác nhận xóa học viên',
+            message: 'Bạn có chắc chắn muốn xóa học viên này? Thao tác này sẽ chuyển học viên vào thùng rác nhưng vẫn giữ lại lịch sử thay đổi.',
+            type: 'danger'
+        })) {
             try {
                 const currentStudent = students.find(s => s.id === id);
                 if (!currentStudent) return;
@@ -633,12 +632,12 @@ export const useDatabase = () => {
                 setStudents(prev => prev.map(s => s.id === id ? { ...s, ...finalUpdateData } : s));
 
                 if (!passwordOverride) {
-                    alert('Đã đưa học viên vào thùng rác thành công.');
+                    showToast('Đã đưa học viên vào thùng rác thành công.', 'success');
                 }
             } catch (error) {
                 console.error('Failed to delete student:', error);
                 if (passwordOverride) throw new Error('Lỗi khi xóa học viên: ' + (error.message || 'Vui lòng thử lại sau.'));
-                alert('Lỗi khi xóa học viên: ' + (error.message || 'Vui lòng thử lại sau.'));
+                showToast('Lỗi khi xóa học viên: ' + (error.message || 'Vui lòng thử lại sau.'), 'error');
             }
         }
     };
@@ -647,7 +646,7 @@ export const useDatabase = () => {
         const hasStudents = students.some(s => s.classId === id);
         if (hasStudents) {
             if (passwordOverride) throw new Error('Không thể xóa lớp đang có học viên. Vui lòng chuyển học viên sang lớp khác trước.');
-            alert('Không thể xóa lớp đang có học viên. Vui lòng chuyển học viên sang lớp khác trước.');
+            showToast('Không thể xóa lớp đang có học viên. Vui lòng chuyển học viên sang lớp khác trước.', 'warning');
             return;
         }
 
@@ -660,11 +659,15 @@ export const useDatabase = () => {
 
         if (password !== 'cqt263') {
             if (passwordOverride) throw new Error('Mật khẩu không chính xác.');
-            alert('Mật khẩu không chính xác. Thao tác xóa bị hủy.');
+            showToast('Mật khẩu không chính xác. Thao tác xóa bị hủy.', 'error');
             return;
         }
 
-        if (passwordOverride || window.confirm('Bạn có chắc chắn muốn xóa lớp này không?')) {
+        if (passwordOverride || await confirm({
+            title: 'Xác nhận xóa lớp học',
+            message: 'Bạn có chắc chắn muốn xóa lớp này không?',
+            type: 'danger'
+        })) {
             try {
                 // Delete associated holidays for this class
                 await holidayService.deleteByClass(id);
@@ -677,18 +680,18 @@ export const useDatabase = () => {
                 setHolidays(prev => prev.filter(h => h.classId !== id));
 
                 if (!passwordOverride) {
-                    alert('Đã xóa lớp học thành công.');
+                    showToast('Đã xóa lớp học thành công.', 'success');
                 }
             } catch (error) {
                 console.error('Failed to delete class:', error);
                 if (passwordOverride) throw new Error('Lỗi khi xóa lớp học: ' + (error.message || 'Vui lòng thử lại sau.'));
-                alert('Lỗi khi xóa lớp học: ' + (error.message || 'Vui lòng thử lại sau.'));
+                showToast('Lỗi khi xóa lớp học: ' + (error.message || 'Vui lòng thử lại sau.'), 'error');
             }
         }
     };
 
     const deleteExtraAttendance = async (id) => {
-        if (window.confirm('Bạn có chắc chắn muốn xóa ghi nhận buổi học này?')) {
+        if (await confirm({ title: 'Xác nhận xóa', message: 'Bạn có chắc chắn muốn xóa ghi nhận buổi học này?', type: 'danger' })) {
             try {
                 const recordToDelete = extraAttendance.find(a => a.id === id);
 
@@ -712,10 +715,10 @@ export const useDatabase = () => {
                     }
                 }
 
-                alert('Đã xóa ghi nhận thành công.');
+                showToast('Đã xóa ghi nhận thành công.', 'success');
             } catch (error) {
                 console.error('Failed to delete attendance:', error);
-                alert('Lỗi khi xóa ghi nhận: ' + (error.message || 'Vui lòng thử lại sau.'));
+                showToast('Lỗi khi xóa ghi nhận: ' + (error.message || 'Vui lòng thử lại sau.'), 'error');
             }
         }
     };
@@ -728,7 +731,7 @@ export const useDatabase = () => {
             return savedHoliday;
         } catch (error) {
             console.error('Failed to add holiday:', error);
-            alert('Lỗi khi thêm lịch nghỉ: ' + (error.message || 'Vui lòng thử lại sau.'));
+            showToast('Lỗi khi thêm lịch nghỉ: ' + (error.message || 'Vui lòng thử lại sau.'), 'error');
             throw error;
         }
     };
@@ -774,7 +777,7 @@ export const useDatabase = () => {
             }
         } catch (error) {
             console.error('Failed to bulk delete attendance:', error);
-            alert('Lỗi khi xóa nhiều ghi nhận: ' + (error.message || 'Vui lòng thử lại sau.'));
+            showToast('Lỗi khi xóa nhiều ghi nhận: ' + (error.message || 'Vui lòng thử lại sau.'), 'error');
             throw error;
         }
     };
@@ -785,20 +788,20 @@ export const useDatabase = () => {
             setHolidays(prev => prev.map(h => h.id === id ? { ...h, ...updatedData } : h));
         } catch (error) {
             console.error('Failed to update holiday:', error);
-            alert('Lỗi khi cập nhật lịch nghỉ: ' + (error.message || 'Vui lòng thử lại sau.'));
+            showToast('Lỗi khi cập nhật lịch nghỉ: ' + (error.message || 'Vui lòng thử lại sau.'), 'error');
             throw error;
         }
     };
 
     const deleteHoliday = async (id) => {
-        if (window.confirm('Bạn có chắc chắn muốn xóa lịch nghỉ này?')) {
+        if (await confirm({ title: 'Xác nhận xóa', message: 'Bạn có chắc chắn muốn xóa lịch nghỉ này?', type: 'danger' })) {
             try {
                 await holidayService.delete(id);
                 setHolidays(prev => prev.filter(h => h.id !== id));
-                alert('Đã xóa lịch nghỉ thành công.');
+                showToast('Đã xóa lịch nghỉ thành công.', 'success');
             } catch (error) {
                 console.error('Failed to delete holiday:', error);
-                alert('Lỗi khi xóa lịch nghỉ: ' + (error.message || 'Vui lòng thử lại sau.'));
+                showToast('Lỗi khi xóa lịch nghỉ: ' + (error.message || 'Vui lòng thử lại sau.'), 'error');
             }
         }
     };
@@ -810,7 +813,7 @@ export const useDatabase = () => {
             return savedPromotion;
         } catch (error) {
             console.error('Failed to add promotion:', error);
-            alert('Lỗi khi thêm khuyến mãi: ' + (error.message || 'Vui lòng thử lại sau.'));
+            showToast('Lỗi khi thêm khuyến mãi: ' + (error.message || 'Vui lòng thử lại sau.'), 'error');
             throw error;
         }
     };
@@ -824,7 +827,7 @@ export const useDatabase = () => {
             return savedPromotions;
         } catch (error) {
             console.error('Failed to bulk add promotions:', error);
-            alert('Lỗi khi thêm nhiều khuyến mãi: ' + (error.message || 'Vui lòng thử lại sau.'));
+            showToast('Lỗi khi thêm nhiều khuyến mãi: ' + (error.message || 'Vui lòng thử lại sau.'), 'error');
             throw error;
         }
     };
@@ -835,20 +838,20 @@ export const useDatabase = () => {
             setPromotions(prev => prev.map(p => p.id === id ? { ...p, ...updatedData } : p));
         } catch (error) {
             console.error('Failed to update promotion:', error);
-            alert('Lỗi khi cập nhật khuyến mãi: ' + (error.message || 'Vui lòng thử lại sau.'));
+            showToast('Lỗi khi cập nhật khuyến mãi: ' + (error.message || 'Vui lòng thử lại sau.'), 'error');
             throw error;
         }
     };
 
     const deletePromotion = async (id) => {
-        if (window.confirm('Bạn có chắc chắn muốn xóa khuyến mãi này?')) {
+        if (await confirm({ title: 'Xác nhận xóa', message: 'Bạn có chắc chắn muốn xóa khuyến mãi này?', type: 'danger' })) {
             try {
                 await promotionService.delete(id);
                 setPromotions(prev => prev.filter(p => p.id !== id));
-                alert('Đã xóa khuyến mãi thành công.');
+                showToast('Đã xóa khuyến mãi thành công.', 'success');
             } catch (error) {
                 console.error('Failed to delete promotion:', error);
-                alert('Lỗi khi xóa khuyến mãi: ' + (error.message || 'Vui lòng thử lại sau.'));
+                showToast('Lỗi khi xóa khuyến mãi: ' + (error.message || 'Vui lòng thử lại sau.'), 'error');
             }
         }
     };

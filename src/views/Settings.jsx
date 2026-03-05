@@ -1,8 +1,9 @@
-import { useState } from 'react';
 import { Download, Upload, ShieldAlert, CheckCircle2, AlertCircle } from 'lucide-react';
 import { backupService } from '../services/backupService';
+import { useNotification } from '../contexts/NotificationContext';
 
 const Settings = ({ db }) => {
+    const { confirm } = useNotification();
     const { actions, automatedBackups } = db;
     const [isProcessing, setIsProcessing] = useState(false);
     const [message, setMessage] = useState(null);
@@ -57,7 +58,12 @@ const Settings = ({ db }) => {
         const file = event.target.files[0];
         if (!file) return;
 
-        if (!window.confirm('CẢNH BÁO: Việc khôi phục sẽ XÓA TOÀN BỘ dữ liệu hiện tại và thay thế bằng dữ liệu từ file sao lưu. Bạn có chắc chắn muốn tiếp tục?')) {
+        if (!(await confirm({
+            title: 'Cảnh báo khôi phục',
+            message: 'Việc khôi phục sẽ XÓA TOÀN BỘ dữ liệu hiện tại và thay thế bằng dữ liệu từ file sao lưu. Bạn có chắc chắn muốn tiếp tục?',
+            type: 'danger',
+            confirmText: 'Tôi hiểu, hãy khôi phục'
+        }))) {
             event.target.value = '';
             return;
         }
