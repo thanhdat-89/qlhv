@@ -94,7 +94,7 @@ export const useDatabase = () => {
     };
 
     // Helper: Count sessions within a specific date range
-    const countSessionsInRange = (schedule, startDate, endDate, classId) => {
+    const countSessionsInRange = (schedule, startDate, endDate, classId, studentId = null) => {
         if (!schedule) return 0;
 
         let count = 0;
@@ -111,11 +111,15 @@ export const useDatabase = () => {
             const dateStr = getLocalDateString(current);
             const dayName = dayMap[current.getDay()];
 
-            // Skip if this date falls within any holiday range for THIS class
+            // Skip if this date falls within any holiday range for THIS class/student
             const isHoliday = holidays.some(h => {
                 const start = h.date;
                 const end = h.endDate || h.date;
-                return dateStr >= start && dateStr <= end && (!h.classId || h.classId === classId);
+                if (!(dateStr >= start && dateStr <= end)) return false;
+                // Class-level or all-school holiday (no student specified)
+                if (!h.studentId) return !h.classId || h.classId === classId;
+                // Student-specific holiday
+                return studentId && h.studentId === studentId;
             });
 
             if (!isHoliday) {
@@ -200,7 +204,7 @@ export const useDatabase = () => {
 
         let scheduledCount = 0;
         if (monthlyStart <= monthlyEnd) {
-            scheduledCount = countSessionsInRange(studentClass.schedule, monthlyStart, monthlyEnd, student.classId);
+            scheduledCount = countSessionsInRange(studentClass.schedule, monthlyStart, monthlyEnd, student.classId, student.id);
         }
 
         // Extra sessions for target month (ALL scheduled sessions, no attendance check)
@@ -261,7 +265,7 @@ export const useDatabase = () => {
             const actualEnd = mEnd < balanceLimit ? mEnd : balanceLimit;
 
             if (mStart <= actualEnd) {
-                const monthScheduledCount = countSessionsInRange(studentClass.schedule, mStart, actualEnd, student.classId);
+                const monthScheduledCount = countSessionsInRange(studentClass.schedule, mStart, actualEnd, student.classId, student.id);
                 const monthStr = `${iterDate.getFullYear()}-${String(iterDate.getMonth() + 1).padStart(2, '0')}`;
 
                 // Effective discount for the iterated month

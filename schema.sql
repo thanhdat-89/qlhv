@@ -59,6 +59,7 @@ create table if not exists holidays (
   description text,
   type text default 'Nghỉ Lễ', -- 'Nghỉ Lễ' or 'Nghỉ đột xuất'
   class_id text references classes(id),
+  student_id text references students(id) on delete cascade,
   created_at timestamp with time zone default timezone('utc'::text, now())
 );
 

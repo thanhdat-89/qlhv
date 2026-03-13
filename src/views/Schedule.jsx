@@ -377,6 +377,11 @@ const Schedule = ({ db }) => {
                                             <div className="uppercase-class" style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
                                                 {h.type || 'Nghỉ Lễ'}
                                                 {h.classId && ` - ${classes.find(c => c.id === h.classId)?.name || 'Lớp đã xóa'}`}
+                                                {h.studentId && (
+                                                    <span style={{ color: 'var(--warning)', fontWeight: 600 }}>
+                                                        {' — '}{students.find(s => s.id === h.studentId)?.name || 'Học viên đã xóa'}
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -410,6 +415,7 @@ const Schedule = ({ db }) => {
                     onAdd={actions.addHoliday}
                     onClose={() => setIsModalOpen(false)}
                     classes={classes}
+                    students={students}
                 />
             )}
 

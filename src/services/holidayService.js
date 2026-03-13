@@ -16,6 +16,7 @@ export const holidayService = {
             description: h.description,
             type: h.type,
             classId: h.class_id,
+            studentId: h.student_id || null,
             createdAt: h.created_at
         }));
     },
@@ -28,7 +29,8 @@ export const holidayService = {
             end_date: holiday.endDate || holiday.date,
             description: holiday.description,
             type: holiday.type,
-            class_id: holiday.classId || null // Ensure empty string becomes null
+            class_id: holiday.classId || null,
+            student_id: holiday.studentId || null
         };
         const { data, error } = await supabase
             .from('holidays')
@@ -53,6 +55,7 @@ export const holidayService = {
         if (holiday.description !== undefined) dbHoliday.description = holiday.description;
         if (holiday.type !== undefined) dbHoliday.type = holiday.type;
         if (holiday.classId !== undefined) dbHoliday.class_id = holiday.classId || null;
+        if (holiday.studentId !== undefined) dbHoliday.student_id = holiday.studentId || null;
 
         const { data, error } = await supabase
             .from('holidays')
