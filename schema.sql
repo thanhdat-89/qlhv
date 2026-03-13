@@ -113,6 +113,7 @@ alter table public.holidays enable row level security;
 alter table public.promotions enable row level security;
 alter table public.messages enable row level security;
 alter table public.backups enable row level security;
+alter table public.student_promotions enable row level security;
 
 -- Helper function to get app secret from headers
 create or replace function get_app_secret() returns text as $$
@@ -151,3 +152,7 @@ create policy "Restricted Write Access" on public.messages for all to anon using
 -- Backups
 create policy "Public Read Access" on public.backups for select to anon using (true);
 create policy "Restricted Write Access" on public.backups for all to anon using (get_app_secret() = 'cqt263') with check (get_app_secret() = 'cqt263');
+
+-- Student Promotions
+create policy "Public Read Access" on public.student_promotions for select to anon using (true);
+create policy "Restricted Write Access" on public.student_promotions for all to anon using (get_app_secret() = 'cqt263') with check (get_app_secret() = 'cqt263');
