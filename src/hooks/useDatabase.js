@@ -285,8 +285,11 @@ export const useDatabase = () => {
                 const rawMonthPromo = promotions.find(p => p.classId === student.classId && p.month === monthStr);
                 const monthPromo = (rawMonthPromo && (rawMonthPromo.excludedStudentIds || []).includes(studentId)) ? null : rawMonthPromo;
 
+                const monthStudentPromo = studentPromotions.find(p => p.studentId === studentId && p.month === monthStr) || null;
+
                 const monthBase = monthScheduledCount * feePerSession * (1 - iterStudentDiscount);
-                tuitionIncurred += Math.round(applyPromoDiscount(monthBase, monthPromo));
+                const baseAfterClassPromo = applyPromoDiscount(monthBase, monthPromo);
+                tuitionIncurred += Math.round(applyPromoDiscount(baseAfterClassPromo, monthStudentPromo));
             }
             iterDate = mEndNext;
         }
@@ -308,9 +311,13 @@ export const useDatabase = () => {
 
             const rawMonthPromo = promotions.find(p => p.classId === student.classId && p.month === monthStr);
             const monthPromo = (rawMonthPromo && (rawMonthPromo.excludedStudentIds || []).includes(studentId)) ? null : rawMonthPromo;
+            
+            const monthStudentPromo = studentPromotions.find(p => p.studentId === studentId && p.month === monthStr) || null;
+            
             const sessionFee = a.fee || feePerSession;
             const extraBase = sessionFee * (1 - iterStudentDiscount);
-            tuitionIncurred += Math.round(applyPromoDiscount(extraBase, monthPromo));
+            const baseAfterClassPromo = applyPromoDiscount(extraBase, monthPromo);
+            tuitionIncurred += Math.round(applyPromoDiscount(baseAfterClassPromo, monthStudentPromo));
         });
 
         const totalPaid = fees
@@ -331,8 +338,12 @@ export const useDatabase = () => {
             promotionDiscount,
             promotionAmount,
             promotionType,
-            studentDiscountRate: effectiveStudentDiscount,
             promotionDescription: promotion ? promotion.description : '',
+            studentPromotionDiscount: studentPromotion ? studentPromotion.discountRate : 0,
+            studentPromotionAmount: studentPromotion ? studentPromotion.discountAmount : 0,
+            studentPromotionType: studentPromotion ? studentPromotion.discountType : 'percent',
+            studentPromotionDescription: studentPromotion ? studentPromotion.description : '',
+            studentDiscountRate: effectiveStudentDiscount,
             status: balance <= 0 ? 'Đã hoàn thành' : 'Còn nợ'
         };
     };

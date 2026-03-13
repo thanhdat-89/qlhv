@@ -86,6 +86,9 @@ const Tuition = ({ db }) => {
             'Khuyến mãi lớp': s.tuition.promotionType === 'amount'
                 ? `-${(s.tuition.promotionAmount || 0).toLocaleString('vi-VN')} đ`
                 : `${(s.tuition.promotionDiscount || 0) * 100}%`,
+            'Khuyến mãi tháng': s.tuition.studentPromotionType === 'amount'
+                ? `-${(s.tuition.studentPromotionAmount || 0).toLocaleString('vi-VN')} đ`
+                : `${(s.tuition.studentPromotionDiscount || 0) * 100}%`,
             [`Học phí tháng ${selectedMonth + 1}`]: s.tuition.tuitionDue
         }));
 
@@ -277,6 +280,7 @@ const Tuition = ({ db }) => {
                                 <th className="hide-mobile" style={{ textAlign: 'right' }}>Học phí học riêng</th>
                                 <th className="hide-mobile" style={{ textAlign: 'center' }}>Giảm giá (HV)</th>
                                 <th className="hide-mobile" style={{ textAlign: 'center' }}>Khuyến mãi (Lớp)</th>
+                                <th className="hide-mobile" style={{ textAlign: 'center' }}>Khuyến mãi (Tháng)</th>
                                 <th style={{ textAlign: 'right' }}>Học phí tháng {selectedMonth + 1}</th>
                             </tr>
                         </thead>
@@ -312,6 +316,16 @@ const Tuition = ({ db }) => {
                                                 {s.tuition.promotionType === 'amount'
                                                     ? `-${(s.tuition.promotionAmount || 0).toLocaleString('vi-VN')} đ`
                                                     : `-${(s.tuition.promotionDiscount * 100).toFixed(0)}%`
+                                                }
+                                            </span>
+                                        ) : '-'}
+                                    </td>
+                                    <td className="hide-mobile" style={{ textAlign: 'center' }}>
+                                        {(s.tuition.studentPromotionDiscount > 0 || s.tuition.studentPromotionAmount > 0) ? (
+                                            <span className="label label-success" style={{ fontSize: '0.75rem' }}>
+                                                {s.tuition.studentPromotionType === 'amount'
+                                                    ? `-${(s.tuition.studentPromotionAmount || 0).toLocaleString('vi-VN')} đ`
+                                                    : `-${(s.tuition.studentPromotionDiscount * 100).toFixed(0)}%`
                                                 }
                                             </span>
                                         ) : '-'}
