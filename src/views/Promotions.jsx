@@ -2,13 +2,17 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Edit2, Trash2, Gift, Calendar, Filter, ChevronLeft, ChevronRight, Clock, Users, UserX } from 'lucide-react';
 import AddPromotionModal from '../components/AddPromotionModal';
+import AddStudentPromotionModal from '../components/AddStudentPromotionModal';
 
 const Promotions = ({ db }) => {
     const navigate = useNavigate();
-    const { promotions, classes, actions, students } = db;
+    const { promotions, studentPromotions, classes, actions, students } = db;
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isStudentModalOpen, setIsStudentModalOpen] = useState(false);
     const [editingPromotion, setEditingPromotion] = useState(null);
+    const [editingStudentPromotion, setEditingStudentPromotion] = useState(null);
     const [selectedMonth, setSelectedMonth] = useState('');
+    const [selectedStudentMonth, setSelectedStudentMonth] = useState('');
     const [activeTab, setActiveTab] = useState('class'); // 'class' or 'student'
     const [studentSearchQuery, setStudentSearchQuery] = useState('');
     const [studentClassFilter, setStudentClassFilter] = useState('all');
@@ -39,8 +43,22 @@ const Promotions = ({ db }) => {
         setEditingPromotion(null);
     };
 
+    const handleEditStudent = (promotion) => {
+        setEditingStudentPromotion(promotion);
+        setIsStudentModalOpen(true);
+    };
+
+    const handleCloseStudentModal = () => {
+        setIsStudentModalOpen(false);
+        setEditingStudentPromotion(null);
+    };
+
     const getClassName = (classId) => {
         return classes.find(c => c.id === classId)?.name || 'N/A';
+    };
+
+    const getStudentName = (studentId) => {
+        return students.find(s => s.id === studentId)?.name || 'Học viên đã xóa';
     };
 
     const filteredPromotions = selectedMonth
@@ -53,13 +71,21 @@ const Promotions = ({ db }) => {
         return getClassName(a.classId).localeCompare(getClassName(b.classId));
     });
 
-    // Students with discountRate > 0
-    const studentsWithDiscount = students.filter(s => {
-        const hasDiscount = s.discountRate > 0;
-        const matchesSearch = s.name.toLowerCase().includes(studentSearchQuery.toLowerCase());
-        const matchesClass = studentClassFilter === 'all' || s.classId === studentClassFilter;
-        return hasDiscount && matchesSearch && matchesClass;
-    }).sort((a, b) => a.name.localeCompare(b.name));
+    const filteredStudentPromotions = studentPromotions.filter(p => {
+        const student = students.find(s => s.id === p.studentId);
+        if (!student) return false;
+        
+        const matchesMonth = selectedStudentMonth ? p.month === selectedStudentMonth : true;
+        const matchesSearch = student.name.toLowerCase().includes(studentSearchQuery.toLowerCase());
+        const matchesClass = studentClassFilter === 'all' || student.classId === studentClassFilter;
+        
+        return matchesMonth && matchesSearch && matchesClass;
+    });
+
+    const sortedStudentPromotions = [...filteredStudentPromotions].sort((a, b) => {
+        if (a.month !== b.month) return b.month.localeCompare(a.month);
+        return getStudentName(a.studentId).localeCompare(getStudentName(b.studentId));
+    });
 
     return (
         <div className="view-container animate-fade-in">
@@ -71,6 +97,11 @@ const Promotions = ({ db }) => {
                 {activeTab === 'class' && (
                     <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>
                         <Plus size={18} /> Thêm khuyến mãi
+                    </button>
+                )}
+                {activeTab === 'student' && (
+                    <button className="btn btn-primary" onClick={() => { setEditingStudentPromotion(null); setIsStudentModalOpen(true); }}>
+                        <Plus size={18} /> Thêm ưu đãi học viên
                     </button>
                 )}
             </div>
@@ -222,7 +253,23 @@ const Promotions = ({ db }) => {
                 <>
                     <div className="filter-container glass card" style={{ padding: '1.25rem 1.5rem', marginBottom: '2rem' }}>
                         <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'end', flexWrap: 'wrap' }}>
-                            <div style={{ flex: 1, minWidth: '250px' }}>
+                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                <label className="form-label" style={{ marginBottom: 0 }}>Lọc theo tháng</label>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <input
+                                        type="month"
+                                        className="glass"
+                                        style={{ width: '160px', padding: '0.6rem 1rem', textAlign: 'center' }}
+                                        value={selectedStudentMonth}
+                                        onChange={(e) => setSelectedStudentMonth(e.target.value)}
+                                    />
+                                    <button className="btn btn-glass btn-sm" onClick={() => setSelectedStudentMonth('')}>
+                                        Tất cả
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div style={{ flex: 1, minWidth: '200px' }}>
                                 <label className="form-label" style={{ marginBottom: '0.5rem', display: 'block' }}>Tìm kiếm học viên</label>
                                 <input
                                     type="text"
@@ -233,7 +280,7 @@ const Promotions = ({ db }) => {
                                     onChange={(e) => setStudentSearchQuery(e.target.value)}
                                 />
                             </div>
-                            <div style={{ flex: 1, minWidth: '200px' }}>
+                            <div style={{ flex: 1, minWidth: '150px' }}>
                                 <label className="form-label" style={{ marginBottom: '0.5rem', display: 'block' }}>Lọc theo lớp</label>
                                 <select
                                     className="glass"
@@ -253,6 +300,7 @@ const Promotions = ({ db }) => {
                                     onClick={() => {
                                         setStudentSearchQuery('');
                                         setStudentClassFilter('all');
+                                        setSelectedStudentMonth('');
                                     }}
                                     style={{ height: '42px' }}
                                 >
@@ -266,52 +314,71 @@ const Promotions = ({ db }) => {
                         <table>
                             <thead>
                                 <tr>
+                                    <th>Tháng</th>
                                     <th>Học viên</th>
                                     <th>Lớp</th>
-                                    <th style={{ textAlign: 'center' }}>Mức giảm trực tiếp</th>
-                                    <th style={{ textAlign: 'center' }}>Thời gian kết thúc</th>
-                                    <th style={{ textAlign: 'center' }}>Trạng thái</th>
+                                    <th style={{ textAlign: 'center' }}>Mức giảm</th>
+                                    <th>Mô tả</th>
+                                    <th style={{ textAlign: 'right' }}>Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {studentsWithDiscount.map((s) => (
-                                    <tr key={s.id}>
-                                        <td style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{s.name}</td>
-                                        <td>
-                                            <span className="label label-glass">{s.className}</span>
-                                        </td>
-                                        <td style={{ textAlign: 'center' }}>
-                                            <div className="label label-success" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-                                                <Gift size={14} />
-                                                -{s.discountRate * 100}%
-                                            </div>
-                                        </td>
-                                        <td style={{ textAlign: 'center' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-                                                <Calendar size={14} color="var(--secondary)" />
-                                                <span style={{ fontWeight: 500 }}>
-                                                    {(s.discountEndDate || '2026-07').split('-').reverse().join('/')}
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td style={{ textAlign: 'center' }}>
-                                            <span className={`label ${s.status === 'Đang học' ? 'label-success' : 'label-warning'}`} style={{ fontSize: '0.75rem' }}>
-                                                {s.status}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))}
+                                {sortedStudentPromotions.map((p) => {
+                                    const student = students.find(s => s.id === p.studentId);
+                                    return (
+                                        <tr key={p.id}>
+                                            <td>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                    <Calendar size={16} color="var(--secondary)" />
+                                                    <span style={{ fontWeight: 600 }}>{p.month.split('-').reverse().join('-')}</span>
+                                                </div>
+                                            </td>
+                                            <td style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{student?.name}</td>
+                                            <td>
+                                                <span className="label label-glass">{student?.className}</span>
+                                            </td>
+                                            <td style={{ textAlign: 'center' }}>
+                                                <div className="label label-success" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                                                    <Gift size={14} />
+                                                    {p.discountType === 'amount'
+                                                        ? `-${(p.discountAmount || 0).toLocaleString('vi-VN')} đ`
+                                                        : `-${(p.discountRate * 100).toFixed(0)}%`
+                                                    }
+                                                </div>
+                                            </td>
+                                            <td style={{ color: 'var(--text-secondary)', maxWidth: '300px' }}>
+                                                {p.description || '-'}
+                                            </td>
+                                            <td style={{ textAlign: 'right' }}>
+                                                <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                                                    <button
+                                                        onClick={() => handleEditStudent(p)}
+                                                        className="btn btn-glass p-2"
+                                                    >
+                                                        <Edit2 size={16} color="var(--primary)" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => actions.deleteStudentPromotion(p.id)}
+                                                        className="btn btn-glass p-2"
+                                                    >
+                                                        <Trash2 size={16} color="var(--danger)" />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
-                        {studentsWithDiscount.length === 0 && (
+                        {sortedStudentPromotions.length === 0 && (
                             <div style={{ padding: '4rem', textAlign: 'center' }}>
                                 <div className="glass shadow-lg" style={{ display: 'inline-block', padding: '1.5rem', borderRadius: '50%', marginBottom: '1rem' }}>
                                     <Users size={40} color="var(--text-secondary)" />
                                 </div>
                                 <p style={{ color: 'var(--text-secondary)' }}>
-                                    {studentSearchQuery || studentClassFilter !== 'all'
-                                        ? 'Không tìm thấy học viên nào phù hợp với bộ lọc.'
-                                        : 'Hiện không có học viên nào được hưởng ưu đãi riêng.'}
+                                    {studentSearchQuery || studentClassFilter !== 'all' || selectedStudentMonth
+                                        ? 'Không tìm thấy ưu đãi nào phù hợp với bộ lọc.'
+                                        : 'Hiện không có học viên nào được hưởng ưu đãi riêng theo tháng.'}
                                 </p>
                             </div>
                         )}
@@ -328,6 +395,16 @@ const Promotions = ({ db }) => {
                     onUpdate={actions.updatePromotion}
                     onClose={handleCloseModal}
                     initialData={editingPromotion}
+                />
+            )}
+            
+            {isStudentModalOpen && (
+                <AddStudentPromotionModal
+                    students={students}
+                    onAdd={actions.addStudentPromotion}
+                    onUpdate={actions.updateStudentPromotion}
+                    onClose={handleCloseStudentModal}
+                    initialData={editingStudentPromotion}
                 />
             )}
         </div>

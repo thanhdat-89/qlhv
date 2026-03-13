@@ -4,6 +4,7 @@ import { classService } from '../services/classService';
 import { financeService } from '../services/financeService';
 import { holidayService } from '../services/holidayService';
 import { promotionService } from '../services/promotionService';
+import { studentPromotionService } from '../services/studentPromotionService';
 import { backupService } from '../services/backupService';
 import { messageService } from '../services/messageService';
 import { useNotification } from '../contexts/NotificationContext';
@@ -16,6 +17,7 @@ export const useDatabase = () => {
     const [fees, setFees] = useState([]);
     const [holidays, setHolidays] = useState([]);
     const [promotions, setPromotions] = useState([]);
+    const [studentPromotions, setStudentPromotions] = useState([]);
     const [automatedBackups, setAutomatedBackups] = useState([]);
     const [messages, setMessages] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -24,13 +26,14 @@ export const useDatabase = () => {
         setIsLoading(true);
         try {
             // If Supabase is not configured, we don't attempt to fetch
-            const [studentsData, classesData, feesData, attendanceData, holidaysData, promotionsData, messagesData] = await Promise.all([
+            const [studentsData, classesData, feesData, attendanceData, holidaysData, promotionsData, studentPromotionsData, messagesData] = await Promise.all([
                 studentService.getAll().catch(e => { console.error(e); return []; }),
                 classService.getAll().catch(e => { console.error(e); return []; }),
                 financeService.getFees().catch(e => { console.error(e); return []; }),
                 financeService.getAttendance().catch(e => { console.error(e); return []; }),
                 holidayService.getAll().catch(e => { console.error(e); return []; }),
                 promotionService.getAll().catch(e => { console.error(e); return []; }),
+                studentPromotionService.getAll().catch(e => { console.error(e); return []; }),
                 messageService.getAll().catch(e => { console.error(e); return []; })
             ]);
 
@@ -45,6 +48,7 @@ export const useDatabase = () => {
             setExtraAttendance(attendanceData || []);
             setHolidays(holidaysData || []);
             setPromotions(promotionsData || []);
+            setStudentPromotions(studentPromotionsData || []);
             setMessages(messagesData || []);
 
             // Check for Auto-backup (Monday only)
@@ -228,6 +232,9 @@ export const useDatabase = () => {
         const promotionAmount = promotion ? (promotion.discountAmount || 0) : 0;
         const promotionType = promotion ? (promotion.discountType || 'percent') : 'percent';
 
+        // Student-specific promotion for this month
+        const studentPromotion = studentPromotions.find(p => p.studentId === studentId && p.month === selectedMonthStr) || null;
+
         // Helper: apply promotion discount (percent or fixed amount)
         const applyPromoDiscount = (baseAmount, promo) => {
             if (!promo) return baseAmount;
@@ -237,15 +244,18 @@ export const useDatabase = () => {
             return baseAmount * (1 - (promo.discountRate || 0));
         };
 
-        // Final Tuition = Base * (1 - Student Discount) then apply Promotion
+        // Final Tuition = Base * (1 - Student Discount) → apply class promo → apply student promo
         const effectiveEndDate = student.discountEndDate || (student.discountRate > 0 ? '2026-07' : null);
         const isStudentDiscountValid = effectiveEndDate && selectedMonthStr <= effectiveEndDate;
         const effectiveStudentDiscount = isStudentDiscountValid ? (student.discountRate || 0) : 0;
 
         const scheduledBase = scheduledCount * feePerSession * (1 - effectiveStudentDiscount);
-        const scheduledTuition = Math.round(applyPromoDiscount(scheduledBase, promotion));
+        const scheduledAfterClassPromo = applyPromoDiscount(scheduledBase, promotion);
+        const scheduledTuition = Math.round(applyPromoDiscount(scheduledAfterClassPromo, studentPromotion));
+
         const tuitionBase = (scheduledCount * feePerSession + totalExtraFee) * (1 - effectiveStudentDiscount);
-        const tuitionDue = Math.round(applyPromoDiscount(tuitionBase, promotion));
+        const tuitionAfterClassPromo = applyPromoDiscount(tuitionBase, promotion);
+        const tuitionDue = Math.round(applyPromoDiscount(tuitionAfterClassPromo, studentPromotion));
 
         // --- Balance Calculation (Relative to Target Month) ---
         // Debt = (Scheduled + Extra up to Target Month) - Total Payments
@@ -885,6 +895,43 @@ export const useDatabase = () => {
         }
     };
 
+    const addStudentPromotion = async (promotion) => {
+        try {
+            const newPromo = await studentPromotionService.create(promotion);
+            setStudentPromotions(prev => [newPromo, ...prev]);
+            showToast('Đã thêm ưu đãi học viên thành công.', 'success');
+        } catch (error) {
+            console.error('Failed to add student promotion:', error);
+            showToast('Lỗi khi thêm ưu đãi: ' + (error.message || 'Vui lòng thử lại sau.'), 'error');
+            throw error;
+        }
+    };
+
+    const updateStudentPromotion = async (id, promotion) => {
+        try {
+            await studentPromotionService.update(id, promotion);
+            setStudentPromotions(prev => prev.map(p => p.id === id ? { ...p, ...promotion } : p));
+            showToast('Đã cập nhật ưu đãi học viên thành công.', 'success');
+        } catch (error) {
+            console.error('Failed to update student promotion:', error);
+            showToast('Lỗi khi cập nhật ưu đãi: ' + (error.message || 'Vui lòng thử lại sau.'), 'error');
+            throw error;
+        }
+    };
+
+    const deleteStudentPromotion = async (id) => {
+        if (await confirm({ title: 'Xác nhận xóa', message: 'Bạn có chắc chắn muốn xóa ưu đãi học viên này?', type: 'danger' })) {
+            try {
+                await studentPromotionService.delete(id);
+                setStudentPromotions(prev => prev.filter(p => p.id !== id));
+                showToast('Đã xóa ưu đãi học viên thành công.', 'success');
+            } catch (error) {
+                console.error('Failed to delete student promotion:', error);
+                showToast('Lỗi khi xóa ưu đãi: ' + (error.message || 'Vui lòng thử lại sau.'), 'error');
+            }
+        }
+    };
+
     return {
         isLoading,
         students: enhancedStudents.filter(s => s.status !== 'Đã xóa'),
@@ -894,6 +941,7 @@ export const useDatabase = () => {
         fees,
         holidays,
         promotions,
+        studentPromotions,
         views: {
             newStudents,
             leftStudents
@@ -921,6 +969,9 @@ export const useDatabase = () => {
             bulkDeleteExtraAttendance,
             deleteHoliday,
             deletePromotion,
+            addStudentPromotion,
+            updateStudentPromotion,
+            deleteStudentPromotion,
             addMessage: async (content) => {
                 const newMessage = await messageService.add({ content });
                 setMessages(prev => [newMessage, ...prev]);
