@@ -373,7 +373,8 @@ export default function Students() {
 
   // Client-side filtering
   const filtered = allStudents.filter(s => {
-    const matchSearch = !search || s.fullName.toLowerCase().includes(search.toLowerCase())
+    const name = s.fullName || (s as any).name || ''
+    const matchSearch = !search || name.toLowerCase().includes(search.toLowerCase())
     const matchGrade = !gradeLevel || String(s.gradeLevel) === gradeLevel
     return matchSearch && matchGrade
   })

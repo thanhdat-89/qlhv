@@ -14,12 +14,35 @@ router.get('/', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const { page = '1', limit = '20', search, status, classId, gradeLevel } = req.query as Record<string, string>
 
-    let students = toDocs<Student>(await db.collection(C.STUDENTS).orderBy('fullName').get())
+    const rawDocs = await db.collection(C.STUDENTS).get()
+    let students = toDocs<Student>(rawDocs).map(s => {
+      const name = s.fullName || (s as any).name || ''
+      let st = s.status
+      if (st === 'Đang học' || st === 'Mới nhập học') st = 'ACTIVE'
+      else if (st === 'Đã nghỉ') st = 'INACTIVE'
+      else if (st === 'Bảo lưu') st = 'RESERVED'
+
+      let gl = s.gradeLevel
+      if (gl == null && (s as any).birthYear) {
+        const by = Number((s as any).birthYear)
+        if (by >= 2008 && by <= 2014) gl = 2020 - by
+      }
+
+      return {
+        ...s,
+        fullName: name,
+        status: st || 'ACTIVE',
+        gradeLevel: gl != null ? Number(gl) : null
+      }
+    })
+
+    // Sort in memory by fullName
+    students.sort((a, b) => a.fullName.localeCompare(b.fullName, 'vi'))
 
     // Filter
     if (status) students = students.filter(s => s.status === status)
     if (gradeLevel) students = students.filter(s => s.gradeLevel === Number(gradeLevel))
-    if (search) students = students.filter(s => s.fullName.toLowerCase().includes(search.toLowerCase()))
+    if (search) students = students.filter(s => (s.fullName || '').toLowerCase().includes(search.toLowerCase()))
 
     // Filter by classId: lấy studentIds từ enrollments
     if (classId) {
@@ -207,7 +230,18 @@ router.get('/:id', async (req: AuthRequest, res: Response, next: NextFunction) =
     const doc = await db.collection(C.STUDENTS).doc(s(req.params.id)).get()
     if (!doc.exists) { res.status(404).json({ message: 'Không tìm thấy học viên' }); return }
 
-    const student = toObj<Student>(doc)
+    const rawStudent = toObj<Student>(doc)
+    const fullName = rawStudent.fullName || (rawStudent as any).name || ''
+    let st = rawStudent.status
+    if (st === 'Đang học' || st === 'Mới nhập học') st = 'ACTIVE'
+    else if (st === 'Đã nghỉ') st = 'INACTIVE'
+    else if (st === 'Bảo lưu') st = 'RESERVED'
+
+    const student = {
+      ...rawStudent,
+      fullName,
+      status: st || 'ACTIVE'
+    }
 
     // Subcollection parents
     const parentsSnap = await db.collection(C.STUDENTS).doc(student.id).collection('parents').get()
