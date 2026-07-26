@@ -57,6 +57,43 @@ router.get('/', async (req: AuthRequest, res: Response, next: NextFunction) => {
   }
 })
 
+// POST /api/students/bulk-deactivate-grades — Chuyển tất cả học viên khối 10, 11, 12 sang Đã nghỉ
+router.post('/bulk-deactivate-grades', async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const targetGrades = new Set([10, 11, 12])
+    const snap = await db.collection(C.STUDENTS).get()
+    const nowISO = new Date().toISOString()
+    const todayStr = nowISO.slice(0, 10)
+
+    let batch = db.batch()
+    let count = 0
+
+    snap.docs.forEach(docSnap => {
+      const data = docSnap.data()
+      const gl = Number(data.gradeLevel)
+      const className = data.className || ''
+      const isHs = targetGrades.has(gl) || /\b(10|11|12)\b/.test(className) || data.birthYear === 2008 || data.birthYear === 2009 || data.birthYear === 2010
+
+      if (isHs && data.status !== 'INACTIVE' && data.status !== 'Đã nghỉ') {
+        batch.update(docSnap.ref, {
+          status: 'INACTIVE',
+          leaveDate: todayStr,
+          updatedAt: nowISO
+        })
+        count++
+      }
+    })
+
+    if (count > 0) {
+      await batch.commit()
+    }
+
+    res.json({ message: `Đã chuyển ${count} học viên Khối 10, 11, 12 sang trạng thái Đã nghỉ`, updatedCount: count })
+  } catch (err) {
+    next(err)
+  }
+})
+
 // POST /api/students/bulk — Import hàng loạt từ Excel
 router.post('/bulk', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
