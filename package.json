@@ -12,6 +12,7 @@
     },
     "dependencies": {
         "@supabase/supabase-js": "^2.91.0",
+        "bcryptjs": "^3.0.3",
         "firebase": "^10.13.0",
         "framer-motion": "^11.0.0",
         "lucide-react": "^0.344.0",
