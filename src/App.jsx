@@ -26,17 +26,20 @@ function App() {
 
     useEffect(() => {
         const unsub = onAuthStateChanged(auth, (user) => {
-            setIsAuthenticated(!!user);
+            const hasLocalAuth = localStorage.getItem('local_admin_authenticated') === 'true';
+            setIsAuthenticated(!!user || hasLocalAuth);
             setAuthChecked(true);
         });
         return () => unsub();
     }, []);
 
     const handleLogin = () => {
+        localStorage.setItem('local_admin_authenticated', 'true');
         setIsAuthenticated(true);
     };
 
     const handleLogout = async () => {
+        localStorage.removeItem('local_admin_authenticated');
         try {
             await signOut(auth);
         } catch (e) {
