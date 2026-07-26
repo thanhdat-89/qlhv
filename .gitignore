@@ -24,3 +24,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 node_modules
+
+# Firebase
+firebase-service-account.json
+.firebase/
+.vercel

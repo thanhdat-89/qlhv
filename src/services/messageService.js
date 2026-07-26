@@ -1,50 +1,56 @@
-import { supabase } from '../lib/supabase';
+import { db } from '../lib/firebase';
+import {
+    collection,
+    doc,
+    getDoc,
+    getDocs,
+    addDoc,
+    updateDoc,
+    deleteDoc,
+    query,
+    orderBy
+} from 'firebase/firestore';
+
+const col = () => collection(db, 'messages');
+
+const normalize = (id, m) => ({
+    id,
+    author: m.author || 'Admin',
+    content: m.content,
+    createdAt: m.createdAt
+});
 
 export const messageService = {
     getAll: async () => {
-        const { data, error } = await supabase
-            .from('messages')
-            .select('*')
-            .order('created_at', { ascending: false });
-
-        if (error) throw error;
-        return data || [];
+        const snap = await getDocs(query(col(), orderBy('createdAt', 'desc')));
+        return snap.docs.map(d => normalize(d.id, d.data()));
     },
 
     add: async (message) => {
-        const { data, error } = await supabase
-            .from('messages')
-            .insert([{
-                author: message.author || 'Admin',
-                content: message.content,
-                created_at: new Date().toISOString()
-            }])
-            .select()
-            .single();
-
-        if (error) throw error;
-        return data;
+        const payload = {
+            author: message.author || 'Admin',
+            content: message.content,
+            createdAt: new Date().toISOString()
+        };
+        const ref = await addDoc(col(), payload);
+        return { id: ref.id, ...payload };
     },
 
     delete: async (id) => {
-        const { error } = await supabase
-            .from('messages')
-            .delete()
-            .eq('id', id);
-
-        if (error) throw error;
+        await deleteDoc(doc(db, 'messages', id));
         return true;
     },
 
     update: async (id, updates) => {
-        const { data, error } = await supabase
-            .from('messages')
-            .update(updates)
-            .eq('id', id)
-            .select()
-            .single();
-
-        if (error) throw error;
-        return data;
+        const ref = doc(db, 'messages', id);
+        const allowed = ['author', 'content'];
+        const payload = Object.fromEntries(
+            Object.entries(updates).filter(([k]) => allowed.includes(k))
+        );
+        if (Object.keys(payload).length) {
+            await updateDoc(ref, payload);
+        }
+        const snap = await getDoc(ref);
+        return normalize(id, snap.data());
     }
 };

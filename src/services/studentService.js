@@ -1,97 +1,84 @@
-import { supabase } from '../lib/supabase';
+import { db } from '../lib/firebase';
+import {
+    collection,
+    doc,
+    getDocs,
+    setDoc,
+    updateDoc,
+    deleteDoc,
+    writeBatch
+} from 'firebase/firestore';
+
+const col = () => collection(db, 'students');
+
+const normalize = (id, data) => ({
+    id,
+    name: data.name,
+    birthYear: data.birthYear ?? null,
+    phone: data.phone ?? null,
+    enrollDate: data.enrollDate ?? null,
+    leaveDate: data.leaveDate ?? null,
+    classId: data.classId ?? null,
+    status: data.status,
+    statusHistory: data.statusHistory || [],
+    discountRate: typeof data.discountRate === 'number'
+        ? data.discountRate
+        : parseFloat(data.discountRate) || 0,
+    discountEndDate: data.discountEndDate ?? null
+});
 
 export const studentService = {
     getAll: async () => {
-        if (!supabase) return [];
-        const { data, error } = await supabase
-            .from('students')
-            .select('*');
-        if (error) throw error;
-
-        // Map snake_case database fields to camelCase used in the app
-        return (data || []).map(s => ({
-            id: s.id,
-            name: s.name,
-            birthYear: s.birth_year,
-            phone: s.phone,
-            enrollDate: s.enroll_date,
-            leaveDate: s.leave_date,
-            classId: s.class_id,
-            status: s.status,
-            statusHistory: s.status_history || [],
-            discountRate: parseFloat(s.discount_rate)
-        }));
+        const snap = await getDocs(col());
+        return snap.docs.map(d => normalize(d.id, d.data()));
     },
 
     create: async (student) => {
-        if (!supabase) throw new Error('Cấu hình database chưa hoàn thiện.');
-        const dbStudent = {
-            id: student.id,
-            name: student.name,
-            birth_year: student.birthYear,
-            phone: student.phone,
-            enroll_date: student.enrollDate,
-            leave_date: student.leaveDate,
-            class_id: student.classId,
-            status: student.status,
-            status_history: student.statusHistory || [],
-            discount_rate: student.discountRate
-        };
-        const { data, error } = await supabase
-            .from('students')
-            .insert(dbStudent)
-            .select()
-            .single();
-        if (error) throw error;
+        const { id, ...rest } = student;
+        await setDoc(doc(db, 'students', id), {
+            ...rest,
+            statusHistory: rest.statusHistory || [],
+            createdAt: new Date().toISOString()
+        });
         return student;
     },
 
     update: async (id, data) => {
-        const dbData = {};
-        if (data.name !== undefined) dbData.name = data.name;
-        if (data.birthYear !== undefined) dbData.birth_year = data.birthYear;
-        if (data.phone !== undefined) dbData.phone = data.phone;
-        if (data.enrollDate !== undefined) dbData.enroll_date = data.enrollDate;
-        if (data.leaveDate !== undefined) dbData.leave_date = data.leaveDate;
-        if (data.classId !== undefined) dbData.class_id = data.classId;
-        if (data.status !== undefined) dbData.status = data.status;
-        if (data.statusHistory !== undefined) dbData.status_history = data.statusHistory;
-        if (data.discountRate !== undefined) dbData.discount_rate = data.discountRate;
-
-        const { error } = await supabase
-            .from('students')
-            .update(dbData)
-            .eq('id', id);
-        if (error) throw error;
+        const allowed = [
+            'name', 'birthYear', 'phone', 'enrollDate', 'leaveDate',
+            'classId', 'status', 'statusHistory', 'discountRate', 'discountEndDate'
+        ];
+        const payload = Object.fromEntries(
+            Object.entries(data).filter(([k]) => allowed.includes(k))
+        );
+        if (Object.keys(payload).length === 0) return data;
+        await updateDoc(doc(db, 'students', id), payload);
         return data;
     },
 
     delete: async (id) => {
-        const { error } = await supabase
-            .from('students')
-            .delete()
-            .eq('id', id);
-        if (error) throw error;
+        await deleteDoc(doc(db, 'students', id));
         return id;
     },
 
     bulkCreate: async (newStudents) => {
-        const dbStudents = newStudents.map(s => ({
-            id: s.id,
-            name: s.name,
-            birth_year: s.birthYear,
-            phone: s.phone,
-            enroll_date: s.enrollDate,
-            leave_date: s.leaveDate,
-            class_id: s.classId,
-            status: s.status,
-            status_history: s.statusHistory || [],
-            discount_rate: s.discountRate
-        }));
-        const { data, error } = await supabase
-            .from('students')
-            .insert(dbStudents);
-        if (error) throw error;
+        const chunks = [];
+        for (let i = 0; i < newStudents.length; i += 400) {
+            chunks.push(newStudents.slice(i, i + 400));
+        }
+        for (const chunk of chunks) {
+            const batch = writeBatch(db);
+            const createdAt = new Date().toISOString();
+            chunk.forEach(s => {
+                const { id, ...rest } = s;
+                batch.set(doc(db, 'students', id), {
+                    ...rest,
+                    statusHistory: rest.statusHistory || [],
+                    createdAt
+                });
+            });
+            await batch.commit();
+        }
         return newStudents;
     }
 };

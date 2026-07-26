@@ -57,7 +57,7 @@ export const useDatabase = () => {
                 const backups = await backupService.getBackups();
                 setAutomatedBackups(backups);
 
-                const alreadyBackedUpToday = backups.some(b => b.created_at.startsWith(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`));
+                const alreadyBackedUpToday = backups.some(b => (b.createdAt || '').startsWith(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`));
 
                 if (!alreadyBackedUpToday) {
                     console.log('Monday detected. Performing automatic weekly backup...');

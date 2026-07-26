@@ -121,7 +121,7 @@ const Messages = ({ db }) => {
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
                                                 <Clock size={12} />
                                                 <span>
-                                                    {new Date(msg.created_at).toLocaleString('vi-VN', {
+                                                    {new Date(msg.createdAt).toLocaleString('vi-VN', {
                                                         day: '2-digit', month: '2-digit', year: 'numeric',
                                                         hour: '2-digit', minute: '2-digit'
                                                     })}

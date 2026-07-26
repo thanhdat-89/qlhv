@@ -1,101 +1,97 @@
-import { supabase } from '../lib/supabase';
+import { db } from '../lib/firebase';
+import {
+    collection,
+    doc,
+    getDocs,
+    setDoc,
+    updateDoc,
+    deleteDoc,
+    writeBatch,
+    query,
+    where,
+    orderBy
+} from 'firebase/firestore';
+
+const normalize = (id, h) => ({
+    id,
+    date: h.date,
+    endDate: h.endDate || h.date,
+    description: h.description,
+    type: h.type,
+    classId: h.classId ?? null,
+    studentId: h.studentId ?? null,
+    createdAt: h.createdAt || null
+});
 
 export const holidayService = {
     getAll: async () => {
-        if (!supabase) return [];
-        const { data, error } = await supabase
-            .from('holidays')
-            .select('*')
-            .order('date', { ascending: true });
-        if (error) throw error;
-
-        return (data || []).map(h => ({
-            id: h.id,
-            date: h.date,
-            endDate: h.end_date || h.date,
-            description: h.description,
-            type: h.type,
-            classId: h.class_id,
-            studentId: h.student_id || null,
-            createdAt: h.created_at
-        }));
+        const snap = await getDocs(query(collection(db, 'holidays'), orderBy('date', 'asc')));
+        return snap.docs.map(d => normalize(d.id, d.data()));
     },
 
     create: async (holiday) => {
-        if (!supabase) throw new Error('Cấu hình database chưa hoàn thiện.');
-        const dbHoliday = {
-            id: holiday.id,
+        const createdAt = new Date().toISOString();
+        const payload = {
             date: holiday.date,
-            end_date: holiday.endDate || holiday.date,
+            endDate: holiday.endDate || holiday.date,
             description: holiday.description,
             type: holiday.type,
-            class_id: holiday.classId || null,
-            student_id: holiday.studentId || null
+            classId: holiday.classId || null,
+            studentId: holiday.studentId || null,
+            createdAt
         };
-        const { data, error } = await supabase
-            .from('holidays')
-            .insert(dbHoliday)
-            .select()
-            .single();
-        if (error) {
-            console.error('Supabase Error (create holiday):', error);
-            throw error;
-        }
-        return {
-            ...holiday,
-            createdAt: data.created_at
-        };
+        await setDoc(doc(db, 'holidays', holiday.id), payload);
+        return { ...holiday, createdAt };
     },
 
     update: async (id, holiday) => {
-        if (!supabase) throw new Error('Cấu hình database chưa hoàn thiện.');
-        const dbHoliday = {};
-        if (holiday.date !== undefined) dbHoliday.date = holiday.date;
-        if (holiday.endDate !== undefined) dbHoliday.end_date = holiday.endDate;
-        if (holiday.description !== undefined) dbHoliday.description = holiday.description;
-        if (holiday.type !== undefined) dbHoliday.type = holiday.type;
-        if (holiday.classId !== undefined) dbHoliday.class_id = holiday.classId || null;
-        if (holiday.studentId !== undefined) dbHoliday.student_id = holiday.studentId || null;
-
-        const { data, error } = await supabase
-            .from('holidays')
-            .update(dbHoliday)
-            .eq('id', id)
-            .select()
-            .single();
-        if (error) {
-            console.error('Supabase Error (update holiday):', error);
-            throw error;
+        const allowed = ['date', 'endDate', 'description', 'type', 'classId', 'studentId'];
+        const payload = {};
+        allowed.forEach(k => {
+            if (holiday[k] !== undefined) {
+                payload[k] = (k === 'classId' || k === 'studentId')
+                    ? (holiday[k] || null)
+                    : holiday[k];
+            }
+        });
+        if (Object.keys(payload).length) {
+            await updateDoc(doc(db, 'holidays', id), payload);
         }
-        return {
-            ...holiday,
-            createdAt: data.created_at
-        };
+        return { ...holiday, id };
     },
 
     delete: async (id) => {
-        if (!supabase) throw new Error('Cấu hình database chưa hoàn thiện.');
-        const { error } = await supabase
-            .from('holidays')
-            .delete()
-            .eq('id', id);
-        if (error) {
-            console.error('Supabase Error (delete holiday):', error);
-            throw error;
-        }
+        await deleteDoc(doc(db, 'holidays', id));
         return id;
     },
 
     deleteByClass: async (classId) => {
-        if (!supabase) throw new Error('Cấu hình database chưa hoàn thiện.');
-        const { error } = await supabase
-            .from('holidays')
-            .delete()
-            .eq('class_id', classId);
-        if (error) {
-            console.error('Supabase Error (deleteByClass holiday):', error);
-            throw error;
+        const snap = await getDocs(query(collection(db, 'holidays'), where('classId', '==', classId)));
+        const refs = snap.docs.map(d => d.ref);
+        const chunks = [];
+        for (let i = 0; i < refs.length; i += 400) {
+            chunks.push(refs.slice(i, i + 400));
+        }
+        for (const chunk of chunks) {
+            const batch = writeBatch(db);
+            chunk.forEach(r => batch.delete(r));
+            await batch.commit();
         }
         return classId;
+    },
+
+    deleteByStudent: async (studentId) => {
+        const snap = await getDocs(query(collection(db, 'holidays'), where('studentId', '==', studentId)));
+        const refs = snap.docs.map(d => d.ref);
+        const chunks = [];
+        for (let i = 0; i < refs.length; i += 400) {
+            chunks.push(refs.slice(i, i + 400));
+        }
+        for (const chunk of chunks) {
+            const batch = writeBatch(db);
+            chunk.forEach(r => batch.delete(r));
+            await batch.commit();
+        }
+        return studentId;
     }
 };

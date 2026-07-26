@@ -207,7 +207,7 @@ const Settings = ({ db }) => {
                                 automatedBackups.map(backup => (
                                     <tr key={backup.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
                                         <td style={{ padding: '1rem', color: 'var(--text-primary)' }}>
-                                            {new Date(backup.created_at).toLocaleDateString('vi-VN', {
+                                            {new Date(backup.createdAt).toLocaleDateString('vi-VN', {
                                                 day: '2-digit', month: '2-digit', year: 'numeric',
                                                 hour: '2-digit', minute: '2-digit'
                                             })}

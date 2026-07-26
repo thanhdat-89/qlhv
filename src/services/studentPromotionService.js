@@ -1,67 +1,57 @@
-import { supabase } from '../lib/supabase';
+import { db } from '../lib/firebase';
+import {
+    collection,
+    doc,
+    getDocs,
+    addDoc,
+    updateDoc,
+    deleteDoc,
+    query,
+    orderBy
+} from 'firebase/firestore';
+
+const col = () => collection(db, 'student_promotions');
+
+const normalize = (id, p) => ({
+    id,
+    studentId: p.studentId,
+    month: p.month,
+    discountRate: parseFloat(p.discountRate) || 0,
+    discountAmount: parseFloat(p.discountAmount) || 0,
+    discountType: p.discountType || 'percent',
+    description: p.description
+});
+
+const payloadFrom = (promotion) => ({
+    studentId: promotion.studentId,
+    month: promotion.month,
+    discountRate: promotion.discountType === 'percent' ? (promotion.discountRate || 0) : 0,
+    discountAmount: promotion.discountType === 'amount' ? (promotion.discountAmount || 0) : 0,
+    discountType: promotion.discountType || 'percent',
+    description: promotion.description || ''
+});
 
 export const studentPromotionService = {
     getAll: async () => {
-        if (!supabase) return [];
-        const { data, error } = await supabase
-            .from('student_promotions')
-            .select('*')
-            .order('month', { ascending: false });
-        if (error) throw error;
-
-        return (data || []).map(p => ({
-            id: p.id,
-            studentId: p.student_id,
-            month: p.month,
-            discountRate: parseFloat(p.discount_rate) || 0,
-            discountAmount: parseFloat(p.discount_amount) || 0,
-            discountType: p.discount_type || 'percent',
-            description: p.description
-        }));
+        const snap = await getDocs(query(col(), orderBy('month', 'desc')));
+        return snap.docs.map(d => normalize(d.id, d.data()));
     },
 
     create: async (promotion) => {
-        if (!supabase) throw new Error('Cấu hình database chưa hoàn thiện.');
-        const { data, error } = await supabase
-            .from('student_promotions')
-            .insert({
-                student_id: promotion.studentId,
-                month: promotion.month,
-                discount_rate: promotion.discountType === 'percent' ? promotion.discountRate : 0,
-                discount_amount: promotion.discountType === 'amount' ? promotion.discountAmount : 0,
-                discount_type: promotion.discountType || 'percent',
-                description: promotion.description
-            })
-            .select()
-            .single();
-        if (error) throw error;
-        return { id: data.id, ...promotion };
+        const ref = await addDoc(col(), {
+            ...payloadFrom(promotion),
+            createdAt: new Date().toISOString()
+        });
+        return { id: ref.id, ...promotion };
     },
 
     update: async (id, promotion) => {
-        if (!supabase) throw new Error('Cấu hình database chưa hoàn thiện.');
-        const { error } = await supabase
-            .from('student_promotions')
-            .update({
-                student_id: promotion.studentId,
-                month: promotion.month,
-                discount_rate: promotion.discountType === 'percent' ? promotion.discountRate : 0,
-                discount_amount: promotion.discountType === 'amount' ? promotion.discountAmount : 0,
-                discount_type: promotion.discountType || 'percent',
-                description: promotion.description
-            })
-            .eq('id', id);
-        if (error) throw error;
+        await updateDoc(doc(db, 'student_promotions', id), payloadFrom(promotion));
         return promotion;
     },
 
     delete: async (id) => {
-        if (!supabase) throw new Error('Cấu hình database chưa hoàn thiện.');
-        const { error } = await supabase
-            .from('student_promotions')
-            .delete()
-            .eq('id', id);
-        if (error) throw error;
+        await deleteDoc(doc(db, 'student_promotions', id));
         return id;
     }
 };

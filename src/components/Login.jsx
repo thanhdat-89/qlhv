@@ -1,18 +1,30 @@
 import { useState } from 'react';
 import { Lock, LogIn, AlertCircle, User } from 'lucide-react';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth, ADMIN_USERNAME, ADMIN_EMAIL } from '../lib/firebase';
 
 const Login = ({ onLogin }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [submitting, setSubmitting] = useState(false);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        if (username === 'admin' && password === 'cqt263') {
+        if (submitting) return;
+        setSubmitting(true);
+        try {
+            const email = username.trim() === ADMIN_USERNAME
+                ? ADMIN_EMAIL
+                : username.trim();
+            await signInWithEmailAndPassword(auth, email, password);
             onLogin();
-        } else {
+        } catch (err) {
+            console.error('Login error:', err);
             setError('Tài khoản hoặc mật khẩu không chính xác!');
             setPassword('');
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -96,8 +108,8 @@ const Login = ({ onLogin }) => {
                         </div>
                     )}
 
-                    <button type="submit" className="btn btn-primary" style={{ padding: '0.85rem', width: '100%', marginTop: '0.5rem' }}>
-                        <LogIn size={18} style={{ marginRight: '8px' }} /> Đăng nhập
+                    <button type="submit" className="btn btn-primary" style={{ padding: '0.85rem', width: '100%', marginTop: '0.5rem' }} disabled={submitting}>
+                        <LogIn size={18} style={{ marginRight: '8px' }} /> {submitting ? 'Đang đăng nhập...' : 'Đăng nhập'}
                     </button>
                 </form>
 

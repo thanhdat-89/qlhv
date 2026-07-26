@@ -1,94 +1,94 @@
-import { supabase } from '../lib/supabase';
+import { db } from '../lib/firebase';
+import {
+    collection,
+    doc,
+    getDoc,
+    getDocs,
+    addDoc,
+    writeBatch,
+    query,
+    orderBy
+} from 'firebase/firestore';
 
-const TABLES = ['classes', 'students', 'fees', 'extra_attendance', 'holidays', 'promotions'];
+const TABLES = ['classes', 'students', 'fees', 'extra_attendance', 'holidays', 'promotions', 'student_promotions'];
+
+const dumpCollection = async (name) => {
+    const snap = await getDocs(collection(db, name));
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+};
+
+const clearCollection = async (name) => {
+    const snap = await getDocs(collection(db, name));
+    const refs = snap.docs.map(d => d.ref);
+    const chunks = [];
+    for (let i = 0; i < refs.length; i += 400) chunks.push(refs.slice(i, i + 400));
+    for (const chunk of chunks) {
+        const batch = writeBatch(db);
+        chunk.forEach(r => batch.delete(r));
+        await batch.commit();
+    }
+};
+
+const restoreCollection = async (name, records) => {
+    if (!records || records.length === 0) return;
+    const chunks = [];
+    for (let i = 0; i < records.length; i += 400) chunks.push(records.slice(i, i + 400));
+    for (const chunk of chunks) {
+        const batch = writeBatch(db);
+        chunk.forEach(record => {
+            const { id, ...rest } = record;
+            if (id) {
+                batch.set(doc(db, name, String(id)), rest);
+            } else {
+                batch.set(doc(collection(db, name)), rest);
+            }
+        });
+        await batch.commit();
+    }
+};
 
 export const backupService = {
     exportData: async () => {
-        if (!supabase) throw new Error('Cấu hình database chưa hoàn thiện.');
-
-        const backup = {};
-
+        const result = {};
         for (const table of TABLES) {
-            const { data, error } = await supabase
-                .from(table)
-                .select('*');
-
-            if (error) {
-                console.error(`Error exporting table ${table}:`, error);
-                throw new Error(`Lỗi khi xuất dữ liệu bảng ${table}: ${error.message}`);
-            }
-
-            backup[table] = data || [];
+            result[table] = await dumpCollection(table);
         }
-
-        return backup;
+        return result;
     },
 
     importData: async (backup) => {
-        if (!supabase) throw new Error('Cấu hình database chưa hoàn thiện.');
-
-        // 1. Validate backup structure
         for (const table of TABLES) {
             if (!Array.isArray(backup[table])) {
                 throw new Error(`Dữ liệu sao lưu không hợp lệ: Thiếu bảng ${table}`);
             }
         }
 
-        // 2. Clear existing data in correct dependency order (children first)
-        const deleteOrder = ['extra_attendance', 'fees', 'holidays', 'promotions', 'students', 'classes'];
-        for (const table of deleteOrder) {
-            const { error } = await supabase
-                .from(table)
-                .delete()
-                .neq('id', '0'); // Works for both text IDs and numerical IDs to delete all records
+        const deleteOrder = ['extra_attendance', 'fees', 'holidays', 'promotions', 'student_promotions', 'students', 'classes'];
+        for (const name of deleteOrder) await clearCollection(name);
 
-            if (error) {
-                console.error(`Error clearing table ${table}:`, error);
-                throw new Error(`Lỗi khi xóa dữ liệu cũ bảng ${table}: ${error.message}`);
-            }
-        }
-
-        // 3. Restore data in correct dependency order (parents first)
-        const insertOrder = ['classes', 'students', 'fees', 'extra_attendance', 'holidays', 'promotions'];
-        for (const table of insertOrder) {
-            const data = backup[table];
-            if (data.length === 0) continue;
-
-            const { error } = await supabase
-                .from(table)
-                .insert(data);
-
-            if (error) {
-                console.error(`Error restoring table ${table}:`, error);
-                throw new Error(`Lỗi khi khôi phục dữ liệu bảng ${table}: ${error.message}`);
-            }
-        }
+        const insertOrder = ['classes', 'students', 'fees', 'extra_attendance', 'holidays', 'promotions', 'student_promotions'];
+        for (const name of insertOrder) await restoreCollection(name, backup[name]);
 
         return true;
     },
 
     getBackups: async () => {
-        const { data, error } = await supabase
-            .from('backups')
-            .select('id, created_at, filename')
-            .order('created_at', { ascending: false });
-
-        if (error) {
-            console.error('Error fetching backups:', error);
-            return [];
-        }
-        return data;
+        const snap = await getDocs(query(collection(db, 'backups'), orderBy('createdAt', 'desc')));
+        return snap.docs.map(d => {
+            const data = d.data();
+            return {
+                id: d.id,
+                filename: data.filename,
+                createdAt: data.createdAt
+            };
+        });
     },
 
     downloadBackup: async (id) => {
-        const { data, error } = await supabase
-            .from('backups')
-            .select('data, filename')
-            .eq('id', id)
-            .single();
-
-        if (error) throw error;
-        return data;
+        const snap = await getDoc(doc(db, 'backups', id));
+        if (!snap.exists()) throw new Error('Không tìm thấy bản sao lưu.');
+        const data = snap.data();
+        return { data: data.data, filename: data.filename };
     },
 
     createAutomatedBackup: async () => {
@@ -96,22 +96,22 @@ export const backupService = {
         const now = new Date();
         const filename = `auto_backup_${now.getFullYear()}_${now.getMonth() + 1}_${now.getDate()}.json`;
 
-        const { error } = await supabase
-            .from('backups')
-            .insert({
-                data,
-                filename,
-                created_at: now.toISOString()
-            });
+        await addDoc(collection(db, 'backups'), {
+            data,
+            filename,
+            createdAt: now.toISOString()
+        });
 
-        if (error) throw error;
-
-        // Cleanup: Delete backups older than 28 days
         const twentyEightDaysAgo = new Date(now.getTime() - (28 * 24 * 60 * 60 * 1000)).toISOString();
-        await supabase
-            .from('backups')
-            .delete()
-            .lt('created_at', twentyEightDaysAgo);
+        const oldSnap = await getDocs(collection(db, 'backups'));
+        const stale = oldSnap.docs.filter(d => (d.data().createdAt || '') < twentyEightDaysAgo);
+        const chunks = [];
+        for (let i = 0; i < stale.length; i += 400) chunks.push(stale.slice(i, i + 400));
+        for (const chunk of chunks) {
+            const batch = writeBatch(db);
+            chunk.forEach(d => batch.delete(d.ref));
+            await batch.commit();
+        }
 
         return true;
     }

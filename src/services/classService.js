@@ -1,55 +1,42 @@
-import { supabase } from '../lib/supabase';
+import { db } from '../lib/firebase';
+import {
+    collection,
+    doc,
+    getDocs,
+    setDoc,
+    updateDoc,
+    deleteDoc
+} from 'firebase/firestore';
+
+const col = () => collection(db, 'classes');
 
 export const classService = {
     getAll: async () => {
-        if (!supabase) return [];
-        const { data, error } = await supabase
-            .from('classes')
-            .select('*');
-        if (error) throw error;
-
-        return (data || []).map(c => ({
-            id: c.id,
-            name: c.name,
-            schedule: c.schedule,
-            feePerSession: c.fee_per_session
-        }));
+        const snap = await getDocs(col());
+        return snap.docs.map(d => ({ id: d.id, ...d.data() }));
     },
 
     create: async (newClass) => {
-        const dbClass = {
-            id: newClass.id,
-            name: newClass.name,
-            schedule: newClass.schedule,
-            fee_per_session: newClass.feePerSession
-        };
-        const { error } = await supabase
-            .from('classes')
-            .insert(dbClass);
-        if (error) throw error;
+        const { id, ...rest } = newClass;
+        await setDoc(doc(db, 'classes', id), {
+            ...rest,
+            createdAt: new Date().toISOString()
+        });
         return newClass;
     },
 
     update: async (id, data) => {
-        const dbData = {};
-        if (data.name !== undefined) dbData.name = data.name;
-        if (data.schedule !== undefined) dbData.schedule = data.schedule;
-        if (data.feePerSession !== undefined) dbData.fee_per_session = data.feePerSession;
-
-        const { error } = await supabase
-            .from('classes')
-            .update(dbData)
-            .eq('id', id);
-        if (error) throw error;
+        const allowed = ['name', 'category', 'schedule', 'feePerSession'];
+        const payload = Object.fromEntries(
+            Object.entries(data).filter(([k]) => allowed.includes(k))
+        );
+        if (Object.keys(payload).length === 0) return data;
+        await updateDoc(doc(db, 'classes', id), payload);
         return data;
     },
 
     delete: async (id) => {
-        const { error } = await supabase
-            .from('classes')
-            .delete()
-            .eq('id', id);
-        if (error) throw error;
+        await deleteDoc(doc(db, 'classes', id));
         return id;
     }
 };

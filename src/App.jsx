@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { auth } from './lib/firebase';
 import { useDatabase } from './hooks/useDatabase';
 import Dashboard from './views/Dashboard';
 import Students from './views/Students';
@@ -17,20 +19,30 @@ import './App.css';
 function App() {
     const navigate = useNavigate();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [isAuthenticated, setIsAuthenticated] = useState(() => {
-        return localStorage.getItem('hv_manager_auth') === 'true';
-    });
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [authChecked, setAuthChecked] = useState(false);
     const db = useDatabase();
     const { isLoading } = db;
 
+    useEffect(() => {
+        const unsub = onAuthStateChanged(auth, (user) => {
+            setIsAuthenticated(!!user);
+            setAuthChecked(true);
+        });
+        return () => unsub();
+    }, []);
+
     const handleLogin = () => {
         setIsAuthenticated(true);
-        localStorage.setItem('hv_manager_auth', 'true');
     };
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        try {
+            await signOut(auth);
+        } catch (e) {
+            console.error('Sign-out error:', e);
+        }
         setIsAuthenticated(false);
-        localStorage.removeItem('hv_manager_auth');
         navigate('/');
     };
 
@@ -66,6 +78,10 @@ function App() {
     useEffect(() => {
         setIsMobileMenuOpen(false);
     }, [navigate]);
+
+    if (!authChecked) {
+        return null;
+    }
 
     if (!isAuthenticated) {
         return <Login onLogin={handleLogin} />;
