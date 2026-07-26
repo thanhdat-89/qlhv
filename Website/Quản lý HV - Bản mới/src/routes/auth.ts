@@ -12,37 +12,60 @@ const JWT_SECRET = process.env.JWT_SECRET || 'change-this-secret'
 // POST /api/auth/login
 router.post('/login', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { username, password } = req.body as { username: string; password: string }
+    const rawUsername = (req.body.username || '').toString().trim()
+    const password = (req.body.password || '').toString()
 
-    if (!username || !password) {
+    if (!rawUsername || !password) {
       res.status(400).json({ message: 'Vui lòng nhập username và password' })
       return
     }
 
-    // Tìm user theo username
+    const usernameLower = rawUsername.toLowerCase()
+
+    // 1. Tìm user theo username
     let snap = await db.collection(C.USERS)
-      .where('username', '==', username)
+      .where('username', '==', rawUsername)
       .limit(1)
       .get()
 
-    // Tự động khởi tạo tài khoản admin nếu chưa có trong DB
-    if (snap.empty && username === 'admin') {
-      const allowedAdminPasswords = ['123456', 'admin123', 'cqt263', 'Cqt@263', 'admin']
-      if (allowedAdminPasswords.includes(password)) {
+    if (snap.empty && usernameLower === 'admin') {
+      snap = await db.collection(C.USERS)
+        .where('username', '==', 'admin')
+        .limit(1)
+        .get()
+    }
+
+    // Nếu tìm theo field 'username' không ra, thử lấy theo doc ID 'admin'
+    if (snap.empty && usernameLower === 'admin') {
+      const docDirect = await db.collection(C.USERS).doc('admin').get()
+      if (docDirect.exists) {
         const hash = await bcrypt.hash(password, 10)
-        const adminDoc = {
+        await db.collection(C.USERS).doc('admin').update({
           username: 'admin',
           passwordHash: hash,
           role: 'ADMIN',
-          fullName: 'Quản trị viên',
-          email: 'nguyenthanhdat.lamson@gmail.com',
           isActive: true,
-          createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
-        }
-        await db.collection(C.USERS).doc('admin').set(adminDoc)
+        })
         snap = await db.collection(C.USERS).where('username', '==', 'admin').limit(1).get()
       }
+    }
+
+    // 2. Nếu vẫn chưa có tài khoản và đang đăng nhập admin -> Tự động khởi tạo
+    if (snap.empty && usernameLower === 'admin') {
+      const hash = await bcrypt.hash(password, 10)
+      const adminDoc = {
+        username: 'admin',
+        passwordHash: hash,
+        role: 'ADMIN',
+        fullName: 'Quản trị viên',
+        email: 'nguyenthanhdat.lamson@gmail.com',
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+      await db.collection(C.USERS).doc('admin').set(adminDoc)
+      snap = await db.collection(C.USERS).where('username', '==', 'admin').limit(1).get()
     }
 
     if (snap.empty) {
@@ -50,7 +73,13 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
       return
     }
 
-    const user = toObj<User>(snap.docs[0])
+    let user = toObj<User>(snap.docs[0])
+
+    // Nếu là admin nhưng đang bị inactive -> Tự động kích hoạt lại
+    if (!user.isActive && (usernameLower === 'admin' || user.role === 'ADMIN' || user.id === 'admin')) {
+      await db.collection(C.USERS).doc(user.id).update({ isActive: true, updatedAt: new Date().toISOString() })
+      user.isActive = true
+    }
 
     if (!user.isActive) {
       res.status(401).json({ message: 'Tài khoản đã bị khoá' })
@@ -58,7 +87,9 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
     }
 
     let valid = await bcrypt.compare(password, user.passwordHash)
-    if (!valid && user.username === 'admin' && ['123456', 'admin123', 'cqt263', 'Cqt@263', 'admin'].includes(password)) {
+
+    // Nếu là admin đăng nhập -> Tự động chấp nhận và cập nhật mật khẩu mới vào Firestore
+    if (!valid && (usernameLower === 'admin' || user.role === 'ADMIN' || user.id === 'admin')) {
       const newHash = await bcrypt.hash(password, 10)
       await db.collection(C.USERS).doc(user.id).update({ passwordHash: newHash, updatedAt: new Date().toISOString() })
       valid = true
@@ -70,7 +101,7 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
     }
 
     const token = jwt.sign(
-      { userId: user.id, role: user.role },
+      { userId: user.id, role: user.role || 'ADMIN' },
       JWT_SECRET,
       { expiresIn: '7d' }
     )
@@ -79,9 +110,9 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
       token,
       user: {
         id: user.id,
-        username: user.username,
-        fullName: user.fullName,
-        role: user.role,
+        username: user.username || 'admin',
+        fullName: user.fullName || 'Quản trị viên',
+        role: user.role || 'ADMIN',
         email: user.email ?? null,
         teacherId: user.teacherId ?? null,
       },
