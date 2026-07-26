@@ -65,6 +65,7 @@ function EditStudentModal({ student, onClose, onSaved }: { student: Student; onC
   const [form, setForm] = useState({
     fullName: student.fullName ?? '',
     dateOfBirth: student.dateOfBirth ?? '',
+    enrollmentDate: student.enrollmentDate ?? '',
     gender: student.gender ?? '',
     school: student.school ?? '',
     gradeLevel: student.gradeLevel?.toString() ?? '',
@@ -86,6 +87,7 @@ function EditStudentModal({ student, onClose, onSaved }: { student: Student; onC
       const res = await api.put(`/students/${student.id}`, {
         fullName: form.fullName,
         dateOfBirth: form.dateOfBirth || null,
+        enrollmentDate: form.enrollmentDate || null,
         gender: form.gender || null,
         school: form.school || null,
         gradeLevel: form.gradeLevel || null,
@@ -113,6 +115,9 @@ function EditStudentModal({ student, onClose, onSaved }: { student: Student; onC
           </div>
           <Field label="Ngày sinh">
             <input value={form.dateOfBirth} onChange={set('dateOfBirth')} type="date" className="input" />
+          </Field>
+          <Field label="Ngày nhập học">
+            <input value={form.enrollmentDate} onChange={set('enrollmentDate')} type="date" className="input" />
           </Field>
           <Field label="Giới tính">
             <select value={form.gender} onChange={set('gender')} className="input">
@@ -301,6 +306,63 @@ function EnrollModal({ studentId, onClose, onSaved }: { studentId: string; onClo
   )
 }
 
+// ─── Edit Enrollment Modal ───────────────────────────────────────────────────
+
+function EditEnrollmentModal({
+  studentId,
+  enrollment,
+  onClose,
+  onSaved,
+}: {
+  studentId: string
+  enrollment: ClassEnrollment
+  onClose: () => void
+  onSaved: () => void
+}) {
+  const [enrollmentDate, setEnrollmentDate] = useState(
+    enrollment.enrollmentDate ? enrollment.enrollmentDate.slice(0, 10) : new Date().toISOString().slice(0, 10)
+  )
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!enrollmentDate) { setError('Vui lòng chọn ngày đăng ký'); return }
+    setSaving(true); setError('')
+    try {
+      await api.put(`/students/${studentId}/enroll/${enrollment.id}`, { enrollmentDate })
+      onSaved()
+    } catch (err: any) {
+      setError(err.response?.data?.message ?? 'Có lỗi xảy ra')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <Modal title={`Chỉnh sửa đăng ký - ${enrollment.className}`} onClose={onClose}>
+      {error && <div className="mb-4 p-3 bg-error-container/10 text-error rounded-xl text-sm">{error}</div>}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <Field label="Ngày đăng ký lớp *">
+          <input
+            value={enrollmentDate}
+            onChange={e => setEnrollmentDate(e.target.value)}
+            type="date"
+            required
+            className="input"
+          />
+        </Field>
+        <div className="flex gap-3 pt-2">
+          <button type="button" onClick={onClose} className="flex-1 btn-secondary justify-center">Huỷ</button>
+          <button type="submit" disabled={saving} className="flex-1 btn-primary justify-center disabled:opacity-60">
+            {saving ? 'Đang lưu...' : 'Cập nhật'}
+          </button>
+        </div>
+      </form>
+    </Modal>
+  )
+}
+
 // ─── Payment Modal ───────────────────────────────────────────────────────────
 
 function PaymentModal({ record, onClose, onSaved }: { record: TuitionRecord; onClose: () => void; onSaved: () => void }) {
@@ -450,6 +512,7 @@ function InfoTab({
 }) {
   const [parentModal, setParentModal] = useState<{ open: boolean; parent: (Parent & { id: string }) | null }>({ open: false, parent: null })
   const [enrollModal, setEnrollModal] = useState(false)
+  const [editEnrollModal, setEditEnrollModal] = useState<ClassEnrollment | null>(null)
   const [confirm, setConfirm] = useState<{ message: string; onConfirm: () => void } | null>(null)
 
   const deleteEnrollment = (e: ClassEnrollment) => {
@@ -638,6 +701,13 @@ function InfoTab({
                     <div className="flex items-center gap-2">
                       <span className="text-[10px] bg-secondary-container/30 text-secondary px-2 py-1 rounded-full font-bold">Đang học</span>
                       <button
+                        onClick={() => setEditEnrollModal(e)}
+                        className="p-1.5 rounded-lg hover:bg-surface-container-highest text-outline hover:text-on-surface transition-colors"
+                        title="Chỉnh sửa ngày đăng ký"
+                      >
+                        <span className="material-symbols-outlined text-base">edit</span>
+                      </button>
+                      <button
                         onClick={() => dropEnrollment(e)}
                         className="p-1.5 rounded-lg hover:bg-error-container/20 text-outline hover:text-error transition-colors"
                         title="Cho nghỉ lớp"
@@ -663,6 +733,13 @@ function InfoTab({
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-[10px] bg-surface-container-high text-outline px-2 py-1 rounded-full font-bold">Đã nghỉ</span>
+                        <button
+                          onClick={() => setEditEnrollModal(e)}
+                          className="p-1.5 rounded-lg hover:bg-surface-container-highest text-outline hover:text-on-surface transition-colors"
+                          title="Chỉnh sửa ngày đăng ký"
+                        >
+                          <span className="material-symbols-outlined text-base">edit</span>
+                        </button>
                         <button
                           onClick={() => deleteEnrollment(e)}
                           className="p-1 hover:bg-error/10 hover:text-error text-outline rounded-lg transition-colors"
@@ -694,6 +771,14 @@ function InfoTab({
           studentId={student.id}
           onClose={() => setEnrollModal(false)}
           onSaved={() => { setEnrollModal(false); onRefresh() }}
+        />
+      )}
+      {editEnrollModal && (
+        <EditEnrollmentModal
+          studentId={student.id}
+          enrollment={editEnrollModal}
+          onClose={() => setEditEnrollModal(null)}
+          onSaved={() => { setEditEnrollModal(null); onRefresh() }}
         />
       )}
       {confirm && <ConfirmDialog message={confirm.message} onConfirm={confirm.onConfirm} onCancel={() => setConfirm(null)} />}

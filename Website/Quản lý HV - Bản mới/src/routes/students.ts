@@ -247,7 +247,7 @@ router.post('/', async (req: AuthRequest, res: Response, next: NextFunction) => 
 // PUT /api/students/:id
 router.put('/:id', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const { fullName, dateOfBirth, gender, school, gradeLevel, address, status, notes, parentName, phone, parentId } = req.body
+    const { fullName, dateOfBirth, gender, school, gradeLevel, address, status, notes, enrollmentDate, parentName, phone, parentId } = req.body
     const studentId = s(req.params.id)
 
     const updates: Record<string, unknown> = { updatedAt: now() }
@@ -259,6 +259,7 @@ router.put('/:id', async (req: AuthRequest, res: Response, next: NextFunction) =
     if (address !== undefined) updates.address = address
     if (status !== undefined) updates.status = status
     if (notes !== undefined) updates.notes = notes
+    if (enrollmentDate !== undefined) updates.enrollmentDate = enrollmentDate
 
     await db.collection(C.STUDENTS).doc(studentId).update(updates)
 
@@ -338,6 +339,22 @@ router.post('/:id/enroll', async (req: AuthRequest, res: Response, next: NextFun
 
     const ref = await db.collection(C.ENROLLMENTS).add(enrollment)
     res.status(201).json({ id: ref.id, ...enrollment })
+  } catch (err) {
+    next(err)
+  }
+})
+
+// PUT /api/students/:id/enroll/:enrollmentId — Cập nhật thông tin đăng ký lớp (ngày đăng ký, ...)
+router.put('/:id/enroll/:enrollmentId', async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const { enrollmentDate, customTuitionRate, notes } = req.body
+    const updates: Record<string, unknown> = {}
+    if (enrollmentDate !== undefined) updates.enrollmentDate = enrollmentDate
+    if (customTuitionRate !== undefined) updates.customTuitionRate = customTuitionRate ? Number(customTuitionRate) : null
+    if (notes !== undefined) updates.notes = notes
+
+    await db.collection(C.ENROLLMENTS).doc(s(req.params.enrollmentId)).update(updates)
+    res.json({ message: 'Đã cập nhật thông tin đăng ký lớp' })
   } catch (err) {
     next(err)
   }
