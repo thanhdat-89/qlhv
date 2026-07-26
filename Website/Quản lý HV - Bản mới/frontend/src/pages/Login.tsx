@@ -15,8 +15,10 @@ export default function Login() {
     try {
       await login(username, password)
       navigate('/dashboard')
-    } catch {
-      setError('Tên đăng nhập hoặc mật khẩu không đúng')
+    } catch (err: any) {
+      const serverMessage = err.response?.data?.message
+      const errorMessage = serverMessage || err.message || 'Tên đăng nhập hoặc mật khẩu không đúng'
+      setError(errorMessage)
     }
   }
 

@@ -21,7 +21,13 @@ const Login = ({ onLogin }) => {
             onLogin();
         } catch (err) {
             console.error('Login error:', err);
-            setError('Tài khoản hoặc mật khẩu không chính xác!');
+            let msg = 'Tài khoản hoặc mật khẩu không chính xác!';
+            if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+                msg = 'Tên đăng nhập hoặc mật khẩu không đúng!';
+            } else if (err.message) {
+                msg = `Lỗi đăng nhập: ${err.message}`;
+            }
+            setError(msg);
             setPassword('');
         } finally {
             setSubmitting(false);
