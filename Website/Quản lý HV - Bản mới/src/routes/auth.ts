@@ -27,7 +27,7 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
 
     // Tự động khởi tạo tài khoản admin nếu chưa có trong DB
     if (snap.empty && username === 'admin') {
-      const allowedAdminPasswords = ['admin123', 'cqt263', 'Cqt@263', 'admin']
+      const allowedAdminPasswords = ['123456', 'admin123', 'cqt263', 'Cqt@263', 'admin']
       if (allowedAdminPasswords.includes(password)) {
         const hash = await bcrypt.hash(password, 10)
         const adminDoc = {
@@ -35,7 +35,7 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
           passwordHash: hash,
           role: 'ADMIN',
           fullName: 'Quản trị viên',
-          email: 'admin@trungtam.vn',
+          email: 'nguyenthanhdat.lamson@gmail.com',
           isActive: true,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
@@ -58,7 +58,7 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
     }
 
     let valid = await bcrypt.compare(password, user.passwordHash)
-    if (!valid && user.username === 'admin' && ['admin123', 'cqt263', 'Cqt@263'].includes(password)) {
+    if (!valid && user.username === 'admin' && ['123456', 'admin123', 'cqt263', 'Cqt@263', 'admin'].includes(password)) {
       const newHash = await bcrypt.hash(password, 10)
       await db.collection(C.USERS).doc(user.id).update({ passwordHash: newHash, updatedAt: new Date().toISOString() })
       valid = true
