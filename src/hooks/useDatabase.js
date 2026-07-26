@@ -696,55 +696,17 @@ export const useDatabase = () => {
         if (password !== 'cqt263' && password !== 'Cqt@263') {
             throw new Error('Mật khẩu không chính xác.');
         }
-        const activeStudents = students.filter(s => s.status !== 'Đã nghỉ' && s.status !== 'Đã xóa');
-        if (activeStudents.length === 0) {
-            showToast('Không có học viên nào trong danh sách đang học.', 'info');
+        if (students.length === 0) {
+            showToast('Không có học viên nào trong cơ sở dữ liệu.', 'info');
             return;
         }
 
-        const now = new Date().toISOString();
-        for (const s of activeStudents) {
-            const newHistoryEntry = {
-                status: 'Đã nghỉ',
-                content: '🗑️ Xóa hàng loạt khỏi danh sách đang học',
-                date: now
-            };
-            const updated = {
-                status: 'Đã nghỉ',
-                leaveDate: s.leaveDate || now,
-                statusHistory: [...(s.statusHistory || []), newHistoryEntry]
-            };
-            await studentService.update(s.id, updated);
+        const count = students.length;
+        for (const s of students) {
+            await studentService.delete(s.id);
         }
-        setStudents(prev => prev.map(s => (s.status !== 'Đã nghỉ' && s.status !== 'Đã xóa') ? { ...s, status: 'Đã nghỉ', leaveDate: s.leaveDate || now } : s));
-        showToast(`Đã chuyển ${activeStudents.length} học viên sang trạng thái nghỉ (có thể hoàn tác).`, 'success');
-    };
-
-    const bulkRestoreStudents = async (password) => {
-        if (password !== 'cqt263' && password !== 'Cqt@263') {
-            throw new Error('Mật khẩu không chính xác.');
-        }
-        const restingStudents = students.filter(s => s.status === 'Đã nghỉ' || s.status === 'Đã xóa');
-        if (restingStudents.length === 0) {
-            showToast('Không có học viên nào để khôi phục.', 'info');
-            return;
-        }
-
-        const now = new Date().toISOString();
-        for (const s of restingStudents) {
-            const newHistoryEntry = {
-                status: 'Đang học',
-                content: '🔄 Khôi phục hàng loạt về danh sách đang học',
-                date: now
-            };
-            const updated = {
-                status: 'Đang học',
-                statusHistory: [...(s.statusHistory || []), newHistoryEntry]
-            };
-            await studentService.update(s.id, updated);
-        }
-        setStudents(prev => prev.map(s => (s.status === 'Đã nghỉ' || s.status === 'Đã xóa') ? { ...s, status: 'Đang học' } : s));
-        showToast(`Đã khôi phục ${restingStudents.length} học viên về trạng thái Đang học.`, 'success');
+        setStudents([]);
+        showToast(`Đã xóa vĩnh viễn toàn bộ ${count} học viên khỏi hệ thống.`, 'success');
     };
 
     const deleteClass = async (id, passwordOverride = null) => {
@@ -1031,7 +993,6 @@ export const useDatabase = () => {
             updatePromotion,
             deleteStudent,
             bulkDeleteStudents,
-            bulkRestoreStudents,
             deleteClass,
             deleteExtraAttendance,
             bulkDeleteExtraAttendance,
