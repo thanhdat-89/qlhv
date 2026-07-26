@@ -70,14 +70,19 @@ const ImportStudentsModal = ({ classes, onImport, onClose }) => {
 
         // If it's a string, try parsing
         if (typeof input === 'string') {
-            // Check for DD/MM/YYYY format which new Date() often fails at
-            const parts = input.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+            // Check for DD/MM/YYYY or DD-MM-YY format
+            const parts = input.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
             if (parts) {
                 const day = parseInt(parts[1], 10);
                 const month = parseInt(parts[2], 10) - 1;
-                const year = parseInt(parts[3], 10);
-                const date = new Date(year, month, day);
-                return date.toISOString().split('T')[0];
+                let year = parseInt(parts[3], 10);
+                if (year < 100) {
+                    year = year > 50 ? 1900 + year : 2000 + year;
+                }
+                const y = String(year);
+                const m = String(month + 1).padStart(2, '0');
+                const d = String(day).padStart(2, '0');
+                return `${y}-${m}-${d}`;
             }
 
             const date = new Date(input);

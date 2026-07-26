@@ -8,8 +8,22 @@ import { Student, ClassEnrollment, TuitionRecord, Parent, Class, StudentPromotio
 
 function fmt(date?: string | null) {
   if (!date) return '—'
-  const [y, m, d] = date.slice(0, 10).split('-')
-  return `${d}/${m}/${y}`
+  const cleanDate = date.trim().slice(0, 10)
+  if (cleanDate.includes('-')) {
+    const parts = cleanDate.split('-')
+    if (parts.length === 3) {
+      const [y, m, d] = parts
+      return `${d.padStart(2, '0')}/${m.padStart(2, '0')}/${y.length === 2 ? '20' + y : y}`
+    }
+  }
+  if (cleanDate.includes('/')) {
+    const parts = cleanDate.split('/')
+    if (parts.length === 3) {
+      const [d, m, y] = parts
+      return `${d.padStart(2, '0')}/${m.padStart(2, '0')}/${y.length === 2 ? '20' + y : y}`
+    }
+  }
+  return date
 }
 
 function fmtMoney(n: number) {

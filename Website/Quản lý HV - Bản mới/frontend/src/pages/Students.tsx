@@ -79,15 +79,28 @@ function normalizeHeader(h: string) {
 // Chuyển DD-MM-YYYY hoặc DD/MM/YYYY → YYYY-MM-DD (ISO) để gửi lên backend
 function toISO(val: string): string {
   const v = val.trim()
-  // DD-MM-YYYY hoặc DD/MM/YYYY
-  const m1 = v.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/)
-  if (m1) return `${m1[3]}-${m1[2].padStart(2,'0')}-${m1[1].padStart(2,'0')}`
+  // DD-MM-YYYY hoặc DD/MM/YYYY hoặc D/M/YY
+  const m1 = v.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{2,4})$/)
+  if (m1) {
+    const day = m1[1].padStart(2, '0')
+    const month = m1[2].padStart(2, '0')
+    let year = m1[3]
+    if (year.length === 2) {
+      year = Number(year) > 50 ? `19${year}` : `20${year}`
+    }
+    return `${year}-${month}-${day}`
+  }
+  // YYYY/MM/DD hoặc YYYY-MM-DD
+  const m2 = v.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/)
+  if (m2) {
+    return `${m2[1]}-${m2[2].padStart(2, '0')}-${m2[3].padStart(2, '0')}`
+  }
   // Excel serial number (number)
   if (/^\d{4,5}$/.test(v)) {
     const d = XLSX.SSF.parse_date_code(Number(v))
-    return `${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`
+    return `${d.y}-${String(d.m).padStart(2, '0')}-${String(d.d).padStart(2, '0')}`
   }
-  return v // YYYY-MM-DD passthrough
+  return v // Passthrough
 }
 
 const DATE_FIELDS = new Set(['dateOfBirth', 'enrollmentDate'])
